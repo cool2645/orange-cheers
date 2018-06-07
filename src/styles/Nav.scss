@@ -1,0 +1,59 @@
+.top .foot {
+  position: relative;
+  z-index: 700;
+}
+
+.top {
+  position: relative;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.14);
+  border-top: 8px solid;
+  .header {
+    height: 77px;
+    position: relative;
+    a {
+      &.active, &:hover {
+        color: #fff !important;
+      }
+    }
+    .logo-container {
+      float: left;
+      width: 300px;
+      height: 85px;
+      margin-top: -8px;
+    }
+    .top-menu {
+      float: left;
+      margin-left: 20px;
+      margin-right: 20px;
+      li {
+        display: block;
+        float: left;
+        line-height: 77px;
+        padding-right: 0.75rem;
+        position: relative;
+        a {
+          display: block;
+          padding: 0 1.25rem;
+          font-size: 15px;
+          font-weight: 500;
+        }
+      }
+    }
+    .social {
+      float: right;
+      .icon {
+        height: 77px;
+        padding: 0 7px;
+        display: inline-block;
+        font-size: 28px;
+        vertical-align: top;
+        a {
+          display: block;
+          line-height: 77px;
+          height: 77px;
+          padding: 0 7px;
+        }
+      }
+    }
+  }
+}

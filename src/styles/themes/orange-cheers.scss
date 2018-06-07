@@ -1,0 +1,17 @@
+.orange-cheers {
+  $background-color: #ff9228;
+  $background-dark-color: #e68026;
+  $theme-color: #f8b500;
+  $theme-dark-color: #ffe6cd;
+
+  .top {
+    background: $background-color;
+    border-top-color: $background-dark-color;
+    .top-menu li a {
+      color: $theme-dark-color;
+    }
+    .social a {
+      color: $theme-dark-color;
+    }
+  }
+}

@@ -1,0 +1,31 @@
+* {
+  -webkit-font-smoothing: antialiased !important;
+  font-smoothing: antialiased !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.22);
+}
+
+body, button, input, select, textarea {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #444;
+  font-family: 'Alegreya', Georgia, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  outline: 0;
+}
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0;
+  outline: 0;
+  padding: 0;
+}
+
+a, a:hover, input, input:hover, button, button:hover, .ico a, .fade, .widget-item li, .widget-item li:hover, .banner .dots li {
+  transition: all .28s cubic-bezier(.4,0,.2,1);
+  -webkit-transition: all .28s cubic-bezier(.4,0,.2,1);
+  -moz-transition: all .28s cubic-bezier(.4,0,.2,1);
+}
+
+a {
+  text-decoration: none;
+}
