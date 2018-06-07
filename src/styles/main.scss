@@ -21,11 +21,28 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
 }
 
 a, a:hover, input, input:hover, button, button:hover, .ico a, .fade, .widget-item li, .widget-item li:hover, .banner .dots li {
-  transition: all .28s cubic-bezier(.4,0,.2,1);
-  -webkit-transition: all .28s cubic-bezier(.4,0,.2,1);
-  -moz-transition: all .28s cubic-bezier(.4,0,.2,1);
+  transition: all .28s cubic-bezier(.4, 0, .2, 1);
+  -webkit-transition: all .28s cubic-bezier(.4, 0, .2, 1);
+  -moz-transition: all .28s cubic-bezier(.4, 0, .2, 1);
 }
 
 a {
   text-decoration: none;
+}
+
+.typed-cursor {
+  opacity: 1;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

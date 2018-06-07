@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, NavLink, Link } from 'react-router-dom'
+import Typed from 'typed.js'
 import '../styles/Nav.css'
 
 class Nav extends Component {
@@ -8,16 +9,37 @@ class Nav extends Component {
     this.state = {
       collapse: ""
     };
-    document.onmousewheel = document.DOMMouseScroll = Nav.handleCollapse.bind(this)
+    document.onmousewheel = document.DOMMouseScroll = this.handleCollapse.bind(this)
   }
-  static handleCollapse(e) {
+  handleCollapse(e) {
     if (document.body.scrollTop === 0) {
       if ((e.wheelDelta && e.wheelDelta > 0) || (e.detail && e.detail < 0)) {
-        this.setState({collapse: ""})
+        if (this.state.collapse !== "") {
+          this.setState({collapse: ""});
+          setTimeout(() => this.typed.reset(), 750);
+        }
       } else {
-        this.setState({collapse: "collapse"})
+        if (this.state.collapse !== "collapse") {
+          this.setState({collapse: "collapse"});
+          setTimeout(() => this.typed.reset(), 750);
+        }
       }
     }
+  }
+  componentDidMount() {
+    // You can pass other options here, such as typing speed, back speed, etc.
+    const options = {
+      strings: ["2645 Laboratory"],
+      typeSpeed: 50,
+      backSpeed: 50
+    };
+    // this.el refers to the <span> in the render() method
+    this.typed = new Typed(this.el, options);
+  }
+  componentWillUnmount() {
+    // Make sure to destroy Typed instance on unmounting
+    // to prevent memory leaks
+    this.typed.destroy();
   }
   render() {
     return (<div>
@@ -38,29 +60,32 @@ class Nav extends Component {
           <div className="header container center">
             <div className={`logo-container ${this.state.collapse}`}>
               <NavLink exact to="/" activeClassName="active">
-                <h1>2645 Laboratory</h1>
+                <h1><span
+                  style={{ whiteSpace: 'pre' }}
+                  ref={(el) => { this.el = el; }}
+                ></span></h1>
               </NavLink>
             </div>
             <div className={`nav-container ${this.state.collapse}`}>
               <div className="top-menu">
                 <ul>
-                  <li>
-                    <NavLink className="collapse-show" activeClassName="active" to="/category/tech">技术</NavLink>
+                  <li className="collapse-show" >
+                    <NavLink activeClassName="active" to="/category/tech">技术</NavLink>
                   </li>
-                  <li>
-                    <NavLink className="collapse-hide" activeClassName="active" to="/category/tech/webdev">Web 開發</NavLink>
+                  <li className="collapse-hide">
+                    <NavLink activeClassName="active" to="/category/tech/webdev">Web 開發</NavLink>
                   </li>
-                  <li>
-                    <NavLink className="collapse-hide" activeClassName="active" to="/category/tech/operation">運維</NavLink>
+                  <li className="collapse-hide" >
+                    <NavLink activeClassName="active" to="/category/tech/operation">運維</NavLink>
                   </li>
-                  <li>
-                    <NavLink className="collapse-hide" activeClassName="active" to="/category/tech/linux">Linux</NavLink>
+                  <li className="collapse-hide" >
+                    <NavLink activeClassName="active" to="/category/tech/linux">Linux</NavLink>
                   </li>
-                  <li>
-                    <NavLink className="collapse-hide" activeClassName="active" to="/category/tech/desktopdev">桌面開發</NavLink>
+                  <li className="collapse-hide" >
+                    <NavLink activeClassName="active" to="/category/tech/desktopdev">桌面開發</NavLink>
                   </li>
-                  <li>
-                    <NavLink className="collapse-hide" activeClassName="active" to="/category/tech/algorithm">算法</NavLink>
+                  <li className="collapse-hide" >
+                    <NavLink activeClassName="active" to="/category/tech/algorithm">算法</NavLink>
                   </li>
                   <li>
                     <NavLink activeClassName="active" to="/archives">歸檔</NavLink>
