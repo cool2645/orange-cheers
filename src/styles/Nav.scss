@@ -8,8 +8,13 @@
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.14);
   border-top: 8px solid;
   .header {
-    height: 77px;
     position: relative;
+    &:after {
+      content: " ";
+      display: block;
+      height: 0;
+      clear: both;
+    }
     a {
       &.active, &:hover {
         color: #fff !important;
@@ -19,50 +24,89 @@
       }
     }
     .logo-container {
+      transition: all 0.75s;
       float: left;
-      width: 320px;
-      height: 77px;
+      width: 100%;
+      &.collapse {
+        width: auto;
+        h1 {
+          font-size: 35px;
+          padding: 0 10px;
+        }
+      }
       h1 {
+        transition: all 0.75s;
+        text-align: center;
         margin-top: 18px;
         font-family: 'Sunflower', sans-serif;
         text-transform: uppercase;
-        font-size: 35px;
+        font-size: 65px;
         line-height: normal;
-        padding-left: 10px;
-        padding-right: 10px;
+        padding: 150px;
       }
     }
-    .top-menu {
-      float: left;
-      margin-left: 20px;
-      margin-right: 20px;
-      li {
-        display: block;
-        float: left;
-        line-height: 77px;
-        padding-right: 0.75rem;
-        position: relative;
-        a {
-          display: block;
-          padding: 0 1.25rem;
-          font-size: 15px;
-          font-weight: 500;
+    .nav-container {
+      float: right;
+      height: 77px;
+      width: 100%;
+      &.collapse {
+        width: auto;
+        .collapse-hide {
+          display: none !important;
+        }
+        .collapse-show {
+          display: block !important;
+        }
+        @media (max-width: 900px) {
+          .social {
+            display: none;
+          }
         }
       }
-    }
-    .social {
-      float: right;
-      .icon {
-        height: 77px;
-        padding: 0 7px;
-        display: inline-block;
-        font-size: 28px;
-        vertical-align: top;
-        a {
+      .collapse-show {
+        display: none !important;
+      }
+      @media (max-width: 950px) {
+        .collapse-hide {
+          display: none !important;
+        }
+        .collapse-show {
+          display: block !important;
+        }
+      }
+      .top-menu {
+        margin-left: 20px;
+        margin-right: 20px;
+        float: left;
+        li {
           display: block;
+          float: left;
           line-height: 77px;
+          padding-right: 0.75rem;
+          position: relative;
+          a {
+            display: block;
+            padding: 0 1.25rem;
+            font-size: 18px;
+            font-weight: 500;
+            font-family: 'Permanent Marker', cursive, 'winmantun23001128051bbbd61f9';
+          }
+        }
+      }
+      .social {
+        float: right;
+        .icon {
           height: 77px;
           padding: 0 7px;
+          display: inline-block;
+          font-size: 28px;
+          vertical-align: top;
+          a {
+            display: block;
+            line-height: 77px;
+            height: 77px;
+            padding: 0 7px;
+          }
         }
       }
     }
