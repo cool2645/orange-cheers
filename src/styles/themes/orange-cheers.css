@@ -1,6 +1,8 @@
 .orange-cheers .top {
   background: #ff9228;
   border-top-color: #e68026; }
+  .orange-cheers .top h1 {
+    color: #ffe6cd; }
   .orange-cheers .top .top-menu li a {
     color: #ffe6cd; }
   .orange-cheers .top .social a {

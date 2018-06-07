@@ -7,6 +7,9 @@
   .top {
     background: $background-color;
     border-top-color: $background-dark-color;
+    h1 {
+      color: $theme-dark-color;
+    }
     .top-menu li a {
       color: $theme-dark-color;
     }

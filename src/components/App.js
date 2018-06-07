@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from '../icons/logo.svg';
 import '../styles/App.css';
 import '../styles/themes/orange-cheers.css'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'

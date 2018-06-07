@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from '../icons/logo.svg';
 import { BrowserRouter as Router, NavLink, Link } from 'react-router-dom'
 import '../styles/Nav.css'
 
@@ -22,8 +21,8 @@ class Nav extends Component {
         <Router>
           <div className="header container center">
             <div className="logo-container">
-              <NavLink exact to="/">
-                <img height="100%" src={logo} className="App-logo" alt="logo" />
+              <NavLink exact to="/" activeClassName="active">
+                <h1>2645 Laboratory</h1>
               </NavLink>
             </div>
             <div className="top-menu">
