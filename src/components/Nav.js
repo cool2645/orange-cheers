@@ -56,6 +56,7 @@ class Nav extends Component {
           }}></div>
       </div>
       <div className="top">
+        <div className="top-banner"></div>
         <Router>
           <div className="header container center">
             <div className={`logo-container ${this.state.collapse}`}>

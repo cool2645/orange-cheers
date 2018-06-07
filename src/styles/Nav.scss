@@ -7,6 +7,16 @@
   position: relative;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.14);
   border-top: 8px solid;
+  .top-banner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    background: url(../images/banner.svg);
+    background-position-x: center;
+    background-position-y: -130px;
+    background-size: 800px 600px;
+  }
   .header {
     position: relative;
     &:after {
