@@ -5,14 +5,23 @@
   }
   .social a {
     color: $background-color;
+    &.active {
+      color: $background-dark-color;
+    }
   }
-  li:hover {
-    background-color: $background-dark-color;
-    a {
-      color: $theme-dark-color;
+  li {
+    a.active {
+      color: $background-dark-color;
+    }
+    &:hover {
+      background-color: $background-dark-color;
+      a {
+        color: $theme-dark-color;
+      }
     }
   }
 }
+
 .top {
   background: $background-color;
   border-top-color: $background-dark-color;

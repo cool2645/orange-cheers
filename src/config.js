@@ -36,7 +36,7 @@ const nav = {
       name: "桌面開發",
       typed: "桌面开发",
       hideInHeader: true,
-      path: "/category/tech/operation"
+      path: "/category/tech/desktopdev"
     },
     {
       name: "算法",

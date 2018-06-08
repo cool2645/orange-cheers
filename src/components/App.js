@@ -2,21 +2,22 @@ import React, { Component } from 'react';
 import '../styles/App.css';
 import '../styles/themes/orange-cheers.css'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import Home from './Home'
 import Nav from "./Nav";
+import _404 from './404'
+import Home from './Home'
 
 class App extends Component {
   render() {
     return (
-      <div className="App orange-cheers">
-        <Nav />
-        <Router>
+      <Router>
+        <div className="App orange-cheers">
+          <Nav />
           <Switch>
             <Route exact path="/" component={Home} />
-            <Route path="/404" component={Home} />
+            <Route component={_404} />
           </Switch>
-        </Router>
-      </div>
+        </div>
+      </Router>
     );
   }
 }

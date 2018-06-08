@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import Typed from 'typed.js'
 import Sidebar from 'react-sidebar';
 import '../styles/Nav.css'
@@ -151,15 +151,20 @@ class Nav extends Component {
     </div>;
     let sidebarStyle = {
       root: {
-        position: 'fixed',
+        position: 'static',
+        overflow: 'auto'
       },
       sidebar: {
         zIndex: 999,
-        width: '14.375rem'
+        width: '14.375rem',
+        position: 'fixed',
+      },
+      content: {
+        position: 'sticky',
+        overflow: 'auto'
       }
     };
     return (<div>
-      <Router>
         <Sidebar styles={sidebarStyle} sidebar={sidebarContent}
                  open={this.state.sidebarOpen}
                  onSetOpen={this.setSidebarOpen}>
@@ -198,7 +203,6 @@ class Nav extends Component {
             </div>
           </div>
         </Sidebar>
-      </Router>
     </div>)
   }
 }
