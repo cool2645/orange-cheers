@@ -1,5 +1,37 @@
 .post {
   background: #fff;
   margin: 0 0 28px;
-  box-shadow: 0 2px 7px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.07);
+  .fee {
+    border-bottom: 1px dashed #e0e0e0;
+  }
+  .title {
+    font-size: 18px;
+    padding: 21px 28px 21px;
+  }
+  .info {
+    padding: 14px 28px;
+    span {
+      &:before {
+        margin-right: 7px;
+      }
+      margin-right: 21px
+    }
+  }
+  .info, .info a {
+    color: #a0a0a0;
+    font-size: 12.5px;
+  }
+  .content {
+    font-family: 'PT Serif', Georgia, Times, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    letter-spacing: .15px;
+    padding: 21px 28px 14px;
+    border-bottom: 1px dashed #e0e0e0;
+    line-height: 1.9;
+    code,pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      white-space: -moz-pre-wrap;
+    }
+  }
 }
