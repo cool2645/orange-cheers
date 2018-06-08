@@ -3,6 +3,11 @@
   z-index: 700;
 }
 
+.top-container {
+  position: sticky;
+  top: 0;
+}
+
 .top {
   position: relative;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.14);

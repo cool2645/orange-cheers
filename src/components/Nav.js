@@ -10,11 +10,16 @@ class Nav extends Component {
     super();
     this.state = {
       collapse: "",
-      sidebarOpen: false
+      animationLock: false,
+      touchStartY: 0,
+      sidebarOpen: false,
     };
     this.setSidebarOpen = this.setSidebarOpen.bind(this);
     this.retype = this.retype.bind(this);
-    document.onmousewheel = this.handleCollapse.bind(this);
+    document.ontouchstart = (e) => {
+      this.setState({ touchStartY: e.touches[0].clientY })
+    };
+    document.onmousewheel = document.ontouchmove = document.onscroll = this.handleCollapse.bind(this);
     document.addEventListener("DOMMouseScroll", this.handleCollapse.bind(this))
   }
 
@@ -32,19 +37,27 @@ class Nav extends Component {
   }
 
   handleCollapse(e) {
-    if (document.body.scrollTop === 0) {
-      if ((e.wheelDelta && e.wheelDelta > 0) || (e.detail && e.detail < 0)) {
-        if (this.state.collapse !== "") {
-          this.setState({ collapse: "" });
-          this.retype(750);
-        }
-      } else {
-        if (this.state.collapse !== "collapse") {
-          this.setState({ collapse: "collapse" });
-          this.retype(750);
-        }
+    let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    if ((e.wheelDelta && e.wheelDelta > 0) || (e.detail && e.detail < 0) || (e.changedTouches && e.changedTouches[0].clientY > this.state.touchStartY)) {
+      if (scrollTop === 0 && window.matchMedia("(min-width: 865px)").matches && this.state.collapse !== "") {
+        this.setState({ collapse: "" });
+        this.retype(750);
+      }
+    } else {
+      if (this.state.animationLock) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+      if (window.matchMedia("(min-width: 865px)").matches && this.state.collapse !== "collapse") {
+        this.setState({ collapse: "collapse", animationLock: true });
+        this.retype(750);
+        setTimeout(() => {
+          this.setState({ animationLock: false })
+        }, 750);
+        if (e.cancelable) e.preventDefault();
       }
     }
+    if (e.changedTouches) this.setState({ touchStartY: e.changedTouches[0].clientY })
   }
 
   componentDidMount() {
@@ -160,49 +173,49 @@ class Nav extends Component {
         position: 'fixed',
       },
       content: {
-        position: 'sticky',
+        position: 'static',
         overflow: 'auto'
       }
     };
-    return (<div>
-        <Sidebar styles={sidebarStyle} sidebar={sidebarContent}
-                 open={this.state.sidebarOpen}
-                 onSetOpen={this.setSidebarOpen}>
-          {progressbar}
-          <div className="top">
-            <div className="top-banner" />
-            <div className="header container">
-              <div className="mobile-show icon">
-                <a href="" onClick={(e) => {
-                  this.setSidebarOpen(true);
-                  e.preventDefault()
-                }} title="菜单" className="fas fa-bars"> /</a>
+    return (<div className="top-container">
+      <Sidebar styles={sidebarStyle} sidebar={sidebarContent}
+               open={this.state.sidebarOpen}
+               onSetOpen={this.setSidebarOpen}>
+        {progressbar}
+        <div className="top">
+          <div className="top-banner" />
+          <div className="header container">
+            <div className="mobile-show icon">
+              <a href="" onClick={(e) => {
+                this.setSidebarOpen(true);
+                e.preventDefault()
+              }} title="菜单" className="fas fa-bars" />
+            </div>
+            <div className={`logo-container ${this.state.collapse}`}>
+              <NavLink exact to="/" onClick={() => {
+                this.typed.strings = [site.banner, site.title];
+              }} activeClassName="active">
+                <h1><span
+                  style={{ whiteSpace: 'pre' }}
+                  ref={(el) => {
+                    this.el = el;
+                  }}
+                /></h1>
+              </NavLink>
+            </div>
+            <div className={`nav-container ${this.state.collapse}`}>
+              <div className="top-menu">
+                <ul>
+                  {headerLinks}
+                </ul>
               </div>
-              <div className={`logo-container ${this.state.collapse}`}>
-                <NavLink exact to="/" onClick={() => {
-                  this.typed.strings = [site.banner, site.title];
-                }} activeClassName="active">
-                  <h1><span
-                    style={{ whiteSpace: 'pre' }}
-                    ref={(el) => {
-                      this.el = el;
-                    }}
-                   /></h1>
-                </NavLink>
-              </div>
-              <div className={`nav-container ${this.state.collapse}`}>
-                <div className="top-menu">
-                  <ul>
-                    {headerLinks}
-                  </ul>
-                </div>
-                <div className="social">
-                  {headerIcons}
-                </div>
+              <div className="social">
+                {headerIcons}
               </div>
             </div>
           </div>
-        </Sidebar>
+        </div>
+      </Sidebar>
     </div>)
   }
 }
