@@ -1,0 +1,23 @@
+.loader {
+  display: none;
+}
+.loading .loader {
+  display: block;
+  position: relative;
+  height: 300px;
+  .spinner {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    width: 200px;
+    height: 200px;
+    background-position: -125px -90px;
+    background-size: 450px 450px;
+  }
+  h1 {
+    position: absolute;
+    left: 50%;
+    top: 220px;
+    transform: translate(-50%);
+  }
+}

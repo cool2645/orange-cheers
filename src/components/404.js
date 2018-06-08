@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import '../styles/App.css';
 import '../styles/themes/orange-cheers.css'
 
+const NotFound = <h1>404 Not Found</h1>;
+
 class _404 extends Component {
   render() {
-    return (
-      <h1>404 Not Found</h1>
-    );
+    return NotFound;
   }
 }
 
-export default _404;
+export { NotFound, _404 };

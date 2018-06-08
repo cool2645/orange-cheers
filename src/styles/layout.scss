@@ -8,10 +8,15 @@ body {
 }
 
 .container {
+  width: 100%;
   max-width: 1000px;
 }
 
-.center {
+.page {
+  padding-top: 35px;
+}
+
+.center,.container {
   display: block;
   margin-left: auto;
   margin-right: auto;

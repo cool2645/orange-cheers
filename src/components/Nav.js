@@ -97,12 +97,12 @@ class Nav extends Component {
           <NavLink activeClassName="active" onClick={() => {
             if (on === 'sidebar') this.setSidebarOpen(false);
             if (icon.typed) this.typed.strings = [icon.typed, site.title];
-          }} to={icon.path} title={icon.title} className={icon.icon}></NavLink>
+          }} to={icon.path} title={icon.title} className={icon.icon} />
         </div>
       ) : (
         <div className="icon" key={icon.icon}>
           <a onClick={on === 'sidebar' ? () => this.setSidebarOpen(false) : null} href={icon.path} title={icon.title}
-             className={icon.icon} target="_blank" rel="noopener noreferrer"></a>
+             className={icon.icon} target="_blank" rel="noopener noreferrer" />
         </div>
       );
     });
@@ -127,7 +127,7 @@ class Nav extends Component {
             clear: 'both',
             transition: 'height 0.28s',
             float: 'left'
-          }}></div>
+          }} />
       </div>
     );
     const sidebarLinks = this.renderLinks.bind(this)('sidebar');
@@ -170,13 +170,13 @@ class Nav extends Component {
                  onSetOpen={this.setSidebarOpen}>
           {progressbar}
           <div className="top">
-            <div className="top-banner"></div>
-            <div className="header container center">
+            <div className="top-banner" />
+            <div className="header container">
               <div className="mobile-show icon">
                 <a href="" onClick={(e) => {
                   this.setSidebarOpen(true);
                   e.preventDefault()
-                }} title="菜单" className="fas fa-bars"></a>
+                }} title="菜单" className="fas fa-bars"> /</a>
               </div>
               <div className={`logo-container ${this.state.collapse}`}>
                 <NavLink exact to="/" onClick={() => {
@@ -187,7 +187,7 @@ class Nav extends Component {
                     ref={(el) => {
                       this.el = el;
                     }}
-                  ></span></h1>
+                   /></h1>
                 </NavLink>
               </div>
               <div className={`nav-container ${this.state.collapse}`}>

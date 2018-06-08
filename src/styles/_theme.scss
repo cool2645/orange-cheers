@@ -32,3 +32,8 @@
     color: $theme-dark-color;
   }
 }
+
+.loader .spinner {
+  background-color: $background-color;
+  background-blend-mode: screen;
+}
