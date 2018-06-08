@@ -1,0 +1,25 @@
+.sidebar {
+  color: $background-color;
+  .top-menu a {
+    color: $theme-color;
+  }
+  .social a {
+    color: $background-color;
+  }
+  li:hover {
+    background-color: $background-dark-color;
+    a {
+      color: $theme-dark-color;
+    }
+  }
+}
+.top {
+  background: $background-color;
+  border-top-color: $background-dark-color;
+  h1 {
+    color: $theme-dark-color;
+  }
+  a {
+    color: $theme-dark-color;
+  }
+}
