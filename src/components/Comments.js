@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 class CommentSender extends Component {
   render() {
     return (
-      <div className="comment-box page-control">
+      <div className="comment-box">
         <div className="comment-send">
           <textarea name="text" id="textarea" cols="100%" rows="10" tabIndex="4"
                     placeholder="把你变成小鸟的点心 (・8・)"></textarea>
@@ -16,7 +16,10 @@ class CommentSender extends Component {
                    aria-required="true" />
             <input type="text" name="mail" id="mail" value="" placeholder="邮箱" size="22" tabIndex="2" />
             <input type="text" name="url" id="url" value="" placeholder="网址" size="22" tabIndex="3" />
-            <input name="submit" className="btn" type="button" id="submit" tabIndex="5" value="发射=A=" />
+            { this.props.replyId ?
+              <input name="submit" className="btn reply-btn" type="button" tabIndex="5" value="取消" /> : ''
+            }
+            <input name="submit" className={ this.props.replyId ? 'btn reply-btn' : 'btn' } type="button" tabIndex="5" value="发射=A=" />
           </div>
         </div>
       </div>
@@ -28,8 +31,11 @@ class Comments extends Component {
   render() {
     return (
       <div className="page-container">
-        <CommentSender />
+        <h1 className="title fee page-control">
+          以下是评论惹(´Д｀)
+        </h1>
         <div className="comments page-control">
+          <CommentSender />
           <div className="comment nf">
             <div className="avatar-control">
               <img className="avatar"
@@ -44,6 +50,7 @@ class Comments extends Component {
                 <a href="">回复</a>
               </div>
             </div>
+            <CommentSender />
           </div>
           <div className="comment reply nf">
             <div className="avatar-control">
@@ -59,7 +66,11 @@ class Comments extends Component {
                 <a href="">回复</a>
               </div>
             </div>
+            <CommentSender replyId={10} />
           </div>
+        </div>
+        <div className="info eef">
+          <center>已经没有更多评论了呢</center>
         </div>
       </div>
     );

@@ -2,16 +2,36 @@
   * {
     box-sizing: border-box;
   }
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
   .comment-send {
     textarea {
       width: 100%;
-      margin: 1rem 0;
+      margin: 0.25rem 0;
       padding: 1rem;
       height: 8rem;
       background: #f4f6f7;
       border: 0;
+      resize: vertical;
+    }
+    .author-info {
+      margin: 0.25rem 0;
     }
     input {
+      &.reply-btn {
+        @media (min-width: 865px) {
+          width: 12%;
+          margin: 0 0.25%;
+        }
+        @media (min-width: 675px) and (max-width: 865px) {
+          width: 24%;
+          margin: .5rem 0.5%;
+        }
+        @media (max-width: 675px) {
+          width: 49%;
+          margin: .5rem 0.5%;
+        }
+      }
       @media (min-width: 865px) {
         width: 25%;
       }
@@ -42,24 +62,24 @@
   .comment {
     &.reply {
       padding-left: 3.75rem;
-      @media screen and (max-width: 992px) {
+      @media screen and (max-width: 865px) {
         padding-left: 2.75rem;
       }
-      @media screen and (max-width: 600px) {
+      @media screen and (max-width: 675px) {
         padding-left: 0.75rem;
       }
     }
     .avatar-control {
       float: left;
       margin-right: 1rem;
-      @media screen and (max-width: 600px) {
+      @media screen and (max-width: 675px) {
         margin-right: 0.75rem;
       }
       line-height: normal;
     }
     .avatar {
       width: 3.5rem;
-      @media screen and (max-width: 600px) {
+      @media screen and (max-width: 675px) {
         width: 3rem;
       }
       height: auto;
@@ -68,14 +88,13 @@
     }
     .comment-control {
       margin: {
-        top: 0.25em;
-        bottom: 0.75em;
+        top: 0.5em;
+        bottom: 0.5em;
       }
       a {
         margin: {
           left: 0.25em;
         }
-      ;
         &.username {
           font-weight: bold;
           margin: {
@@ -89,7 +108,6 @@
           left: 0.25em;
           right: 0.25em;
         }
-      ;
         font-size: 14px;
         font-weight: 300;
         color: #555555;
@@ -102,7 +120,6 @@
           left: 0.25em;
           right: 0.25em;
         }
-      ;
         font-size: 16px;
         font-family: "Source Han Sans CN Light";
       }
