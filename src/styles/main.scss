@@ -29,3 +29,15 @@ a, a:hover, input, input:hover, button, button:hover, .ico a, .fade, .widget-ite
 a {
   text-decoration: none;
 }
+
+input[type=button], input[type=reset], input[type=submit] {
+  -webkit-appearance: button;
+  cursor: pointer;
+}
+
+.nf:after {
+  content: " ";
+  display: block;
+  height: 0;
+  clear: both;
+}

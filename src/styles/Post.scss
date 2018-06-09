@@ -1,7 +1,4 @@
 .post {
-  background: #fff;
-  margin: 0 0 28px;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.07);
   .fee {
     border-bottom: 1px dashed #e0e0e0;
   }
@@ -28,10 +25,16 @@
     padding: 21px 28px 14px;
     border-bottom: 1px dashed #e0e0e0;
     line-height: 1.9;
-    code,pre {
+    code, pre {
       white-space: pre-wrap;
       word-wrap: break-word;
       white-space: -moz-pre-wrap;
     }
+  }
+}
+
+.loading {
+  .post, .comment-box {
+    display: none;
   }
 }

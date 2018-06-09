@@ -24,12 +24,6 @@
   }
   .header {
     position: relative;
-    &:after {
-      content: " ";
-      display: block;
-      height: 0;
-      clear: both;
-    }
     a {
       &.active, &:hover {
         color: #fff !important;
@@ -201,12 +195,6 @@
     }
   }
   .social {
-    &:after {
-      content: " ";
-      display: block;
-      height: 0;
-      clear: both;
-    }
     .icon {
       float: left;
       display: inline-block;

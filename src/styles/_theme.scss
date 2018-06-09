@@ -23,7 +23,7 @@
 }
 
 .top {
-  background: $background-color;
+  background-color: $background-color;
   border-top-color: $background-dark-color;
   h1 {
     color: $theme-dark-color;
@@ -36,4 +36,13 @@
 .loader .spinner {
   background-color: $background-color;
   background-blend-mode: screen;
+}
+
+.comment-box {
+  .comment-send {
+    input[type=button] {
+      background-color: $background-color;
+      color: #fff;
+    }
+  }
 }

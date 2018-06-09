@@ -158,7 +158,7 @@ class Nav extends Component {
           {sidebarLinks}
         </ul>
       </div>
-      <div className="social center">
+      <div className="social nf center">
         {sidebarIcons}
       </div>
     </div>;
@@ -184,7 +184,7 @@ class Nav extends Component {
         {progressbar}
         <div className="top">
           <div className="top-banner" />
-          <div className="header container">
+          <div className="header nf container">
             <div className="mobile-show icon">
               <a href="" onClick={(e) => {
                 this.setSidebarOpen(true);
