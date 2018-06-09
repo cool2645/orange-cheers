@@ -3,7 +3,7 @@ import '../styles/App.css'
 import '../styles/themes/orange-cheers.css'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import Nav from "./Nav"
-import { _404 } from './404'
+import _404 from './404'
 import Home from './Home'
 import Post from './Post'
 

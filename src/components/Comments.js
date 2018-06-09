@@ -3,6 +3,7 @@ import '../styles/Comments.css'
 import '../styles/themes/orange-cheers.css'
 import { ClassicalLoader as Loader } from './Loader'
 import { Link } from 'react-router-dom'
+import _000 from "./000"
 import honoka from "honoka";
 import { comment as config } from "../config"
 import urlEncode from "../utils/url";
@@ -40,6 +41,7 @@ class Comments extends Component {
       comments: [],
       page: 0,
       end: false,
+      error: null,
     };
     this.fetchMoreComments = this.fetchMoreComments.bind(this);
     this.fetchComments = this.fetchComments.bind(this);
@@ -107,7 +109,7 @@ class Comments extends Component {
 
   fetchMoreComments() {
     if (!this.state.ready) return;
-    this.setState({ ready: false });
+    this.setState({ ready: false, error: null });
     this.fetchComments(this.props.id, this.state.page + 1)
       .then((data) => {
         let end = data.length === 0;
@@ -116,6 +118,7 @@ class Comments extends Component {
       })
       .catch(err => {
         console.log(err);
+        this.setState({ ready: true, error: this.fetchMoreComments });
       })
   }
 
@@ -158,7 +161,8 @@ class Comments extends Component {
         </h1>
         <div className="comments page-control">
           <CommentSender />
-          {this.state.ready ? comments : Loader}
+          {comments}
+          {!this.state.ready ? Loader : this.state.error ? <_000 retry={this.state.error} /> : ''}
         </div>
         {
           this.state.end ?
