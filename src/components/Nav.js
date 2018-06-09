@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import { NavLink } from 'react-router-dom'
 import Typed from 'typed.js'
-import Sidebar from 'react-sidebar';
+import Sidebar from 'react-sidebar'
 import '../styles/Nav.css'
 import { site, nav } from '../config'
 
@@ -78,7 +78,7 @@ class Nav extends Component {
   }
 
   renderLinks(on) {
-    return nav.links.map((link) => {
+    return nav.links.map(link => {
       if ((on === 'sidebar' && link.hideInSidebar) ||
         (on === 'header' && link.hideInBanner && link.hideInHeader)
       ) return '';
@@ -103,7 +103,7 @@ class Nav extends Component {
   }
 
   renderIcons(on) {
-    return nav.icons.map((icon) => {
+    return nav.icons.map(icon => {
       const internal = icon.path && (icon.path.charAt(0) === '/' || icon.path.charAt(0) === '#');
       return internal ? (
         <div className="icon" key={icon.icon}>

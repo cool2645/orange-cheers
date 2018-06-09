@@ -1,8 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import '../styles/Comments.css'
 import '../styles/themes/orange-cheers.css'
 import { ClassicalLoader as Loader } from './Loader'
 import { Link } from 'react-router-dom'
+import honoka from "honoka";
+import { comment as config } from "../config"
+import urlEncode from "../utils/url";
+import { human } from "../utils/datetime";
 
 class CommentSender extends Component {
   render() {
@@ -16,10 +20,11 @@ class CommentSender extends Component {
                    aria-required="true" />
             <input type="text" name="mail" id="mail" value="" placeholder="邮箱" size="22" tabIndex="2" />
             <input type="text" name="url" id="url" value="" placeholder="网址" size="22" tabIndex="3" />
-            { this.props.replyId ?
+            {this.props.replyId ?
               <input name="submit" className="btn reply-btn" type="button" tabIndex="5" value="取消" /> : ''
             }
-            <input name="submit" className={ this.props.replyId ? 'btn reply-btn' : 'btn' } type="button" tabIndex="5" value="发射=A=" />
+            <input name="submit" className={this.props.replyId ? 'btn reply-btn' : 'btn'} type="button" tabIndex="5"
+                   value="发射=A=" />
           </div>
         </div>
       </div>
@@ -28,7 +33,124 @@ class CommentSender extends Component {
 }
 
 class Comments extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ready: true,
+      comments: [],
+      page: 0,
+      end: false,
+    };
+    this.fetchMoreComments = this.fetchMoreComments.bind(this);
+    this.fetchComments = this.fetchComments.bind(this);
+    this.fetchReplies = this.fetchReplies.bind(this);
+    this.fetchReply = this.fetchReply.bind(this);
+  }
+
+  componentDidMount() {
+    this.fetchMoreComments()
+  }
+
+  fetchReply(id, page, totalPage, comment) {
+    return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
+      page: page,
+      parent: id
+    })).then(response => {
+      let total = response.headers.get("x-wp-totalpages");
+      totalPage = +total;
+      return response.json();
+    }).then(data => {
+      comment.children = [...comment.children, ...data];
+      page++;
+      if (page <= totalPage) {
+        this.setState({
+          comments: [...this.state.comments.filter(c => {
+            return c.id !== comment.id
+          }), comment]
+        });
+        return this.fetchReply(id, page, totalPage, comment)
+      }
+    })
+  }
+
+  fetchReplies(comments) {
+    let promise = new Promise((resolve, reject) => {
+      resolve();
+    });
+    for (let comment of comments) {
+      comment.children = [];
+      promise = promise.then(() => this.fetchReply(comment.id, 1, 1, comment))
+        .then(() => {
+          this.setState({
+            comments: [...this.state.comments.filter(c => {
+              return c.id !== comment.id
+            }), comment]
+          });
+        });
+    }
+    return promise.then(() => {
+      return comments;
+    })
+  }
+
+  fetchComments(id, page) {
+    return honoka.get('/comments', {
+      data: {
+        post: id,
+        parent: 0,
+        per_page: config.perPage,
+        page: page,
+      }
+    })
+      .then(data => this.fetchReplies(data))
+  }
+
+  fetchMoreComments() {
+    if (!this.state.ready) return;
+    this.setState({ ready: false });
+    this.fetchComments(this.props.id, this.state.page + 1)
+      .then((data) => {
+        let end = data.length === 0;
+        this.setState({ ready: true, page: this.state.page + 1, end: end });
+        console.log(this.state)
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  }
+
+  renderComment(data) {
+    const isReply = data.parent === 0 ? '' : 'reply';
+    return (
+      <div key={data.id} className={`comment ${isReply} nf`}>
+        <div className="avatar-control">
+          <img alt={data.author_name} className="avatar"
+               src={data.author_avatar_urls['96']} />
+        </div>
+        <div className="comment-control">
+          <div dangerouslySetInnerHTML={{ __html: data.content.rendered }} />
+          <div className="comment-author">
+            <a href={data.author_url} target="_blank" rel="noopener noreferrer" className="username">
+              {data.author_name}
+            </a>
+            <span>学院生</span>
+            <label>{human(data.date_gmt + '.000Z')}</label>
+            <a href="">回复</a>
+          </div>
+        </div>
+        <CommentSender replyId={data.id} />
+      </div>
+    )
+  }
+
   render() {
+    let comments = [];
+    for (let cmt of this.state.comments) {
+      comments.push(this.renderComment(cmt));
+      for (let chl of cmt.children) {
+        comments.push(this.renderComment(chl));
+      }
+    }
     return (
       <div className="page-container">
         <h1 className="title fee page-control">
@@ -36,42 +158,15 @@ class Comments extends Component {
         </h1>
         <div className="comments page-control">
           <CommentSender />
-          <div className="comment nf">
-            <div className="avatar-control">
-              <img className="avatar"
-                   src="https://secure.gravatar.com/avatar/06bd7a0d2a6c1d0dc78758ecb0a99b88?s=100&r=G&d=https://kotori.love/usr/themes/default/assets/img/default-avatar.jpg" />
-            </div>
-            <div className="comment-control">
-              空樱酱 twitter 的ラブライブ pixiv bot 怎么啦 好久不见它了 (•̥́ ˍ •̀ू)
-              <div className="comment-author">
-                <a href="#" className="username">梨子</a>
-                <span>学院生</span>
-                <label>1 年前</label>
-                <a href="">回复</a>
-              </div>
-            </div>
-            <CommentSender />
-          </div>
-          <div className="comment reply nf">
-            <div className="avatar-control">
-              <img className="avatar"
-                   src="https://secure.gravatar.com/avatar/06bd7a0d2a6c1d0dc78758ecb0a99b88?s=100&r=G&d=https://kotori.love/usr/themes/default/assets/img/default-avatar.jpg" />
-            </div>
-            <div className="comment-control">
-              空樱酱 twitter 的ラブライブ pixiv bot 怎么啦 好久不见它了 (•̥́ ˍ •̀ू)
-              <div className="comment-author">
-                <a href="#" className="username">梨子</a>
-                <span>学院生</span>
-                <label>1 年前</label>
-                <a href="">回复</a>
-              </div>
-            </div>
-            <CommentSender replyId={10} />
-          </div>
+          {this.state.ready ? comments : Loader}
         </div>
-        <div className="info eef">
-          <center>已经没有更多评论了呢</center>
-        </div>
+        {
+          this.state.end ?
+            <div className="info eef">
+              <center>已经没有更多评论了呢</center>
+            </div>
+            : ''
+        }
       </div>
     );
   }

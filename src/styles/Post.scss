@@ -17,6 +17,12 @@
       }
       margin-right: 1.25rem
     }
+    .tag-link::after, .category-link::after {
+      content: ', ';
+    }
+    .tag-link:last-child::after, .category-link:last-child::after {
+      content: '';
+    }
   }
   .info, .info a {
     color: #a0a0a0;
@@ -26,7 +32,6 @@
     font-family: 'PT Serif', Georgia, Times, 'PingFang SC', 'Microsoft YaHei', sans-serif;
     letter-spacing: 0.009rem;
     padding: 1.25rem 1.75rem 1.25rem;
-    border-bottom: 1px dashed #e0e0e0;
     line-height: 1.9;
     code, pre {
       white-space: pre-wrap;

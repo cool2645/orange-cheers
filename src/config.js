@@ -1,7 +1,11 @@
 const site = {
   name: "2645 实验室",
   banner: "2645 实验室",
-  title: "2645 Laboratory"
+  title: "2645 Laboratory",
+  apiEndpoint: 'https://blog.cool2645.com/index.php/wp-json/wp/v2',
+};
+const comment = {
+  perPage: 15,
 };
 const nav = {
   sidebar: {
@@ -82,4 +86,4 @@ const nav = {
   ]
 };
 
-export { site, nav }
+export { site, nav, comment }
