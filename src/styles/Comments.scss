@@ -1,6 +1,6 @@
 .comment-box {
   * {
-    box-sizing:border-box;
+    box-sizing: border-box;
   }
   .comment-send {
     textarea {
@@ -36,4 +36,77 @@
       border: 0;
     }
   }
+}
+
+.comments {
+  .comment {
+    &.reply {
+      padding-left: 3.75rem;
+      @media screen and (max-width: 992px) {
+        padding-left: 2.75rem;
+      }
+      @media screen and (max-width: 600px) {
+        padding-left: 0.75rem;
+      }
+    }
+    .avatar-control {
+      float: left;
+      margin-right: 1rem;
+      @media screen and (max-width: 600px) {
+        margin-right: 0.75rem;
+      }
+      line-height: normal;
+    }
+    .avatar {
+      width: 3.5rem;
+      @media screen and (max-width: 600px) {
+        width: 3rem;
+      }
+      height: auto;
+      padding: 0;
+      border-radius: 50%;
+    }
+    .comment-control {
+      margin: {
+        top: 0.25em;
+        bottom: 0.75em;
+      }
+      a {
+        margin: {
+          left: 0.25em;
+        }
+      ;
+        &.username {
+          font-weight: bold;
+          margin: {
+            left: 0;
+            right: 0.25em;
+          }
+        }
+      }
+      span {
+        margin: {
+          left: 0.25em;
+          right: 0.25em;
+        }
+      ;
+        font-size: 14px;
+        font-weight: 300;
+        color: #555555;
+        padding: 0.3em;
+        background-color: #efefef;
+        border-radius: 0.25em;
+      }
+      label {
+        margin: {
+          left: 0.25em;
+          right: 0.25em;
+        }
+      ;
+        font-size: 16px;
+        font-family: "Source Han Sans CN Light";
+      }
+    }
+  }
+  padding-bottom: 1rem;
 }

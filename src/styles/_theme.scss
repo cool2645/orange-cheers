@@ -33,7 +33,7 @@
   }
 }
 
-.loader .spinner {
+.full-page-loader .spinner {
   background-color: $background-color;
   background-blend-mode: screen;
 }
@@ -44,5 +44,11 @@
       background-color: $background-color;
       color: #fff;
     }
+  }
+}
+
+.comment {
+  a {
+    color: $theme-color;
   }
 }

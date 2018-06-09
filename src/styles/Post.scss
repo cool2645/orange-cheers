@@ -3,26 +3,26 @@
     border-bottom: 1px dashed #e0e0e0;
   }
   .title {
-    font-size: 18px;
-    padding: 21px 28px 21px;
+    font-size: 1.125rem;
+    padding: 1.25rem 1.75rem 1.25rem;
   }
   .info {
-    padding: 14px 28px;
+    padding: 0.875rem 1.75rem;
     span {
       &:before {
-        margin-right: 7px;
+        margin-right: 0.5rem;
       }
-      margin-right: 21px
+      margin-right: 1.25rem
     }
   }
   .info, .info a {
     color: #a0a0a0;
-    font-size: 12.5px;
+    font-size: 0.8rem;
   }
   .content {
     font-family: 'PT Serif', Georgia, Times, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    letter-spacing: .15px;
-    padding: 21px 28px 14px;
+    letter-spacing: 0.009rem;
+    padding: 1.25rem 1.75rem 1.25rem;
     border-bottom: 1px dashed #e0e0e0;
     line-height: 1.9;
     code, pre {
@@ -30,11 +30,5 @@
       word-wrap: break-word;
       white-space: -moz-pre-wrap;
     }
-  }
-}
-
-.loading {
-  .post, .comment-box {
-    display: none;
   }
 }
