@@ -24,6 +24,8 @@ class Nav extends Component {
   }
 
   setSidebarOpen(open) {
+    if (open) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'auto';
     this.setState({ sidebarOpen: open });
   }
 
@@ -163,25 +165,10 @@ class Nav extends Component {
         {sidebarIcons}
       </div>
     </div>;
-    let sidebarStyle = {
-      root: {
-        position: 'static',
-        overflow: 'auto'
-      },
-      sidebar: {
-        zIndex: 999,
-        width: '14.375rem',
-        position: 'fixed',
-      },
-      content: {
-        position: 'static',
-        overflow: 'auto'
-      }
-    };
     return (<div className="top-container">
-      <Sidebar styles={sidebarStyle} sidebar={sidebarContent}
-               open={this.state.sidebarOpen}
-               onSetOpen={this.setSidebarOpen}>
+      <Sidebar rootClassName="side-root" sidebarClassName="side-side fix-mobile"
+               overlayClassName="fix-mobile" contentClassName="out-sidebar-content"
+               sidebar={sidebarContent} open={this.state.sidebarOpen} onSetOpen={this.setSidebarOpen}>
         {progressbar}
         <div className="top">
           <div className="top-banner" />

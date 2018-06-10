@@ -173,6 +173,22 @@
   }
 }
 
+.side-root {
+  position: static !important;
+  overflow: auto !important;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.14);
+}
+.side-side {
+  z-index: 999 !important;
+  width: 14.375rem !important;
+  position: fixed !important;
+  top: 0 !important;
+}
+.out-sidebar-content {
+  position: static !important;
+  overflow: auto !important;
+}
+
 .sidebar {
   background-color: white;
   min-height: 100%;
