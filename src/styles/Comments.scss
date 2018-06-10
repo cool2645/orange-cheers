@@ -127,3 +127,9 @@
   }
   padding-bottom: 1rem;
 }
+
+.comment-content {
+  p:last-child {
+    margin-bottom: 0;
+  }
+}

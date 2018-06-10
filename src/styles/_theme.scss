@@ -51,6 +51,21 @@
   }
 }
 
+.post-content {
+  a {
+    color: $theme-color;
+  }
+  table {
+    tr:nth-child(2n) {
+      background-color: $theme-dark-color;
+    }
+  }
+  blockquote {
+    border-color: $theme-color;
+    background-color: $theme-dark-color;
+  }
+}
+
 .comment {
   a {
     color: $theme-color;

@@ -166,7 +166,7 @@ class Comments extends Component {
                src={data.author_avatar_urls['96']} />
         </div>
         <div className="comment-control">
-          <div dangerouslySetInnerHTML={{ __html: data.content.rendered }} />
+          <div className="comment-content post-content" dangerouslySetInnerHTML={{ __html: data.content.rendered }} />
           <div className="comment-author">
             <a href={data.author_url} target="_blank" rel="noopener noreferrer" className="username">
               {data.author_name}
