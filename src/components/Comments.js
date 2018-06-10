@@ -45,8 +45,8 @@ class CommentSender extends Component {
 }
 
 class Comments extends Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = {
       ready: true,
       comments: [],

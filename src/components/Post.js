@@ -10,17 +10,20 @@ import { formatDate, human } from '../utils/datetime'
 import urlEncode from '../utils/url'
 import Comments from './Comments'
 
+let initialState = {
+  ready: false,
+  post: null,
+  commentCount: 0,
+  categories: [],
+  tags: [],
+  error: null,
+};
+
 class Post extends Component {
-  constructor() {
-    super();
-    this.state = {
-      ready: false,
-      post: null,
-      commentCount: 0,
-      categories: [],
-      tags: [],
-      error: null,
-    };
+  constructor(props) {
+    super(props);
+    this.state = initialState;
+    this.state.params = props.match.params;
     this.fetchData = this.fetchData.bind(this);
     this.fetchPostData = this.fetchPostData.bind(this);
     this.fetchTagData = this.fetchTagData.bind(this);
@@ -31,9 +34,15 @@ class Post extends Component {
     this.fetchData()
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState(initialState);
+    this.setState({params: nextProps.match.params});
+    this.fetchData()
+  }
+
   fetchData() {
     this.setState({ ready: false, error: null });
-    this.fetchPostData(this.props.match.params.slug)
+    this.fetchPostData(this.state.params.slug)
       .then(() => this.fetchCategoryData(this.state.post.categories))
       .then(() => this.fetchTagData(this.state.post.tags))
       .then(() => this.fetchCommentCount(this.state.post.id))
@@ -123,9 +132,9 @@ class Post extends Component {
     commentCount = <Link to="#Comments">{commentCount}</Link>;
     const dateStr = formatDate(this.state.post.date_gmt + '.000Z');
     let date = [];
-    date.push(<span className="fas fa-calendar">发表于 {dateStr}</span>);
+    date.push(<span key="date" className="fas fa-calendar">发表于 {dateStr}</span>);
     if (formatDate(this.state.post.modified_gmt + '.000Z') !== dateStr) {
-      date.push(<span className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>)
+      date.push(<span key="modified" className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>)
     }
     const post = (
       <div className="post">
