@@ -9,6 +9,16 @@ import { comment as config } from "../config"
 import urlEncode from "../utils/url";
 import { human } from "../utils/datetime";
 
+let getElementTop = function (element) {
+  let actualTop = element.offsetTop;
+  let current = element.offsetParent;
+  while (current !== null) {
+    actualTop += current.offsetTop;
+    current = current.offsetParent;
+  }
+  return actualTop;
+};
+
 class CommentSender extends Component {
   render() {
     return (
@@ -45,26 +55,12 @@ class Comments extends Component {
       end: false,
       error: null,
     };
+    this.update = this.update.bind(this);
     this.fetchMoreComments = this.fetchMoreComments.bind(this);
     this.fetchComments = this.fetchComments.bind(this);
     this.fetchReplies = this.fetchReplies.bind(this);
     this.fetchReply = this.fetchReply.bind(this);
-    let getElementTop = function (element) {
-      let actualTop = element.offsetTop;
-      let current = element.offsetParent;
-      while (current !== null) {
-        actualTop += current.offsetTop;
-        current = current.offsetParent;
-      }
-      return actualTop;
-    };
-    window.onscroll = () => {
-      let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      let commentTop = getElementTop(document.getElementById('comment-ending'));
-      //let scrollHeight = document.body.clientHeight;
-      let windowHeight = window.visualViewport.height || window.innerHeight + 100;
-      if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
-    }
+    window.onscroll = this.update;
   }
 
   componentDidMount() {
@@ -84,9 +80,9 @@ class Comments extends Component {
       page++;
       if (page <= totalPage) {
         this.setState({
-          comments: [...this.state.comments.filter(c => {
-            return c.id !== comment.id
-          }), comment]
+          comments: [...this.state.comments.map(c => {
+            return c.id !== comment.id ? c : comment
+          })]
         });
         return this.fetchReply(id, page, totalPage, comment)
       }
@@ -102,9 +98,9 @@ class Comments extends Component {
       promise = promise.then(() => this.fetchReply(comment.id, 1, 1, comment))
         .then(() => {
           this.setState({
-            comments: [...this.state.comments.filter(c => {
-              return c.id !== comment.id
-            }), comment]
+            comments: [...this.state.comments.map(c => {
+              return c.id !== comment.id ? c : comment
+            })]
           });
         });
     }
@@ -122,7 +118,23 @@ class Comments extends Component {
         page: page,
       }
     })
-      .then(data => this.fetchReplies(data))
+      .then(data => {
+        this.setState({
+          comments: [...this.state.comments, ...data.map(comment => {
+            comment.children = [];
+            return comment;
+          })]
+        });
+        return data;
+      })
+  }
+
+  update() {
+    let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    let commentTop = getElementTop(document.getElementById('comment-ending'));
+    //let scrollHeight = document.body.clientHeight;
+    let windowHeight = window.visualViewport.height || window.innerHeight + 100;
+    if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
   }
 
   fetchMoreComments() {
@@ -132,11 +144,16 @@ class Comments extends Component {
       .then((data) => {
         let end = data.length === 0;
         this.setState({ ready: true, page: this.state.page + 1, end: end });
-        console.log(this.state)
+        this.update();
+        return data
       })
       .catch(err => {
         console.log(err);
         this.setState({ ready: true, error: this.fetchMoreComments });
+      })
+      .then(data => this.fetchReplies(data))
+      .catch(err => {
+        console.log(err);
       })
   }
 
@@ -209,7 +226,7 @@ class Comments extends Component {
         {
           this.state.end ?
             <div className="info eef">
-              <center>{this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧'}</center>
+              <center>{this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧 |･ω･｀)'}</center>
             </div>
             : ''
         }

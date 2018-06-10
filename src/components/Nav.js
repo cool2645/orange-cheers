@@ -52,7 +52,8 @@ class Nav extends Component {
         this.setState({ collapse: "collapse", animationLock: true });
         this.retype(750);
         setTimeout(() => {
-          this.setState({ animationLock: false })
+          this.setState({ animationLock: false });
+          if (typeof window.onscroll === 'function') window.onscroll(e);
         }, 750);
         if (e.cancelable) e.preventDefault();
       }
