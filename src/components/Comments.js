@@ -3,7 +3,7 @@ import '../styles/Comments.css'
 import '../styles/themes/orange-cheers.css'
 import { ClassicalLoader as Loader } from './Loader'
 import { Link } from 'react-router-dom'
-import _000 from "./000"
+import Unreachable from "./000"
 import honoka from "honoka";
 import { comment as config } from "../config"
 import urlEncode from "../utils/url";
@@ -47,6 +47,22 @@ class Comments extends Component {
     this.fetchComments = this.fetchComments.bind(this);
     this.fetchReplies = this.fetchReplies.bind(this);
     this.fetchReply = this.fetchReply.bind(this);
+    let getElementTop = function (element) {
+      let actualTop = element.offsetTop;
+      let current = element.offsetParent;
+      while (current !== null) {
+        actualTop += current.offsetTop;
+        current = current.offsetParent;
+      }
+      return actualTop;
+    };
+    window.onscroll = () => {
+      let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      let commentTop = getElementTop(document.getElementById('comment-ending'));
+      //let scrollHeight = document.body.clientHeight;
+      let windowHeight = window.visualViewport.height;
+      if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
+    }
   }
 
   componentDidMount() {
@@ -162,8 +178,9 @@ class Comments extends Component {
         <div className="comments page-control">
           <CommentSender />
           {comments}
-          {!this.state.ready ? Loader : this.state.error ? <_000 retry={this.state.error} /> : ''}
+          {!this.state.ready ? Loader : this.state.error ? <Unreachable retry={this.state.error} /> : ''}
         </div>
+        <div id="comment-ending" />
         {
           this.state.end ?
             <div className="info eef">

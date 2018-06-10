@@ -3,8 +3,8 @@ import '../styles/Post.css'
 import '../styles/themes/orange-cheers.css'
 import { Link } from 'react-router-dom'
 import { FullPageLoader as Loader } from './Loader'
-import _404 from "./404"
-import _000 from "./000"
+import NotFound from "./404"
+import Unreachable from "./000"
 import honoka from 'honoka'
 import { formatDate, human } from '../utils/datetime'
 import urlEncode from '../utils/url'
@@ -106,10 +106,10 @@ class Post extends Component {
       return Loader
     }
     if (this.state.error) {
-      return <_000 retry={this.state.error} />
+      return <Unreachable retry={this.state.error} />
     }
     if (!this.state.post) {
-      return <_404 />
+      return <NotFound />
     }
     const categories = this.state.categories.map(cate => {
       return <Link key={cate.slug} className="category-link" to={`/categories/${cate.slug}`}>{cate.name}</Link>
