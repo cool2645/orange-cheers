@@ -1,0 +1,26 @@
+From 4e83dbdb72a2b44b984114b8e712a434beb2fc15 Mon Sep 17 00:00:00 2001
+From: LI JIAHAO <lijiahao99131@gmail.com>
+Date: Mon, 11 Jun 2018 01:01:16 +0800
+Subject: [PATCH] :green_heart: github pages homepage
+
+Signed-off-by: LI JIAHAO <lijiahao99131@gmail.com>
+---
+ package.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/package.json b/package.json
+index c1e360c..9c7bc06 100644
+--- a/package.json
++++ b/package.json
+@@ -2,7 +2,7 @@
+   "name": "2645laboratory",
+   "version": "0.1.0",
+   "private": true,
+-  "homepage": "/",
++  "homepage": "https://cool2645.github.io/OrangeCheers/",
+   "devDependencies": {
+     "honoka": "^0.4.17",
+     "node-sass-chokidar": "^1.3.0",
+-- 
+2.17.1
+
