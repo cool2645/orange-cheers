@@ -22,7 +22,8 @@ class CommentSender extends Component {
             <input type="text" name="mail" id="mail" value="" placeholder="邮箱" size="22" tabIndex="2" />
             <input type="text" name="url" id="url" value="" placeholder="网址" size="22" tabIndex="3" />
             {this.props.replyId ?
-              <input name="submit" className="btn reply-btn" type="button" tabIndex="5" value="取消" /> : ''
+              <input name="submit" className="btn reply-btn" type="button" tabIndex="5" value="取消"
+                     onClick={this.props.cancel} /> : ''
             }
             <input name="submit" className={this.props.replyId ? 'btn reply-btn' : 'btn'} type="button" tabIndex="5"
                    value="发射=A=" />
@@ -39,6 +40,7 @@ class Comments extends Component {
     this.state = {
       ready: true,
       comments: [],
+      replyFocus: true,
       page: 0,
       end: false,
       error: null,
@@ -60,7 +62,7 @@ class Comments extends Component {
       let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
       let commentTop = getElementTop(document.getElementById('comment-ending'));
       //let scrollHeight = document.body.clientHeight;
-      let windowHeight = window.visualViewport.height;
+      let windowHeight = window.visualViewport.height || window.innerHeight + 100;
       if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
     }
   }
@@ -154,10 +156,31 @@ class Comments extends Component {
             </a>
             <span>学院生</span>
             <label>{human(data.date_gmt + '.000Z')}</label>
-            <a href="">回复</a>
+            <a href="" onClick={(e) => {
+              this.setState({
+                replyFocus: false,
+                comments: this.state.comments.map(comment => {
+                  if (comment.id === data.id) comment.replyFocus = true;
+                  return comment;
+                })
+              });
+              e.preventDefault();
+            }}>回复</a>
           </div>
         </div>
-        <CommentSender replyId={data.id} />
+        {
+          data.replyFocus ?
+            <CommentSender replyId={data.id} cancel={() => {
+              this.setState({
+                replyFocus: true,
+                comments: this.state.comments.map(comment => {
+                  if (comment.id === data.id) comment.replyFocus = false;
+                  return comment;
+                })
+              })
+            }} />
+            : ''
+        }
       </div>
     )
   }
@@ -176,7 +199,9 @@ class Comments extends Component {
           以下是评论惹(´Д｀)
         </h1>
         <div className="comments page-control">
-          <CommentSender />
+          {
+            this.state.replyFocus ? <CommentSender /> : ''
+          }
           {comments}
           {!this.state.ready ? Loader : this.state.error ? <Unreachable retry={this.state.error} /> : ''}
         </div>
@@ -184,7 +209,7 @@ class Comments extends Component {
         {
           this.state.end ?
             <div className="info eef">
-              <center>已经没有更多评论了呢</center>
+              <center>{this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧'}</center>
             </div>
             : ''
         }
