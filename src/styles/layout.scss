@@ -14,6 +14,9 @@ body {
 
 .page {
   padding-top: 2.15rem;
+  @media (max-width: 675px) {
+    padding-top: 0;
+  }
 }
 
 .page-control {

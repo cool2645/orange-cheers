@@ -33,9 +33,13 @@
   }
 }
 
-.full-page-loader .spinner {
-  background-color: $background-color;
-  background-blend-mode: screen;
+.full-page-loader {
+  .lds-pacman > div:nth-child(2) div {
+    background-color: $background-color;
+  }
+  .lds-pacman > div:nth-child(1) div {
+    background-color: $theme-color;
+  }
 }
 
 .comment-box {

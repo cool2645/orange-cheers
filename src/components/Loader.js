@@ -1,14 +1,21 @@
 import React from 'react';
-import Loading from '../images/loading'
 import '../styles/Loader.css'
-
-const spinnerStyle = {
-  backgroundImage: Loading
-};
 
 const FullPageLoader = (
   <div className="full-page-loader">
-    <div className="spinner" style={spinnerStyle} />
+    <div className="lds-css ng-scope">
+      <div className="lds-pacman">
+        <div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
     <h1>载入中...</h1>
   </div>
 );

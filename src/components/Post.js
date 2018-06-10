@@ -36,7 +36,7 @@ class Post extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.setState(initialState);
-    this.setState({params: nextProps.match.params});
+    this.setState({ params: nextProps.match.params });
     this.fetchData()
   }
 
@@ -112,7 +112,13 @@ class Post extends Component {
 
   render() {
     if (!this.state.ready) {
-      return Loader
+      return (
+        <div className="container page">
+          <div className="page-container">
+            {Loader}
+          </div>
+        </div>
+      )
     }
     if (this.state.error) {
       return <Unreachable retry={this.state.error} />
@@ -134,7 +140,8 @@ class Post extends Component {
     let date = [];
     date.push(<span key="date" className="fas fa-calendar">发表于 {dateStr}</span>);
     if (formatDate(this.state.post.modified_gmt + '.000Z') !== dateStr) {
-      date.push(<span key="modified" className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>)
+      date.push(<span key="modified"
+                      className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>)
     }
     const post = (
       <div className="post">
