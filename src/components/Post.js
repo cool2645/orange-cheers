@@ -121,12 +121,17 @@ class Post extends Component {
       '还没有评论耶' : this.state.commentCount === 1 ?
         `${this.state.commentCount} 条评论` : `${this.state.commentCount} 条评论`;
     commentCount = <Link to="#Comments">{commentCount}</Link>;
+    const dateStr = formatDate(this.state.post.date_gmt + '.000Z');
+    let date = [];
+    date.push(<span className="fas fa-calendar">发表于 {dateStr}</span>);
+    if (formatDate(this.state.post.modified_gmt + '.000Z') !== dateStr) {
+      date.push(<span className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>)
+    }
     const post = (
       <div className="post">
         <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: this.state.post.title.rendered }} />
         <div className="info fee page-control">
-          <span className="fas fa-calendar">发表于 {formatDate(this.state.post.date_gmt + '.000Z')}</span>
-          <span className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>
+          {date}
           <span className="fas fa-comments">{commentCount}</span>
           <span className="fas fa-folder">
             {categories}
