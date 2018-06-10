@@ -177,7 +177,7 @@ class Comments extends Component {
               this.setState({
                 replyFocus: false,
                 comments: this.state.comments.map(comment => {
-                  if (comment.id === data.id) comment.replyFocus = true;
+                  comment.replyFocus = comment.id === data.id;
                   return comment;
                 })
               });
@@ -191,7 +191,7 @@ class Comments extends Component {
               this.setState({
                 replyFocus: true,
                 comments: this.state.comments.map(comment => {
-                  if (comment.id === data.id) comment.replyFocus = false;
+                  comment.replyFocus = false;
                   return comment;
                 })
               })
