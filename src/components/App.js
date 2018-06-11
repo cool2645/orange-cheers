@@ -14,12 +14,12 @@ class App extends Component {
         <div className="App orange-cheers">
           <Nav />
           <Switch>
-            <Route exact path="/" component={Home} />
-            <Route exact path="/page/:page" component={Home} />
-            <Route exact path="/category/:category" component={Home} />
-            <Route exact path="/category/:category/page/:page" component={Home} />
-            <Route exact path="/tag/:tag" component={Home} />
-            <Route exact path="/tag/:tag/page/:page" component={Home} />
+            <Route exact path="/" component={Post} />
+            <Route exact path="/page/:page" component={Post} />
+            <Route exact path="/category/:category" component={Post} />
+            <Route exact path="/category/:category/page/:page" component={Post} />
+            <Route exact path="/tag/:tag" component={Post} />
+            <Route exact path="/tag/:tag/page/:page" component={Post} />
             <Route exact path="/:slug" component={Post} />
             <Route component={NotFound} />
           </Switch>

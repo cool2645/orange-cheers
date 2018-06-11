@@ -18,8 +18,6 @@ let initialState = {
   posts: [],
   page: 1,
   totalPage: 0,
-  categories: [],
-  tags: [],
   error: null,
 };
 
@@ -28,6 +26,8 @@ class Post extends Component {
     super(props);
     this.state = initialState;
     this.state.params = props.match.params;
+    this.categories = [];
+    this.tags = [];
     this.fetchData = this.fetchData.bind(this);
     this.fetchPostData = this.fetchPostData.bind(this);
     this.fetchTagData = this.fetchTagData.bind(this);
@@ -61,17 +61,18 @@ class Post extends Component {
     );
     else this.setState({ ready: false, error: null }, () =>
       this.fetchPosts(this.state.page)
-        .then((posts) => {
+        .then(posts => {
+          console.log(posts);
           let categories = [];
-          posts.forEach((post) => {
-            categories.concat(post.categories);
+          posts.forEach(post => {
+            categories = categories.concat(post.categories);
           });
           return this.fetchCategoryData(categories, posts)
         })
         .then((posts) => {
           let tags = [];
-          posts.forEach((post) => {
-            tags.concat(post.tags);
+          posts.forEach(post => {
+            tags = tags.concat(post.tags);
           });
           return this.fetchTagData(tags, posts)
         })
@@ -161,7 +162,7 @@ class Post extends Component {
         data.forEach(cat => {
           categories[cat.id] = cat
         });
-        this.setState({ categories: categories });
+        this.categories = categories;
         return o;
       })
   }
@@ -180,43 +181,44 @@ class Post extends Component {
         data.forEach(tag => {
           tags[tag.id] = tag
         });
-        this.setState({ tags: tags });
+        this.tags = tags;
         return o;
       })
   }
 
   renderPost(post, fold) {
-    console.log(this.state);
     const categories = post.categories.filter(cate => {
-      return this.state.categories[cate]
+      return this.categories[cate]
     }).map(cate => {
-      return <Link key={this.state.categories[cate].slug} className="category-link"
-                   to={`/categories/${this.state.categories[cate].slug}`}>{this.state.categories[cate].name}</Link>
+      return <Link key={this.categories[cate].slug} className="category-link"
+                   to={`/categories/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>
     });
     const tags = post.tags.filter(tag => {
-      return this.state.tags[tag]
+      return this.tags[tag]
     }).map(tag => {
-      return <Link key={this.state.tags[tag].slug} className="tag-link"
-                   to={`/tag/${this.state.tags[tag].slug}`}>{this.state.tags[tag].name}</Link>
+      return <Link key={this.tags[tag].slug} className="tag-link"
+                   to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>
     });
     let commentCount = post.commentCount === 0 ?
       '还没有评论耶' : post.commentCount === 1 ?
         `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
-    commentCount = <Link to="#Comments">{commentCount}</Link>;
+    commentCount = <Link to={`/${post.slug}#Comments`}>{commentCount}</Link>;
     const dateStr = formatDate(post.date_gmt + '.000Z');
     let date = [];
     date.push(<span key="date" className="fas fa-calendar">发表于 {dateStr}</span>);
     if (formatDate(post.modified_gmt + '.000Z') !== dateStr) {
       date.push(<span key="modified"
-                      className="fas fa-pencil-alt">最后更新于 {human(this.state.post.modified_gmt + '.000Z')}</span>)
+                      className="fas fa-pencil-alt">最后更新于 {human(post.modified_gmt + '.000Z')}</span>)
     }
     return fold ? (
       <div className="post">
-        <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+        <Link className="post-title-link" to={`/${post.slug}`}>
+          <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+        </Link>
         <div className="content page-control">
-          <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+          <div className="post-content" dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }} />
         </div>
-        <div className="info fee page-control">
+        <div className="info eef page-control">
           {date}
           <span className="fas fa-comments">{commentCount}</span>
           <span className="fas fa-folder">
@@ -233,7 +235,7 @@ class Post extends Component {
       </div>
     ) : (
       <div className="post">
-        <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: this.state.post.title.rendered }} />
+        <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
         <div className="info fee page-control">
           {date}
           <span className="fas fa-comments">{commentCount}</span>
@@ -249,7 +251,7 @@ class Post extends Component {
           }
         </div>
         <div className="content page-control">
-          <div className="post-content" dangerouslySetInnerHTML={{ __html: this.state.post.content.rendered }} />
+          <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
         </div>
         {
           this.props.siblings ?
@@ -275,21 +277,34 @@ class Post extends Component {
     if (this.state.error) {
       return <Unreachable retry={this.state.error} />
     }
-    if (!this.state.post) {
-      return <NotFound />
+    if (this.state.params.slug) {
+      if (!this.state.post) {
+        return <NotFound />
+      }
+      return (
+        <div className="container page">
+          <div className="page-container">
+            {this.renderPost(this.state.post, false)}
+          </div>
+          {
+            this.state.post.comment_status === "open" ?
+              <Comments id={this.state.post.id} />
+              : ''
+          }
+        </div>
+      );
     }
     return (
       <div className="container page">
-        <div className="page-container">
-          {this.renderPost(this.state.post, false)}
-        </div>
         {
-          this.state.post.comment_status === "open" ?
-            <Comments id={this.state.post.id} />
-            : ''
+          this.state.posts.map(post => {
+            return <div className="page-container">
+              {this.renderPost(post, true)}
+            </div>;
+          })
         }
       </div>
-    );
+    )
   }
 }
 
