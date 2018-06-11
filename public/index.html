@@ -41,5 +41,41 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+  <script src="https://unpkg.com/monaco-editor@0.8.3/min/vs/loader.js"></script>
+  <script>
+    function initMonacoEditor() {
+      require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.8.3/min/vs' } });
+      window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+
+      let proxy = URL.createObjectURL(new Blob([`
+	self.MonacoEnvironment = {
+		baseUrl: 'https://unpkg.com/monaco-editor@0.8.3/min/'
+	};
+	importScripts('https://unpkg.com/monaco-editor@0.8.3/min/vs/base/worker/workerMain.js');
+`], { type: 'text/javascript' }));
+
+      for (let element of document.getElementsByTagName('pre')) {
+        require(["vs/editor/editor.main"], () => {
+          let code = element.innerText.trim();
+          let lang = element.className.match(/lang:(\S+)/);
+          lang = (lang && lang.length) > 1 ? lang[1] : '';
+          lang = lang.replace(/\+/g, 'p');
+          lang = lang.replace(/#/g, 'sharp');
+          console.log(lang);
+          element.style.display = 'block';
+          element.style.overflow = 'hidden';
+          let enter = code.match(/\n\r?/g);
+          element.style.height = 19 * (enter ? enter.length + 1 : 1) + 'px';
+          element.innerHTML = '';
+          let editor = window.monaco.editor.create(element, {
+            value: code,
+            language: lang,
+            folding: true,
+            scrollBeyondLastLine: false,
+          });
+        });
+      }
+    }
+  </script>
   </body>
 </html>

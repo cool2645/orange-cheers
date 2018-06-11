@@ -67,6 +67,10 @@ class Comments extends Component {
     this.fetchMoreComments()
   }
 
+  componentWillUnmount() {
+    window.onscroll = null;
+  }
+
   fetchReply(id, page, totalPage, comment) {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       page: page,
@@ -139,7 +143,7 @@ class Comments extends Component {
 
   fetchMoreComments() {
     if (!this.state.ready) return;
-    this.setState({ ready: false, error: null });
+    this.setState({ ready: false, error: null }, () =>
     this.fetchComments(this.props.id, this.state.page + 1)
       .then((data) => {
         let end = data.length === 0;
@@ -155,6 +159,7 @@ class Comments extends Component {
       .catch(err => {
         console.log(err);
       })
+    )
   }
 
   renderComment(data) {

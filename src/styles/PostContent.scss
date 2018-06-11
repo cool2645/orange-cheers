@@ -19,7 +19,7 @@
     margin: 20px 0 10px;
     font-size: 1rem;
   }
-  p, ul, ol {
+  p, ul, ol, pre {
     margin-bottom: 0.6rem;
   }
   li > p {
@@ -29,9 +29,12 @@
     padding-left: 2rem;
   }
   code, p code {
-    padding: 3px 5px;
     margin: 0;
+  }
+  code, p code, pre {
+    padding: 3px 5px;
     font-size: 85%;
+    line-height: 1.25rem;
     background-color: rgba(0, 0, 0, 0.04);
     border-radius: 3px;
     font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
@@ -39,9 +42,13 @@
   a {
     text-decoration: underline dotted;
     text-decoration-color: initial;
+    word-wrap:break-word;
   }
   img {
     max-width: 100%;
+    vertical-align: middle;
+    display: block;
+    height: auto;
   }
   code, pre {
     white-space: pre-wrap;
@@ -66,5 +73,14 @@
   }
   hr {
     margin: 20px auto;
+  }
+  iframe {
+    position: relative !important;
+  }
+  iframe.wp-embedded-content {
+    display: none;
+  }
+  .aligncenter {
+    margin: 5px auto;
   }
 }

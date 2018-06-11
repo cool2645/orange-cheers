@@ -37,18 +37,17 @@ class Post extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.setState(initialState);
-    this.setState({ params: nextProps.match.params });
-    this.fetchData()
+    this.setState({ params: nextProps.match.params }, this.fetchData);
   }
 
   fetchData() {
-    this.setState({ ready: false, error: null });
+    this.setState({ ready: false, error: null }, () =>
     this.fetchPostData(this.state.params.slug)
       .then(() => this.fetchCategoryData(this.state.post.categories))
       .then(() => this.fetchTagData(this.state.post.tags))
       .then(() => this.fetchCommentCount(this.state.post.id))
       .then(() => {
-        this.setState({ ready: true, error: null });
+        this.setState({ ready: true, error: null }, window.initMonacoEditor);
       })
       .catch(err => {
         console.log(err);
@@ -57,6 +56,7 @@ class Post extends Component {
           error: this.fetchData
         })
       })
+    );
   }
 
   fetchPostData(slug) {
