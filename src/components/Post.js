@@ -48,7 +48,8 @@ class Post extends Component {
 
   componentWillReceiveProps(nextProps) {
     let page = +nextProps.match.params.page || 1;
-    if (page === this.state.page &&
+    if (nextProps.match.params.slug === this.state.params.slug &&
+      page === this.state.page &&
       nextProps.match.params.category === this.state.params.category &&
       nextProps.match.params.tag === this.state.params.tag &&
       nextProps.match.params.search === this.state.params.search
@@ -73,12 +74,13 @@ class Post extends Component {
       }
     })
       .then(data => {
-        let cat = data.length === 0 ? null : data[0].id;
+        let cat = data.length === 0 ? null : data[0];
         if (cat === null) {
           this.setState({ ready: true });
           throw "404";
         }
-        this.setState({ category: cat });
+        this.setState({ category: cat.id });
+        this.props.setTyped(cat.name);
       }));
     if (this.state.params.tag) promise = promise.then(() => honoka.get('/tags', {
       data: {
@@ -86,12 +88,13 @@ class Post extends Component {
       }
     })
       .then(data => {
-        let tag = data.length === 0 ? null : data[0].id;
+        let tag = data.length === 0 ? null : data[0];
         if (tag === null) {
           this.setState({ ready: true });
           throw "404";
         }
-        this.setState({ tag: tag });
+        this.setState({ tag: tag.id });
+        this.props.setTyped(tag.name);
       }));
     return promise
   }
@@ -115,7 +118,6 @@ class Post extends Component {
     else this.setState({ ready: false, error: null }, () =>
       this.fetchPosts(this.state.page)
         .then(posts => {
-          console.log(posts);
           let categories = [];
           posts.forEach(post => {
             categories = categories.concat(post.categories);

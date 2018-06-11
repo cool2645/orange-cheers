@@ -8,19 +8,30 @@ import Home from './Home'
 import Post from './Post'
 
 class App extends Component {
+
+  constructor() {
+    super();
+    this.nav = React.createRef();
+    this.setTyped = this.setTyped.bind(this);
+  }
+
+  setTyped(text) {
+    if (this.nav.current) this.nav.current.setTyped(text);
+  }
+
   render() {
     return (
       <Router basename={process.env.PUBLIC_URL}>
         <div className="App orange-cheers">
-          <Nav />
+          <Nav ref={this.nav} />
           <Switch>
-            <Route exact path="/" component={Post} />
-            <Route exact path="/page/:page" component={Post} />
-            <Route exact path="/category/:category" component={Post} />
-            <Route exact path="/category/:category/page/:page" component={Post} />
-            <Route exact path="/tag/:tag" component={Post} />
-            <Route exact path="/tag/:tag/page/:page" component={Post} />
-            <Route exact path="/:slug" component={Post} />
+            <Route exact path="/" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
+            <Route exact path="/page/:page" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
+            <Route exact path="/category/:category" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
+            <Route exact path="/category/:category/page/:page" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
+            <Route exact path="/tag/:tag" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
+            <Route exact path="/tag/:tag/page/:page" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
+            <Route exact path="/:slug" render={(props) => <Post setTyped={this.setTyped} {...props} />} />
             <Route component={NotFound} />
           </Switch>
         </div>

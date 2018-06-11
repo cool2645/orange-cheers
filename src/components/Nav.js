@@ -16,11 +16,13 @@ class Nav extends Component {
     };
     this.setSidebarOpen = this.setSidebarOpen.bind(this);
     this.retype = this.retype.bind(this);
+    this.setTyped = this.setTyped.bind(this);
     document.ontouchstart = (e) => {
       this.setState({ touchStartY: e.touches[0].clientY })
     };
     document.onmousewheel = document.ontouchmove = document.onscroll = this.handleCollapse.bind(this);
-    document.addEventListener("DOMMouseScroll", this.handleCollapse.bind(this))
+    document.addEventListener("DOMMouseScroll", this.handleCollapse.bind(this));
+    setInterval(this.retype, 15000)
   }
 
   setSidebarOpen(open) {
@@ -31,11 +33,17 @@ class Nav extends Component {
 
   retype(timeout) {
     // BUG: https://github.com/mattboldt/typed.js/issues/283
-    console.log(this.typed.strings);
     timeout = timeout || 0;
     setTimeout(() => {
       this.typed.reset();
     }, timeout);
+  }
+
+  setTyped(text) {
+    if(this.typed) {
+      this.typed.strings = [text, site.title];
+      this.retype(0);
+    }
   }
 
   handleCollapse(e) {
@@ -93,7 +101,7 @@ class Nav extends Component {
         <li className={className} key={link.name}>
           <NavLink activeClassName="active" onClick={() => {
             if (on === 'sidebar') this.setSidebarOpen(false);
-            if (link.typed) this.typed.strings = [link.typed, site.title];
+            if (link.typed) this.setTyped(link.typed);
           }} to={link.path}>{link.name}</NavLink>
         </li>
       ) : (
@@ -112,7 +120,7 @@ class Nav extends Component {
         <div className="icon" key={icon.icon}>
           <NavLink activeClassName="active" onClick={() => {
             if (on === 'sidebar') this.setSidebarOpen(false);
-            if (icon.typed) this.typed.strings = [icon.typed, site.title];
+            if (icon.typed) this.setTyped(icon.typed);
           }} to={icon.path} title={icon.title} className={icon.icon} />
         </div>
       ) : (
@@ -181,7 +189,7 @@ class Nav extends Component {
             </div>
             <div className={`logo-container ${this.state.collapse}`}>
               <NavLink exact to="/" onClick={() => {
-                this.typed.strings = [site.banner, site.title];
+                this.setTyped(site.banner);
               }} activeClassName="active">
                 <h1><span
                   style={{ whiteSpace: 'pre' }}
