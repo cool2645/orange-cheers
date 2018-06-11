@@ -3,7 +3,7 @@ import '../styles/Post.css'
 import '../styles/PostContent.css'
 import '../styles/themes/orange-cheers.css'
 import { Link } from 'react-router-dom'
-import { FullPageLoader as Loader } from './Loader'
+import { FullPageLoader as Loader, InlineLoader } from './Loader'
 import { post as config } from '../config'
 import NotFound from "./404"
 import Unreachable from "./000"
@@ -49,8 +49,9 @@ class Post extends Component {
   fetchData() {
     if (this.state.params.slug) this.setState({ ready: false, error: null }, () =>
       this.fetchPostData(this.state.params.slug)
-        .then((post) => this.fetchCategoryData(post.categories, post))
-        .then((post) => this.fetchTagData(post.tags, post))
+        .then(post => this.fetchCategoryData(post.categories, post))
+        .then(post => this.fetchTagData(post.tags, post))
+        .then(post => this.fetchCommentCount(post))
         .then(() => {
           this.setState({ ready: true, error: null }, window.initMonacoEditor);
         })
@@ -72,16 +73,18 @@ class Post extends Component {
           });
           return this.fetchCategoryData(categories, posts)
         })
-        .then((posts) => {
+        .then(posts => {
           let tags = [];
           posts.forEach(post => {
             tags = tags.concat(post.tags);
           });
           return this.fetchTagData(tags, posts)
         })
-        .then(() => {
+        .then((data) => {
           this.setState({ ready: true, error: null }, window.initMonacoEditor);
+          return data;
         })
+        .then(data => this.fetchCommentCounts(data))
         .catch(err => {
           console.log(err);
           this.setState({
@@ -101,7 +104,6 @@ class Post extends Component {
       this.setState({ totalPage: +totalPage });
       return response.json();
     })
-      .then(data => this.fetchCommentCounts(data))
       .then(data => {
         this.setState({ posts: data });
         return data;
@@ -122,7 +124,6 @@ class Post extends Component {
         }
         return post
       })
-      .then(post => this.fetchCommentCount(post))
       .then(post => {
         this.setState({ post: post });
         return post
@@ -149,6 +150,14 @@ class Post extends Component {
       .then(response => {
         let total = response.headers.get("x-wp-total");
         post.commentCount = +total;
+        if (this.state.post !== null) this.setState({ post: post });
+        else {
+          this.setState({
+            posts: this.state.posts.map(p => {
+              return p.id === post.id ? post : p;
+            })
+          })
+        }
         return post
       })
   }
@@ -171,7 +180,7 @@ class Post extends Component {
 
   fetchTagData(tags, o) {
     if (tags.length === 0) {
-      return
+      return o;
     }
     return honoka.get('/tags', {
       data: {
@@ -201,10 +210,13 @@ class Post extends Component {
       return <Link key={this.tags[tag].slug} className="tag-link"
                    to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>
     });
-    let commentCount = post.commentCount === 0 ?
-      '还没有评论耶' : post.commentCount === 1 ?
+    let commentCount;
+    if (post.commentCount === undefined) commentCount = <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
+    else {
+      commentCount = post.commentCount === 0 ? '还没有评论耶' : post.commentCount === 1 ?
         `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
-    commentCount = <Link to={`/${post.slug}#Comments`}>{commentCount}</Link>;
+      commentCount = <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
+    }
     const dateStr = formatDate(post.date_gmt + '.000Z');
     let date = [];
     date.push(<span key="date" className="fas fa-calendar">发表于 {dateStr}</span>);
@@ -222,7 +234,7 @@ class Post extends Component {
         </div>
         <div className="info eef page-control">
           {date}
-          <span className="fas fa-comments">{commentCount}</span>
+          {commentCount}
           <span className="fas fa-folder">
             {categories}
             </span>
@@ -240,7 +252,7 @@ class Post extends Component {
         <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
         <div className="info fee page-control">
           {date}
-          <span className="fas fa-comments">{commentCount}</span>
+          {commentCount}
           <span className="fas fa-folder">
             {categories}
             </span>
@@ -271,61 +283,63 @@ class Post extends Component {
     if (this.state.params.category) slug += `category/${this.state.params.category}`;
     else if (this.state.params.tag) slug += `tag/${this.state.params.tag}`;
     return (
-        <div className="page-container pagination">
-          <div className="nav-links">
-            {
-              this.state.page > 1 ?
-                <Link className="prev" to={`${slug}/page/${this.state.page - 1}`}><i className="fas fa-chevron-left" /></Link>
-                : ''
-            }
-            {
-              this.state.page > 3 ?
-                <Link className="page-number" to={`${slug}/page/1`}>1</Link>
-                : ''
-            }
-            {
-              this.state.page > 4 ?
-                <span className="space">…</span>
-                : ''
-            }
-            {
-              this.state.page > 2 ?
-                <Link className="page-number" to={`${slug}/page/${this.state.page - 2}`}>{this.state.page - 2}</Link>
-                : ''
-            }
-            {
-              this.state.page > 1 ?
-                <Link className="page-number" to={`${slug}/page/${this.state.page - 1}`}>{this.state.page - 1}</Link>
-                : ''
-            }
-            <span className="page-number current">{this.state.page}</span>
-            {
-              this.state.page < this.state.totalPage ?
-                <Link className="page-number" to={`${slug}/page/${this.state.page + 1}`}>{this.state.page + 1}</Link>
-                : ''
-            }
-            {
-              this.state.page + 1 < this.state.totalPage ?
-                <Link className="page-number" to={`${slug}/page/${this.state.page + 2}`}>{this.state.page + 2}</Link>
-                : ''
-            }
-            {
-              this.state.page + 3 < this.state.totalPage ?
-                <span className="space">…</span>
-                : ''
-            }
-            {
-              this.state.page + 2 < this.state.totalPage ?
-                <Link className="page-number" to={`${slug}/page/${this.state.totalPage}`}>{this.state.totalPage}</Link>
-                : ''
-            }
-            {
-              this.state.page < this.state.totalPage ?
-                <Link className="next" to={`${slug}/page/${this.state.page + 1}`}><i className="fas fa-chevron-right" /></Link>
-                : ''
-            }
-          </div>
+      <div className="page-container pagination">
+        <div className="nav-links">
+          {
+            this.state.page > 1 ?
+              <Link className="prev" to={`${slug}/page/${this.state.page - 1}`}><i
+                className="fas fa-chevron-left" /></Link>
+              : ''
+          }
+          {
+            this.state.page > 3 ?
+              <Link className="page-number" to={`${slug}/page/1`}>1</Link>
+              : ''
+          }
+          {
+            this.state.page > 4 ?
+              <span className="space">…</span>
+              : ''
+          }
+          {
+            this.state.page > 2 ?
+              <Link className="page-number" to={`${slug}/page/${this.state.page - 2}`}>{this.state.page - 2}</Link>
+              : ''
+          }
+          {
+            this.state.page > 1 ?
+              <Link className="page-number" to={`${slug}/page/${this.state.page - 1}`}>{this.state.page - 1}</Link>
+              : ''
+          }
+          <span className="page-number current">{this.state.page}</span>
+          {
+            this.state.page < this.state.totalPage ?
+              <Link className="page-number" to={`${slug}/page/${this.state.page + 1}`}>{this.state.page + 1}</Link>
+              : ''
+          }
+          {
+            this.state.page + 1 < this.state.totalPage ?
+              <Link className="page-number" to={`${slug}/page/${this.state.page + 2}`}>{this.state.page + 2}</Link>
+              : ''
+          }
+          {
+            this.state.page + 3 < this.state.totalPage ?
+              <span className="space">…</span>
+              : ''
+          }
+          {
+            this.state.page + 2 < this.state.totalPage ?
+              <Link className="page-number" to={`${slug}/page/${this.state.totalPage}`}>{this.state.totalPage}</Link>
+              : ''
+          }
+          {
+            this.state.page < this.state.totalPage ?
+              <Link className="next" to={`${slug}/page/${this.state.page + 1}`}><i
+                className="fas fa-chevron-right" /></Link>
+              : ''
+          }
         </div>
+      </div>
     );
   }
 
@@ -363,7 +377,7 @@ class Post extends Component {
       <div className="container page">
         {
           this.state.posts.map(post => {
-            return <div className="page-container">
+            return <div key={post.id} className="page-container">
               {this.renderPost(post, true)}
             </div>;
           })

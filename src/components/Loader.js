@@ -43,4 +43,12 @@ const ClassicalLoader = (
   </div>
 );
 
-export { FullPageLoader, ClassicalLoader }
+const InlineLoader = (
+  <div className="inline-loader">
+    <div className="loader-inner ball-clip-rotate">
+      <div></div>
+    </div>
+  </div>
+);
+
+export { FullPageLoader, ClassicalLoader, InlineLoader }
