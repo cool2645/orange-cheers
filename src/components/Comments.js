@@ -60,11 +60,11 @@ class Comments extends Component {
     this.fetchComments = this.fetchComments.bind(this);
     this.fetchReplies = this.fetchReplies.bind(this);
     this.fetchReply = this.fetchReply.bind(this);
-    window.onscroll = this.update;
   }
 
   componentDidMount() {
-    this.fetchMoreComments()
+    this.fetchMoreComments();
+    window.onscroll = this.update;
   }
 
   componentWillUnmount() {
@@ -227,10 +227,10 @@ class Comments extends Component {
           {comments}
           {!this.state.ready ? Loader : this.state.error ? <Unreachable retry={this.state.error} /> : ''}
         </div>
-        <div id="comment-ending" />
+        <div id="comment-ending"/>
         {
           this.state.end ?
-            <div className="info eef">
+            <div className="info eef page-control">
               <center>{this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧 |･ω･｀)'}</center>
             </div>
             : ''

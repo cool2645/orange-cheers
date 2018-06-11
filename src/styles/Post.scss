@@ -2,6 +2,11 @@
   .post-title-link {
     color: #444;
   }
+  @media (max-width: 675px) {
+    .fas {
+      font-weight: 500;
+    }
+  }
   .fee {
     border-bottom: 1px dashed #e0e0e0;
   }
@@ -10,10 +15,8 @@
   }
   .title {
     font-size: 1.125rem;
-    padding: 1.25rem 1.75rem 1.25rem;
   }
   .info {
-    padding: 0.875rem 1.75rem;
     span {
       &:before {
         margin-right: 0.5rem;
@@ -32,6 +35,5 @@
     font-size: 0.8rem;
   }
   .content {
-    padding: 1.25rem 1.75rem 1.25rem;
   }
 }

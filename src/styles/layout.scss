@@ -21,6 +21,9 @@ body {
 
 .page-control {
   padding: 0.875rem 1.75rem;
+  @media (max-width: 675px) {
+    padding: 0.8rem 1rem;
+  }
 }
 
 .page-container {
