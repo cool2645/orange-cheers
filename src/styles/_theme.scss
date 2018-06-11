@@ -33,6 +33,12 @@
   }
 }
 
+.nav-links {
+  .page-number.current {
+    color: $theme-color
+  }
+}
+
 .full-page-loader {
   .lds-pacman > div:nth-child(2) div {
     background-color: $background-color;

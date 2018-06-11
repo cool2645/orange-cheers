@@ -29,6 +29,37 @@ body {
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.07);
 }
 
+.pagination {
+  .nav-links {
+    position: relative;
+    text-align: center;
+    height: 48px;
+    .prev {
+      left: 0;
+    }
+    .prev, .next {
+      color: #a0a0a0;
+      display: inline-block;
+      font-size: 16px;
+      line-height: 48px;
+      margin: 0 16px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+    }
+    .next {
+      right: 0;
+    }
+    .page-number {
+      display: inline-block;
+      line-height: 48px;
+      padding: 0 12px;
+      font-size: 14px;
+      color: #a0a0a0;
+    }
+  }
+}
+
 .center,.container {
   display: block;
   margin-left: auto;

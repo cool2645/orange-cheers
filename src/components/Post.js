@@ -18,6 +18,7 @@ let initialState = {
   posts: [],
   page: 1,
   totalPage: 0,
+  params: null,
   error: null,
 };
 
@@ -26,6 +27,7 @@ class Post extends Component {
     super(props);
     this.state = initialState;
     this.state.params = props.match.params;
+    this.state.page = +props.match.params.page || 1;
     this.categories = [];
     this.tags = [];
     this.fetchData = this.fetchData.bind(this);
@@ -40,7 +42,8 @@ class Post extends Component {
 
   componentWillReceiveProps(nextProps) {
     this.setState(initialState);
-    this.setState({ params: nextProps.match.params }, this.fetchData);
+    let page = nextProps.match.params.page || 1;
+    this.setState({ params: nextProps.match.params, page: +page }, this.fetchData);
   }
 
   fetchData() {
@@ -95,8 +98,7 @@ class Post extends Component {
       per_page: config.perPage,
     })).then(response => {
       let totalPage = response.headers.get("x-wp-totalpages");
-      totalPage = +totalPage;
-      this.setState({ totalPage: totalPage });
+      this.setState({ totalPage: +totalPage });
       return response.json();
     })
       .then(data => this.fetchCommentCounts(data))
@@ -191,7 +193,7 @@ class Post extends Component {
       return this.categories[cate]
     }).map(cate => {
       return <Link key={this.categories[cate].slug} className="category-link"
-                   to={`/categories/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>
+                   to={`/category/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>
     });
     const tags = post.tags.filter(tag => {
       return this.tags[tag]
@@ -264,6 +266,69 @@ class Post extends Component {
     )
   }
 
+  renderPagination() {
+    let slug = '';
+    if (this.state.params.category) slug += `category/${this.state.params.category}`;
+    else if (this.state.params.tag) slug += `tag/${this.state.params.tag}`;
+    return (
+        <div className="page-container pagination">
+          <div className="nav-links">
+            {
+              this.state.page > 1 ?
+                <Link className="prev" to={`${slug}/page/${this.state.page - 1}`}><i className="fas fa-chevron-left" /></Link>
+                : ''
+            }
+            {
+              this.state.page > 3 ?
+                <Link className="page-number" to={`${slug}/page/1`}>1</Link>
+                : ''
+            }
+            {
+              this.state.page > 4 ?
+                <span className="space">…</span>
+                : ''
+            }
+            {
+              this.state.page > 2 ?
+                <Link className="page-number" to={`${slug}/page/${this.state.page - 2}`}>{this.state.page - 2}</Link>
+                : ''
+            }
+            {
+              this.state.page > 1 ?
+                <Link className="page-number" to={`${slug}/page/${this.state.page - 1}`}>{this.state.page - 1}</Link>
+                : ''
+            }
+            <span className="page-number current">{this.state.page}</span>
+            {
+              this.state.page < this.state.totalPage ?
+                <Link className="page-number" to={`${slug}/page/${this.state.page + 1}`}>{this.state.page + 1}</Link>
+                : ''
+            }
+            {
+              this.state.page + 1 < this.state.totalPage ?
+                <Link className="page-number" to={`${slug}/page/${this.state.page + 2}`}>{this.state.page + 2}</Link>
+                : ''
+            }
+            {
+              this.state.page + 3 < this.state.totalPage ?
+                <span className="space">…</span>
+                : ''
+            }
+            {
+              this.state.page + 2 < this.state.totalPage ?
+                <Link className="page-number" to={`${slug}/page/${this.state.totalPage}`}>{this.state.totalPage}</Link>
+                : ''
+            }
+            {
+              this.state.page < this.state.totalPage ?
+                <Link className="next" to={`${slug}/page/${this.state.page + 1}`}><i className="fas fa-chevron-right" /></Link>
+                : ''
+            }
+          </div>
+        </div>
+    );
+  }
+
   render() {
     if (!this.state.ready) {
       return (
@@ -303,6 +368,7 @@ class Post extends Component {
             </div>;
           })
         }
+        {this.renderPagination()}
       </div>
     )
   }
