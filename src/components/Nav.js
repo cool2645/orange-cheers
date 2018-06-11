@@ -17,11 +17,25 @@ class Nav extends Component {
     this.setSidebarOpen = this.setSidebarOpen.bind(this);
     this.retype = this.retype.bind(this);
     this.setTyped = this.setTyped.bind(this);
+    this._onProgress = this._onProgress.bind(this);
+    this.startProgress = this.startProgress.bind(this);
+    this.joinProgress = this.joinProgress.bind(this);
+    this.doneProgress = this.doneProgress.bind(this);
     document.ontouchstart = (e) => {
       this.setState({ touchStartY: e.touches[0].clientY })
     };
     document.onmousewheel = document.ontouchmove = document.onscroll = this.handleCollapse.bind(this);
     document.addEventListener("DOMMouseScroll", this.handleCollapse.bind(this));
+    window.addEventListener('scroll', () => {
+      if (this._progressing) return;
+      let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      let windowHeight = window.visualViewport.height || window.innerHeight;
+      let documentHeight = document.body.clientHeight;
+      let perc = 100 * scrollTop / (documentHeight - windowHeight);
+      let inb = document.getElementById('inb');
+      inb.style.height = '100%';
+      inb.style.width = perc > 100 ? 100 : perc + '%';
+    });
     setInterval(this.retype, 15000)
   }
 
@@ -40,7 +54,7 @@ class Nav extends Component {
   }
 
   setTyped(text) {
-    if(this.typed) {
+    if (this.typed) {
       this.typed.strings = [text, site.title];
       this.retype(0);
     }
@@ -80,6 +94,7 @@ class Nav extends Component {
     };
     // this.el refers to the <span> in the render() method
     this.typed = new Typed(this.el, options);
+    this.startProgress();
   }
 
   componentWillUnmount() {
@@ -132,26 +147,47 @@ class Nav extends Component {
     });
   }
 
+  _onProgress() {
+    let inb = document.getElementById('inb');
+    let step = (Math.random() > 0.7) * 5;
+    if (this._progress + step > 98) return;
+    else if (this._progress + step > 90) step = 0.1;
+    this._progress += step;
+    inb.style.width = this._progress + '%';
+  }
+
+  joinProgress() {
+    let inb = document.getElementById('inb');
+    let step = Math.random() * 10 + 20;
+    if (this._progress >= 90) return;
+    else if (this._progress + step > 90) this._progress = 90;
+    else this._progress += step;
+    inb.style.width = this._progress + '%';
+  }
+
+  doneProgress() {
+    if (!this._progressing) return;
+    let inb = document.getElementById('inb');
+    this._progress = 100;
+    clearInterval(this._progressing);
+    this._progressing = null;
+    inb.style.width = '100%';
+    setTimeout(() => inb.style.height = '0', 500);
+  }
+
+  startProgress() {
+    if (this._progressing) return;
+    let inb = document.getElementById('inb');
+    inb.style.width = 0;
+    inb.style.height = '100%';
+    this._progress = 0;
+    this._progressing = setInterval(this._onProgress, 200);
+  }
+
   render() {
     const progressbar = (
-      <div id="inb"
-           style={{
-             width: '100%',
-             height: '8px',
-             zIndex: 9999,
-             top: '0px',
-             float: 'left',
-             position: 'absolute'
-           }}>
-        <div
-          style={{
-            backgroundColor: 'rgb(190, 219, 236)',
-            width: '0px',
-            height: '100%',
-            clear: 'both',
-            transition: 'height 0.28s',
-            float: 'left'
-          }} />
+      <div className="progressbar">
+        <div id="inb" className="bar" />
       </div>
     );
     const sidebarLinks = this.renderLinks.bind(this)('sidebar');

@@ -1,3 +1,21 @@
+.progressbar {
+  width: 100%;
+  height: 8px;
+  z-index: 9999;
+  top: 0;
+  float: left;
+  position: absolute;
+  .bar {
+    background-color: rgba(255, 255, 255, 0.7);
+    width: 0;
+    height: 100%;
+    clear: both;
+    transition: all 0.28s;
+    float: left;
+    transition-timing-function: ease;
+  }
+}
+
 .top .foot {
   position: relative;
   z-index: 700;

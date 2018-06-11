@@ -33,6 +33,7 @@ class Post extends Component {
     this.categories = [];
     this.tags = [];
     this.update = this.update.bind(this);
+    this.onReady = this.onReady.bind(this);
     this.challengeParams = this.challengeParams.bind(this);
     this.fetchData = this.fetchData.bind(this);
     this.fetchPostData = this.fetchPostData.bind(this);
@@ -43,7 +44,22 @@ class Post extends Component {
   }
 
   componentDidMount() {
+    this.props.startProgress();
+    document.onreadystatechange = () => {
+      if (document.readyState === "complete") {
+        if (this.state.ready) this.props.doneProgress();
+        else this.props.joinProgress();
+      }
+    };
     this.update()
+  }
+
+  onReady(error) {
+    if (error === null) this.setState({ ready: true, error: null }, window.initMonacoEditor);
+    else if (typeof error === 'function') this.setState({ ready: true, error: error });
+    else this.setState({ ready: true });
+    if (document.readyState === "complete") this.props.doneProgress();
+    else this.props.joinProgress();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -54,6 +70,7 @@ class Post extends Component {
       nextProps.match.params.tag === this.state.params.tag &&
       nextProps.match.params.search === this.state.params.search
     ) return;
+    this.props.startProgress();
     this.setState(initialState);
     this.setState({ params: nextProps.match.params, page: page }, this.update);
   }
@@ -76,7 +93,7 @@ class Post extends Component {
       .then(data => {
         let cat = data.length === 0 ? null : data[0];
         if (cat === null) {
-          this.setState({ ready: true });
+          this.onReady(404);
           throw "404";
         }
         this.setState({ category: cat.id });
@@ -90,7 +107,7 @@ class Post extends Component {
       .then(data => {
         let tag = data.length === 0 ? null : data[0];
         if (tag === null) {
-          this.setState({ ready: true });
+          this.onReady(404);
           throw "404";
         }
         this.setState({ tag: tag.id });
@@ -105,14 +122,11 @@ class Post extends Component {
         .then(post => this.fetchCategoryData(post.categories, post))
         .then(post => this.fetchTagData(post.tags, post))
         .then(() => {
-          this.setState({ ready: true, error: null }, window.initMonacoEditor);
+          this.onReady(null);
         })
         .catch(err => {
           console.log(err);
-          if (err !== '404') this.setState({
-            ready: true,
-            error: this.fetchData
-          })
+          if (err !== '404') this.onReady(this.fetchData)
         })
     );
     else this.setState({ ready: false, error: null }, () =>
@@ -132,15 +146,12 @@ class Post extends Component {
           return this.fetchTagData(tags, posts)
         })
         .then((data) => {
-          this.setState({ ready: true, error: null }, window.initMonacoEditor);
+          this.onReady(null);
           return data;
         })
         .catch(err => {
           console.log(err);
-          this.setState({
-            ready: true,
-            error: this.fetchData
-          })
+          if (err !== '404') this.onReady(this.fetchData)
         })
     );
   }
@@ -174,7 +185,7 @@ class Post extends Component {
       .then(data => {
         let post = data.length === 0 ? null : data[0];
         if (post === null) {
-          this.setState({ ready: true });
+          this.onReady(404);
           throw "404";
         }
         return post
@@ -206,7 +217,7 @@ class Post extends Component {
         let total = response.headers.get("x-wp-total");
         post.commentCount = +total;
         if (this.state.post !== null) this.setState({ post: post });
-        else if(this.state.posts !== null) {
+        else if (this.state.posts !== null) {
           this.setState({
             posts: this.state.posts.map(p => {
               return p.id === post.id ? post : p;
