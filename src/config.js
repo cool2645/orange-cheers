@@ -25,31 +25,31 @@ const nav = {
       name: "Web 開發",
       typed: "Web 开发",
       hideInHeader: true,
-      path: "/category/tech/webdev"
+      path: "/category/webdev"
     },
     {
       name: "運維",
       typed: "运维",
       hideInHeader: true,
-      path: "/category/tech/operation"
+      path: "/category/operation"
     },
     {
       name: "Linux",
       typed: "Linux",
       hideInHeader: true,
-      path: "/category/tech/linux"
+      path: "/category/linux"
     },
     {
       name: "桌面開發",
       typed: "桌面开发",
       hideInHeader: true,
-      path: "/category/tech/desktopdev"
+      path: "/category/desktopdev"
     },
     {
       name: "算法",
       typed: "算法",
       hideInHeader: true,
-      path: "/category/tech/algorithm"
+      path: "/category/algorithm"
     },
     {
       name: "歸檔",

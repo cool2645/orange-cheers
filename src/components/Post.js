@@ -15,9 +15,11 @@ import Comments from './Comments'
 let initialState = {
   ready: false,
   post: null,
-  posts: [],
+  posts: null,
   page: 1,
   totalPage: 0,
+  category: null,
+  tag: null,
   params: null,
   error: null,
 };
@@ -30,20 +32,68 @@ class Post extends Component {
     this.state.page = +props.match.params.page || 1;
     this.categories = [];
     this.tags = [];
+    this.update = this.update.bind(this);
+    this.challengeParams = this.challengeParams.bind(this);
     this.fetchData = this.fetchData.bind(this);
     this.fetchPostData = this.fetchPostData.bind(this);
+    this.fetchPosts = this.fetchPosts.bind(this);
     this.fetchTagData = this.fetchTagData.bind(this);
     this.fetchCommentCount = this.fetchCommentCount.bind(this);
+    this.fetchCommentCounts = this.fetchCommentCounts.bind(this);
   }
 
   componentDidMount() {
-    this.fetchData()
+    this.update()
   }
 
   componentWillReceiveProps(nextProps) {
+    let page = +nextProps.match.params.page || 1;
+    if (page === this.state.page &&
+      nextProps.match.params.category === this.state.params.category &&
+      nextProps.match.params.tag === this.state.params.tag &&
+      nextProps.match.params.search === this.state.params.search
+    ) return;
     this.setState(initialState);
-    let page = nextProps.match.params.page || 1;
-    this.setState({ params: nextProps.match.params, page: +page }, this.fetchData);
+    this.setState({ params: nextProps.match.params, page: page }, this.update);
+  }
+
+  update() {
+    this.challengeParams()
+      .then(() => this.fetchData())
+  }
+
+  challengeParams() {
+    let promise = new Promise((resolve, reject) => {
+      resolve();
+    });
+    if (this.state.params.slug) return promise;
+    if (this.state.params.category) promise = promise.then(() => honoka.get('/categories', {
+      data: {
+        slug: this.state.params.category
+      }
+    })
+      .then(data => {
+        let cat = data.length === 0 ? null : data[0].id;
+        if (cat === null) {
+          this.setState({ ready: true });
+          throw "404";
+        }
+        this.setState({ category: cat });
+      }));
+    if (this.state.params.tag) promise = promise.then(() => honoka.get('/tags', {
+      data: {
+        slug: this.state.params.tag
+      }
+    })
+      .then(data => {
+        let tag = data.length === 0 ? null : data[0].id;
+        if (tag === null) {
+          this.setState({ ready: true });
+          throw "404";
+        }
+        this.setState({ tag: tag });
+      }));
+    return promise
   }
 
   fetchData() {
@@ -51,7 +101,6 @@ class Post extends Component {
       this.fetchPostData(this.state.params.slug)
         .then(post => this.fetchCategoryData(post.categories, post))
         .then(post => this.fetchTagData(post.tags, post))
-        .then(post => this.fetchCommentCount(post))
         .then(() => {
           this.setState({ ready: true, error: null }, window.initMonacoEditor);
         })
@@ -84,7 +133,6 @@ class Post extends Component {
           this.setState({ ready: true, error: null }, window.initMonacoEditor);
           return data;
         })
-        .then(data => this.fetchCommentCounts(data))
         .catch(err => {
           console.log(err);
           this.setState({
@@ -96,16 +144,21 @@ class Post extends Component {
   }
 
   fetchPosts(page) {
-    return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode({
+    let params = {
       page: page,
       per_page: config.perPage,
-    })).then(response => {
-      let totalPage = response.headers.get("x-wp-totalpages");
-      this.setState({ totalPage: +totalPage });
-      return response.json();
-    })
+    };
+    if (this.state.category) params.categories = this.state.category;
+    if (this.state.tag) params.tags = this.state.tag;
+    if (this.state.params.search) params.search = this.state.params.search;
+    return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
+      .then(response => {
+        let totalPage = response.headers.get("x-wp-totalpages");
+        this.setState({ totalPage: +totalPage });
+        return response.json();
+      })
       .then(data => {
-        this.setState({ posts: data });
+        this.setState({ posts: data }, () => this.fetchCommentCounts(data));
         return data;
       })
   }
@@ -125,7 +178,7 @@ class Post extends Component {
         return post
       })
       .then(post => {
-        this.setState({ post: post });
+        this.setState({ post: post }, () => this.fetchCommentCount(post));
         return post
       })
   }
@@ -151,7 +204,7 @@ class Post extends Component {
         let total = response.headers.get("x-wp-total");
         post.commentCount = +total;
         if (this.state.post !== null) this.setState({ post: post });
-        else {
+        else if(this.state.posts !== null) {
           this.setState({
             posts: this.state.posts.map(p => {
               return p.id === post.id ? post : p;
@@ -279,9 +332,10 @@ class Post extends Component {
   }
 
   renderPagination() {
+    if (this.state.totalPage === 1) return '';
     let slug = '';
-    if (this.state.params.category) slug += `category/${this.state.params.category}`;
-    else if (this.state.params.tag) slug += `tag/${this.state.params.tag}`;
+    if (this.state.params.category) slug += `/category/${this.state.params.category}`;
+    else if (this.state.params.tag) slug += `/tag/${this.state.params.tag}`;
     return (
       <div className="page-container pagination">
         <div className="nav-links">
@@ -372,6 +426,9 @@ class Post extends Component {
           }
         </div>
       );
+    }
+    if (this.state.posts === null) {
+      return <NotFound />
     }
     return (
       <div className="container page">
