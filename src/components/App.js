@@ -15,6 +15,11 @@ class App extends Component {
           <Nav />
           <Switch>
             <Route exact path="/" component={Home} />
+            <Route exact path="/page/:page" component={Home} />
+            <Route exact path="/category/:category" component={Home} />
+            <Route exact path="/category/:category/page/:page" component={Home} />
+            <Route exact path="/tag/:tag" component={Home} />
+            <Route exact path="/tag/:tag/page/:page" component={Home} />
             <Route exact path="/:slug" component={Post} />
             <Route component={NotFound} />
           </Switch>

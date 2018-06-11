@@ -4,6 +4,9 @@ const site = {
   title: "2645 Laboratory",
   apiEndpoint: 'https://blog.cool2645.com/index.php/wp-json/wp/v2',
 };
+const post = {
+  perPage: 10,
+};
 const comment = {
   perPage: 15,
 };
@@ -86,4 +89,4 @@ const nav = {
   ]
 };
 
-export { site, nav, comment }
+export { site, nav, post, comment }
