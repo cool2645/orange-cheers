@@ -21,6 +21,7 @@ let initialState = {
   category: null,
   tag: null,
   params: null,
+  siblings: null,
   error: null,
 };
 
@@ -123,6 +124,7 @@ class Post extends Component {
       this.fetchPostData(this.state.params.slug)
         .then(post => this.fetchCategoryData(post.categories, post))
         .then(post => this.fetchTagData(post.tags, post))
+        .then(post => this.getSiblings(post))
         .then(() => {
           this.onReady(null);
         })
@@ -158,36 +160,124 @@ class Post extends Component {
     );
   }
 
+  getSiblings(post) {
+    if (!this.query) return post;
+    let siblings = {
+      prev: undefined,
+      prevOffset: this.query.offset - 1,
+      next: undefined,
+      nextOffset: this.query.offset + 1,
+    };
+    let page = Math.floor(this.query.offset / config.perPage) + 1;
+    let j = this.query.offset % config.perPage;
+
+    // Need to look at previous page
+    if (j === 0) {
+      // No previous page, no need any more
+      if (page === 1) siblings.prev = null;
+      // Try previous page
+      else {
+        let prevPage = this.indexes[this.query.key].posts[page - 1];
+        if (prevPage && prevPage.length) {
+          siblings.prev = this.posts[prevPage[prevPage.length - 1]]
+        }
+      }
+    }
+    // Need to look at next page
+    if (j === config.perPage - 1) {
+      // No next page, no need any more
+      if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
+      // Try next page
+      else {
+        let nextPage = this.indexes[this.query.key].posts[page + 1];
+        if (nextPage && nextPage.length) {
+          siblings.next = this.posts[nextPage[0]]
+        }
+      }
+    }
+    // Look at current page
+    let currPage = this.indexes[this.query.key].posts[page];
+    if (currPage && currPage.length) {
+      siblings.prev = j > 0 ? this.posts[currPage[j - 1]] : siblings.prev;
+      siblings.next = j < currPage.length - 1 ? this.posts[currPage[j + 1]] : siblings.next;
+    }
+
+    if (siblings.prev === undefined) {
+      let params = Object.assign({}, this.query.params);
+      params.per_page = 1;
+      params.offset = siblings.prevOffset;
+      honoka.get('/posts', {
+        data: params
+      })
+        .then(data => {
+          if (data.length === 0) siblings.prev = null;
+          else {
+            this.posts[data[0].slug] = data[0];
+            siblings.prev = data[0];
+          }
+          this.setState({ siblings: siblings });
+        })
+    }
+    if (siblings.next === undefined) {
+      let params = Object.assign({}, this.query.params);
+      params.per_page = 1;
+      params.offset = siblings.nextOffset;
+      honoka.get('/posts', {
+        data: params
+      })
+        .then(data => {
+          if (data.length === 0) siblings.next = null;
+          else {
+            this.posts[data[0].slug] = data[0];
+            siblings.next = data[0];
+          }
+          this.setState({ siblings: siblings });
+        })
+    }
+    this.setState({ siblings: siblings });
+    return post;
+  }
+
   fetchPosts(page) {
     let params = {
-      page: page,
       per_page: config.perPage,
     };
     if (this.state.category) params.categories = this.state.category;
     if (this.state.tag) params.tags = this.state.tag;
     if (this.state.params.search) params.search = this.state.params.search;
-    params = urlEncode(params);
-    if (this.indexes[params]) {
-      let data = this.indexes[params].posts.map(slug => this.posts[slug]);
-      this.setState({ posts: data, totalPage: this.indexes[params].totalPage });
+    let query = urlEncode(params);
+    if (this.indexes[query] && this.indexes[query].posts[page]) {
+      this.query = { key: query, params: params };
+      let data = this.indexes[query].posts[page].map(index => {
+        let post = this.posts[index.slug];
+        post.offset = index.offset;
+        return post;
+      });
+      this.setState({ posts: data, totalPage: this.indexes[query].totalPage });
       return new Promise(resolve => {
         resolve(data);
       });
     }
-    return fetch(honoka.defaults.baseURL + '/posts?' + params)
+    params.page = page;
+    return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
       .then(response => {
         let totalPage = response.headers.get("x-wp-totalpages");
         this.setState({ totalPage: +totalPage });
         return response.json()
           .then(data => {
-            data.forEach(post => {
-              this.posts[post.slug] = post
+            data.forEach((post, i) => {
+              this.posts[post.slug] = post;
+              post.offset = (page - 1) * config.perPage + i
             });
-            this.indexes[params] = {
-              posts: data.map(post => post.slug),
-              totalPage: totalPage,
-            };
-            this.setState({ posts: data }, () => this.fetchCommentCounts(data));
+            if (!this.indexes[query]) this.indexes[query] = { posts: {} };
+            this.indexes[query].totalPage = totalPage;
+            this.indexes[query].posts[page] = data.map(post => {
+              return { slug: post.slug, offset: post.offset }
+            });
+            this.query = { key: query, params: params };
+            this.setState({
+              posts: data,
+            }, () => this.fetchCommentCounts(data));
             return data;
           })
       });
@@ -296,7 +386,6 @@ class Post extends Component {
       }
     })
       .then(data => {
-        console.log(data);
         data.forEach(tag => {
           this.tags[tag.id] = tag
         });
@@ -335,7 +424,8 @@ class Post extends Component {
     }
     return fold ? (
       <div className="post">
-        <Link className="post-title-link" to={`/${post.slug}`}>
+        <Link className="post-title-link" to={`/${post.slug}`}
+              onClick={() => this.query.offset = post.offset}>
           <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
         </Link>
         <div className="content page-control">
@@ -377,10 +467,27 @@ class Post extends Component {
           <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
         </div>
         {
-          this.props.siblings ?
-            <div className="info eef">
-              <span>上一篇：<Link to="/">2018年美团在线笔试编程题解题报告</Link></span>
-              <span>下一篇：<Link to="/">Windows下安装libsvm for Python</Link></span>
+          this.state.siblings ?
+            <div className="info eef page-control">
+              {
+                this.state.siblings.prev === null ?
+                  <span>已经是第一篇了</span> : this.state.siblings.prev ?
+                  <span>
+                    上一篇：<Link to={`/${this.state.siblings.prev.slug}`}
+                              onClick={() => this.query.offset = this.state.siblings.prevOffset}
+                              dangerouslySetInnerHTML={{ __html: this.state.siblings.prev.title.rendered }} />
+                  </span> :
+                  <span>上一篇：加载中 {InlineLoader} </span>
+              }
+              {
+                this.state.siblings.next === null ?
+                  <span>已经是最后一篇了</span> : this.state.siblings.next ?
+                  <span>下一篇：<Link to={`/${this.state.siblings.next.slug}`}
+                                  onClick={() => this.query.offset = this.state.siblings.nextOffset}
+                                  dangerouslySetInnerHTML={{ __html: this.state.siblings.next.title.rendered }} />
+                  </span> :
+                  <span>下一篇：加载中 {InlineLoader} </span>
+              }
             </div> : ''
         }
       </div>
