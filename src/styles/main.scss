@@ -41,3 +41,8 @@ input[type=button], input[type=reset], input[type=submit] {
   height: 0;
   clear: both;
 }
+
+input, textarea, button, select,
+a {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
