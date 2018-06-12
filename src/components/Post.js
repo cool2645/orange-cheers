@@ -468,7 +468,7 @@ class Post extends Component {
         </div>
         {
           this.state.siblings ?
-            <div className="info eef page-control">
+            <div className="info eef sibling page-control">
               {
                 this.state.siblings.prev === null ?
                   <span>已经是第一篇了</span> : this.state.siblings.prev ?
