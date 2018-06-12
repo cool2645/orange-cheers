@@ -20,4 +20,4 @@ after_success:
   - git checkout --orphan gh-pages
   - git add -A
   - git commit -m "travis auto build"
-  - git push --force https://$REPO_TOKEN@github.com/cool2645/OrangeCheers.git gh-pages:gh-pages
+  - git push --force https://$REPO_TOKEN@github.com/cool2645/orange-cheers.git gh-pages:gh-pages
