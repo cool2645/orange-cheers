@@ -30,8 +30,10 @@ class Post extends Component {
     this.state = initialState;
     this.state.params = props.match.params;
     this.state.page = +props.match.params.page || 1;
-    this.categories = [];
-    this.tags = [];
+    this.categories = {};
+    this.tags = {};
+    this.posts = {};
+    this.indexes = {};
     this.update = this.update.bind(this);
     this.onReady = this.onReady.bind(this);
     this.challengeParams = this.challengeParams.bind(this);
@@ -145,7 +147,7 @@ class Post extends Component {
           });
           return this.fetchTagData(tags, posts)
         })
-        .then((data) => {
+        .then(data => {
           this.onReady(null);
           return data;
         })
@@ -164,19 +166,40 @@ class Post extends Component {
     if (this.state.category) params.categories = this.state.category;
     if (this.state.tag) params.tags = this.state.tag;
     if (this.state.params.search) params.search = this.state.params.search;
-    return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
+    params = urlEncode(params);
+    if (this.indexes[params]) {
+      let data = this.indexes[params].posts.map(slug => this.posts[slug]);
+      this.setState({ posts: data, totalPage: this.indexes[params].totalPage });
+      return new Promise(resolve => {
+        resolve(data);
+      });
+    }
+    return fetch(honoka.defaults.baseURL + '/posts?' + params)
       .then(response => {
         let totalPage = response.headers.get("x-wp-totalpages");
         this.setState({ totalPage: +totalPage });
-        return response.json();
-      })
-      .then(data => {
-        this.setState({ posts: data }, () => this.fetchCommentCounts(data));
-        return data;
-      })
+        return response.json()
+          .then(data => {
+            data.forEach(post => {
+              this.posts[post.slug] = post
+            });
+            this.indexes[params] = {
+              posts: data.map(post => post.slug),
+              totalPage: totalPage,
+            };
+            this.setState({ posts: data }, () => this.fetchCommentCounts(data));
+            return data;
+          })
+      });
   }
 
   fetchPostData(slug) {
+    if (this.posts[this.state.params.slug]) {
+      this.setState({ post: this.posts[this.state.params.slug] });
+      return new Promise(resolve => {
+        resolve(this.posts[this.state.params.slug]);
+      });
+    }
     return honoka.get('/posts', {
       data: {
         slug: slug
@@ -191,7 +214,9 @@ class Post extends Component {
         return post
       })
       .then(post => {
-        this.setState({ post: post }, () => this.fetchCommentCount(post));
+        this.posts[post.slug] = post;
+        if (this.state.params.slug === post.slug) this.setState({ post: post });
+        this.fetchCommentCount(post);
         return post
       })
   }
@@ -216,7 +241,8 @@ class Post extends Component {
       .then(response => {
         let total = response.headers.get("x-wp-total");
         post.commentCount = +total;
-        if (this.state.post !== null) this.setState({ post: post });
+        this.posts[post.slug].commentCount = total;
+        if (this.state.post !== null && this.state.post.slug === post.slug) this.setState({ post: post });
         else if (this.state.posts !== null) {
           this.setState({
             posts: this.state.posts.map(p => {
@@ -229,17 +255,24 @@ class Post extends Component {
   }
 
   fetchCategoryData(cats, o) {
+    let flag = true;
+    for (let cat of cats) {
+      if (!this.categories[cat]) {
+        flag = false;
+        break;
+      }
+    }
+    if (flag) return o;
     return honoka.get('/categories', {
       data: {
         include: cats.join(','),
+        per_page: 100,
       }
     })
       .then(data => {
-        let categories = {};
         data.forEach(cat => {
-          categories[cat.id] = cat
+          this.categories[cat.id] = cat
         });
-        this.categories = categories;
         return o;
       })
   }
@@ -248,17 +281,25 @@ class Post extends Component {
     if (tags.length === 0) {
       return o;
     }
+    let flag = true;
+    for (let tag of tags) {
+      if (!this.tags[tag]) {
+        flag = false;
+        break;
+      }
+    }
+    if (flag) return o;
     return honoka.get('/tags', {
       data: {
         include: tags.join(','),
+        per_page: 100,
       }
     })
       .then(data => {
-        let tags = {};
+        console.log(data);
         data.forEach(tag => {
-          tags[tag.id] = tag
+          this.tags[tag.id] = tag
         });
-        this.tags = tags;
         return o;
       })
   }
@@ -277,11 +318,13 @@ class Post extends Component {
                    to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>
     });
     let commentCount;
-    if (post.commentCount === undefined) commentCount = <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
+    if (post.commentCount === undefined) commentCount =
+      <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
     else {
       commentCount = post.commentCount === 0 ? '还没有评论耶' : post.commentCount === 1 ?
         `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
-      commentCount = <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
+      commentCount =
+        <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
     }
     const dateStr = formatDate(post.date_gmt + '.000Z');
     let date = [];
