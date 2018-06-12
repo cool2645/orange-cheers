@@ -1,18 +1,20 @@
+import honoka from 'honoka';
 import React, { Component } from 'react';
-import '../styles/Post.css'
-import '../styles/PostContent.css'
-import '../styles/themes/orange-cheers.css'
-import { Link } from 'react-router-dom'
-import { FullPageLoader as Loader, InlineLoader } from './Loader'
-import { post as config } from '../config'
-import NotFound from "./404"
-import Unreachable from "./000"
-import honoka from 'honoka'
-import { formatDate, human } from '../utils/datetime'
-import urlEncode from '../utils/url'
-import Comments from './Comments'
+import { Link } from 'react-router-dom';
 
-let initialState = {
+import { post as config } from '../config';
+import '../styles/Post.css';
+import '../styles/PostContent.css';
+import '../styles/themes/orange-cheers.css';
+import { formatDate, human } from '../utils/datetime';
+import urlEncode from '../utils/url';
+
+import Comments from './Comments';
+import { FullPageLoader as Loader, InlineLoader } from './Loader';
+import NotFound from './NotFound';
+import Unreachable from './Unreachable';
+
+const initialState = {
   ready: false,
   post: null,
   posts: null,
@@ -51,24 +53,24 @@ class Post extends Component {
   componentDidMount() {
     this.props.startProgress();
     document.onreadystatechange = () => {
-      if (document.readyState === "complete") {
+      if (document.readyState === 'complete') {
         if (this.state.ready) this.props.doneProgress();
         else this.props.joinProgress();
       }
     };
-    this.update()
+    this.update();
   }
 
   onReady(error) {
     if (error === null) this.setState({ ready: true, error: null }, window.initMonacoEditor);
     else if (typeof error === 'function') this.setState({ ready: true, error: error });
     else this.setState({ ready: true });
-    if (document.readyState === "complete") this.props.doneProgress();
+    if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
   }
 
   componentWillReceiveProps(nextProps) {
-    let page = +nextProps.match.params.page || 1;
+    const page = +nextProps.match.params.page || 1;
     if (nextProps.match.params.slug === this.state.params.slug &&
       page === this.state.page &&
       nextProps.match.params.category === this.state.params.category &&
@@ -81,20 +83,20 @@ class Post extends Component {
   }
 
   buildAndUpdateQuery() {
-    let params = {
+    const params = {
       per_page: config.perPage,
     };
     if (this.state.category) params.categories = this.state.category;
     if (this.state.tag) params.tags = this.state.tag;
     if (this.state.params.search) params.search = this.state.params.search;
-    let query = urlEncode(params);
+    const query = urlEncode(params);
     this.query = { key: query, params: params };
     return Object.assign({}, params);
   }
 
   update() {
     this.challengeParams()
-      .then(() => this.fetchData())
+      .then(() => this.fetchData());
   }
 
   challengeParams() {
@@ -102,88 +104,95 @@ class Post extends Component {
       resolve();
     });
     if (this.state.params.slug) return promise;
-    if (this.state.params.category) promise = promise.then(() => honoka.get('/categories', {
-      data: {
-        slug: this.state.params.category
-      }
-    })
-      .then(data => {
-        let cat = data.length === 0 ? null : data[0];
-        if (cat === null) {
-          this.onReady(404);
-          throw "404";
-        }
-        this.setState({ category: cat.id });
-        this.props.setTyped(cat.name);
-      }));
-    if (this.state.params.tag) promise = promise.then(() => honoka.get('/tags', {
-      data: {
-        slug: this.state.params.tag
-      }
-    })
-      .then(data => {
-        let tag = data.length === 0 ? null : data[0];
-        if (tag === null) {
-          this.onReady(404);
-          throw "404";
-        }
-        this.setState({ tag: tag.id });
-        this.props.setTyped(tag.name);
-      }));
-    return promise
+    if (this.state.params.category) {
+      promise = promise.then(() => honoka.get('/categories', {
+        data: {
+          slug: this.state.params.category,
+        },
+      })
+        .then(data => {
+          const cat = data.length === 0 ? null : data[0];
+          if (cat === null) {
+            this.onReady(404);
+            throw new Error('404');
+          }
+          this.setState({ category: cat.id });
+          this.props.setTyped(cat.name);
+        }));
+    }
+    if (this.state.params.tag) {
+      promise = promise.then(() => honoka.get('/tags', {
+        data: {
+          slug: this.state.params.tag,
+        },
+      })
+        .then(data => {
+          const tag = data.length === 0 ? null : data[0];
+          if (tag === null) {
+            this.onReady(404);
+            throw new Error('404');
+          }
+          this.setState({ tag: tag.id });
+          this.props.setTyped(tag.name);
+        }));
+    }
+    return promise;
   }
 
   fetchData() {
-    if (this.state.params.slug) this.setState({ ready: false, error: null }, () =>
-      this.fetchPostData(this.state.params.slug)
-        .then(post => this.fetchCategoryData(post.categories, post))
-        .then(post => this.fetchTagData(post.tags, post))
-        .then(post => this.getSiblings(post))
-        .then(() => {
-          this.onReady(null);
-        })
-        .catch(err => {
-          console.log(err);
-          if (err !== '404') this.onReady(this.fetchData)
-        })
-    );
-    else this.setState({ ready: false, error: null }, () =>
-      this.fetchPosts(this.state.page)
-        .then(posts => {
-          let categories = [];
-          posts.forEach(post => {
-            categories = categories.concat(post.categories);
-          });
-          return this.fetchCategoryData(categories, posts)
-        })
-        .then(posts => {
-          let tags = [];
-          posts.forEach(post => {
-            tags = tags.concat(post.tags);
-          });
-          return this.fetchTagData(tags, posts)
-        })
-        .then(data => {
-          this.onReady(null);
-          return data;
-        })
-        .catch(err => {
-          console.log(err);
-          if (err !== '404') this.onReady(this.fetchData)
-        })
-    );
+    if (this.state.params.slug) {
+      this.setState({ ready: false, error: null }, () =>
+        this.fetchPostData(this.state.params.slug)
+          .then(post => this.fetchCategoryData(post.categories, post))
+          .then(post => this.fetchTagData(post.tags, post))
+          .then(post => this.getSiblings(post))
+          .then(() => {
+            this.onReady(null);
+          })
+          .catch(err => {
+            console.log(err);
+            if (err !== '404') this.onReady(this.fetchData);
+          }),
+      );
+    } else {
+      this.setState({ ready: false, error: null }, () =>
+        this.fetchPosts(this.state.page)
+          .then(posts => {
+            let categories = [];
+            posts.forEach(post => {
+              categories = categories.concat(post.categories);
+            });
+            return this.fetchCategoryData(categories, posts);
+          })
+          .then(posts => {
+            let tags = [];
+            posts.forEach(post => {
+              tags = tags.concat(post.tags);
+            });
+            return this.fetchTagData(tags, posts);
+          })
+          .then(data => {
+            this.onReady(null);
+            return data;
+          })
+          .catch(err => {
+            console.log(err);
+            if (err !== '404') this.onReady(this.fetchData);
+          }),
+      );
+    }
   }
 
   getSiblings(post) {
     if (!this.query) return post;
-    let siblings = {
+    const siblings = {
       prev: undefined,
       prevOffset: this.query.offset - 1,
       next: undefined,
       nextOffset: this.query.offset + 1,
     };
-    let page = Math.floor(this.query.offset / config.perPage) + 1;
-    let j = this.query.offset % config.perPage;
+    const page = Math.floor(this.query.offset / config.perPage) + 1;
+    const j = this.query.offset % config.perPage;
 
     if (this.indexes[this.query.key]) {
       // Need to look at previous page
@@ -192,9 +201,9 @@ class Post extends Component {
         if (page === 1) siblings.prev = null;
         // Try previous page
         else {
-          let prevPage = this.indexes[this.query.key].posts[page - 1];
+          const prevPage = this.indexes[this.query.key].posts[page - 1];
           if (prevPage && prevPage.length) {
-            siblings.prev = this.posts[prevPage[prevPage.length - 1].slug]
+            siblings.prev = this.posts[prevPage[prevPage.length - 1].slug];
           }
         }
       }
@@ -204,14 +213,14 @@ class Post extends Component {
         if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
         // Try next page
         else {
-          let nextPage = this.indexes[this.query.key].posts[page + 1];
+          const nextPage = this.indexes[this.query.key].posts[page + 1];
           if (nextPage && nextPage.length) {
-            siblings.next = this.posts[nextPage[0].slug]
+            siblings.next = this.posts[nextPage[0].slug];
           }
         }
       }
       // Look at current page
-      let currPage = this.indexes[this.query.key].posts[page];
+      const currPage = this.indexes[this.query.key].posts[page];
       if (currPage && currPage.length) {
         siblings.prev = j > 0 ? this.posts[currPage[j - 1].slug] : siblings.prev;
         siblings.next = j < currPage.length - 1 ? this.posts[currPage[j + 1].slug] : siblings.next;
@@ -219,12 +228,12 @@ class Post extends Component {
     }
 
     if (siblings.prev === undefined) {
-      let params = Object.assign({}, this.query.params);
+      const params = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.after = post.date;
       params.order = 'asc';
       honoka.get('/posts', {
-        data: params
+        data: params,
       })
         .then(data => {
           if (!data.length) siblings.prev = null;
@@ -235,15 +244,15 @@ class Post extends Component {
           this.setState({ siblings: siblings });
         })
         .catch(err => {
-          console.log(err)
-        })
+          console.log(err);
+        });
     }
     if (siblings.next === undefined) {
-      let params = Object.assign({}, this.query.params);
+      const params = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.before = post.date;
       honoka.get('/posts', {
-        data: params
+        data: params,
       })
         .then(data => {
           if (!data.length) siblings.next = null;
@@ -254,19 +263,19 @@ class Post extends Component {
           this.setState({ siblings: siblings });
         })
         .catch(err => {
-          console.log(err)
-        })
+          console.log(err);
+        });
     }
     this.setState({ siblings: siblings });
     return post;
   }
 
   fetchPosts(page) {
-    let params = this.buildAndUpdateQuery();
-    let query = this.query.key;
+    const params = this.buildAndUpdateQuery();
+    const query = this.query.key;
     if (this.indexes[query] && this.indexes[query].posts[page]) {
-      let data = this.indexes[query].posts[page].map(index => {
-        let post = this.posts[index.slug];
+      const data = this.indexes[query].posts[page].map(index => {
+        const post = this.posts[index.slug];
         post.offset = index.offset;
         return post;
       });
@@ -278,24 +287,24 @@ class Post extends Component {
     params.page = page;
     return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
       .then(response => {
-        let totalPage = response.headers.get("x-wp-totalpages");
+        const totalPage = response.headers.get('x-wp-totalpages');
         this.setState({ totalPage: +totalPage });
         return response.json()
           .then(data => {
             data.forEach((post, i) => {
               this.posts[post.slug] = post;
-              post.offset = (page - 1) * config.perPage + i
+              post.offset = (page - 1) * config.perPage + i;
             });
             if (!this.indexes[query]) this.indexes[query] = { posts: {} };
             this.indexes[query].totalPage = totalPage;
             this.indexes[query].posts[page] = data.map(post => {
-              return { slug: post.slug, offset: post.offset }
+              return { slug: post.slug, offset: post.offset };
             });
             this.setState({
               posts: data,
             }, () => this.fetchCommentCounts(data));
             return data;
-          })
+          });
       });
   }
 
@@ -308,44 +317,44 @@ class Post extends Component {
     }
     return honoka.get('/posts', {
       data: {
-        slug: slug
-      }
+        slug: slug,
+      },
     })
       .then(data => {
-        let post = data.length === 0 ? null : data[0];
+        const post = data.length === 0 ? null : data[0];
         if (post === null) {
           this.onReady(404);
-          throw "404";
+          throw new Error('404');
         }
-        return post
+        return post;
       })
       .then(post => {
         this.posts[post.slug] = post;
         if (this.state.params.slug === post.slug) this.setState({ post: post });
         this.fetchCommentCount(post);
-        return post
-      })
+        return post;
+      });
   }
 
   fetchCommentCounts(posts) {
     let promise = new Promise((resolve, reject) => {
       resolve();
     });
-    for (let post of posts) {
-      promise = promise.then(() => this.fetchCommentCount(post))
+    for (const post of posts) {
+      promise = promise.then(() => this.fetchCommentCount(post));
     }
     return promise.then(() => {
       return posts;
-    })
+    });
   }
 
   fetchCommentCount(post) {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       post: post.id,
-      per_page: 1
+      per_page: 1,
     }))
       .then(response => {
-        let total = response.headers.get("x-wp-total");
+        const total = response.headers.get('x-wp-total');
         post.commentCount = +total;
         this.posts[post.slug].commentCount = total;
         if (this.state.post !== null && this.state.post.slug === post.slug) this.setState({ post: post });
@@ -353,16 +362,16 @@ class Post extends Component {
           this.setState({
             posts: this.state.posts.map(p => {
               return p.id === post.id ? post : p;
-            })
-          })
+            }),
+          });
         }
-        return post
-      })
+        return post;
+      });
   }
 
   fetchCategoryData(cats, o) {
     let flag = true;
-    for (let cat of cats) {
+    for (const cat of cats) {
       if (!this.categories[cat]) {
         flag = false;
         break;
@@ -373,14 +382,14 @@ class Post extends Component {
       data: {
         include: cats.join(','),
         per_page: 100,
-      }
+      },
     })
       .then(data => {
         data.forEach(cat => {
-          this.categories[cat.id] = cat
+          this.categories[cat.id] = cat;
         });
         return o;
-      })
+      });
   }
 
   fetchTagData(tags, o) {
@@ -388,7 +397,7 @@ class Post extends Component {
       return o;
     }
     let flag = true;
-    for (let tag of tags) {
+    for (const tag of tags) {
       if (!this.tags[tag]) {
         flag = false;
         break;
@@ -399,44 +408,45 @@ class Post extends Component {
       data: {
         include: tags.join(','),
         per_page: 100,
-      }
+      },
     })
       .then(data => {
         data.forEach(tag => {
-          this.tags[tag.id] = tag
+          this.tags[tag.id] = tag;
         });
         return o;
-      })
+      });
   }
 
   renderPost(post, fold) {
     const categories = post.categories.filter(cate => {
-      return this.categories[cate]
+      return this.categories[cate];
     }).map(cate => {
       return <Link key={this.categories[cate].slug} className="category-link"
-                   to={`/category/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>
+                   to={`/category/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>;
     });
     const tags = post.tags.filter(tag => {
-      return this.tags[tag]
+      return this.tags[tag];
     }).map(tag => {
       return <Link key={this.tags[tag].slug} className="tag-link"
-                   to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>
+                   to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>;
     });
     let commentCount;
-    if (post.commentCount === undefined) commentCount =
-      <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
-    else {
+    if (post.commentCount === undefined) {
+      commentCount =
+        <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
+    } else {
       commentCount = post.commentCount === 0 ? '还没有评论耶' : post.commentCount === 1 ?
         `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
       commentCount =
         <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
     }
     const dateStr = formatDate(post.date_gmt + '.000Z');
-    let date = [];
+    const date = [];
     date.push(<span key="date" className="fas fa-calendar">发表于 {dateStr}</span>);
     if (formatDate(post.modified_gmt + '.000Z') !== dateStr) {
       date.push(<span key="modified"
-                      className="fas fa-pencil-alt">最后更新于 {human(post.modified_gmt + '.000Z')}</span>)
+                      className="fas fa-pencil-alt">最后更新于 {human(post.modified_gmt + '.000Z')}</span>);
     }
     return fold ? (
       <div className="post">
@@ -509,7 +519,7 @@ class Post extends Component {
             </div> : ''
         }
       </div>
-    )
+    );
   }
 
   renderPagination() {
@@ -586,14 +596,14 @@ class Post extends Component {
             {Loader}
           </div>
         </div>
-      )
+      );
     }
     if (this.state.error) {
-      return <Unreachable retry={this.state.error} />
+      return <Unreachable retry={this.state.error} />;
     }
     if (this.state.params.slug) {
       if (!this.state.post) {
-        return <NotFound />
+        return <NotFound />;
       }
       return (
         <div className="container page post">
@@ -601,7 +611,7 @@ class Post extends Component {
             {this.renderPost(this.state.post, false)}
           </div>
           {
-            this.state.post.comment_status === "open" ?
+            this.state.post.comment_status === 'open' ?
               <Comments id={this.state.post.id} />
               : ''
           }
@@ -609,7 +619,7 @@ class Post extends Component {
       );
     }
     if (this.state.posts === null) {
-      return <NotFound />
+      return <NotFound />;
     }
     return (
       <div className="container page">
@@ -622,7 +632,7 @@ class Post extends Component {
         }
         {this.renderPagination()}
       </div>
-    )
+    );
   }
 }
 

@@ -1,15 +1,16 @@
-import React, { Component } from 'react'
-import { NavLink } from 'react-router-dom'
-import Typed from 'typed.js'
-import Sidebar from 'react-sidebar'
-import '../styles/Nav.css'
-import { site, nav } from '../config'
+import React, { Component } from 'react';
+import { NavLink } from 'react-router-dom';
+import Sidebar from 'react-sidebar';
+import Typed from 'typed.js';
+
+import { nav, site } from '../config';
+import '../styles/Nav.css';
 
 class Nav extends Component {
   constructor() {
     super();
     this.state = {
-      collapse: "",
+      collapse: '',
       animationLock: false,
       touchStartY: 0,
       sidebarOpen: false,
@@ -22,21 +23,21 @@ class Nav extends Component {
     this.joinProgress = this.joinProgress.bind(this);
     this.doneProgress = this.doneProgress.bind(this);
     document.ontouchstart = (e) => {
-      this.setState({ touchStartY: e.touches[0].clientY })
+      this.setState({ touchStartY: e.touches[0].clientY });
     };
     document.onmousewheel = document.ontouchmove = document.onscroll = this.handleCollapse.bind(this);
-    document.addEventListener("DOMMouseScroll", this.handleCollapse.bind(this));
+    document.addEventListener('DOMMouseScroll', this.handleCollapse.bind(this));
     window.addEventListener('scroll', () => {
       if (this._progressing) return;
-      let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      let windowHeight = window.visualViewport.height || window.innerHeight;
-      let documentHeight = document.body.clientHeight;
-      let perc = 100 * scrollTop / (documentHeight - windowHeight);
-      let inb = document.getElementById('inb');
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const windowHeight = window.visualViewport.height || window.innerHeight;
+      const documentHeight = document.body.clientHeight;
+      const perc = 100 * scrollTop / (documentHeight - windowHeight);
+      const inb = document.getElementById('inb');
       inb.style.height = '100%';
       inb.style.width = perc > 100 ? 100 : perc + '%';
     });
-    setInterval(this.retype, 15000)
+    setInterval(this.retype, 15000);
   }
 
   setSidebarOpen(open) {
@@ -61,10 +62,10 @@ class Nav extends Component {
   }
 
   handleCollapse(e) {
-    let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     if ((e.wheelDelta && e.wheelDelta > 0) || (e.detail && e.detail < 0) || (e.changedTouches && e.changedTouches[0].clientY > this.state.touchStartY)) {
-      if (scrollTop === 0 && window.matchMedia("(min-width: 865px)").matches && this.state.collapse !== "") {
-        this.setState({ collapse: "" });
+      if (scrollTop === 0 && window.matchMedia('(min-width: 865px)').matches && this.state.collapse !== '') {
+        this.setState({ collapse: '' });
         this.retype(750);
       }
     } else {
@@ -72,8 +73,8 @@ class Nav extends Component {
         if (e.cancelable) e.preventDefault();
         return;
       }
-      if (window.matchMedia("(min-width: 865px)").matches && this.state.collapse !== "collapse") {
-        this.setState({ collapse: "collapse", animationLock: true });
+      if (window.matchMedia('(min-width: 865px)').matches && this.state.collapse !== 'collapse') {
+        this.setState({ collapse: 'collapse', animationLock: true });
         this.retype(750);
         setTimeout(() => {
           this.setState({ animationLock: false });
@@ -82,7 +83,7 @@ class Nav extends Component {
         if (e.cancelable) e.preventDefault();
       }
     }
-    if (e.changedTouches) this.setState({ touchStartY: e.changedTouches[0].clientY })
+    if (e.changedTouches) this.setState({ touchStartY: e.changedTouches[0].clientY });
   }
 
   componentDidMount() {
@@ -90,7 +91,7 @@ class Nav extends Component {
     const options = {
       strings: [site.banner, site.title],
       typeSpeed: 50,
-      backSpeed: 50
+      backSpeed: 50,
     };
     // this.el refers to the <span> in the render() method
     this.typed = new Typed(this.el, options);
@@ -109,7 +110,7 @@ class Nav extends Component {
         (on === 'header' && link.hideInBanner && link.hideInHeader)
       ) return '';
       const className = on === 'header' ?
-        link.hideInBanner ? ["collapse-show"] : link.hideInHeader ? ["collapse-hide"] : []
+        link.hideInBanner ? ['collapse-show'] : link.hideInHeader ? ['collapse-hide'] : []
         : [];
       const internal = link.path && (link.path.charAt(0) === '/' || link.path.charAt(0) === '#');
       return internal ? (
@@ -148,7 +149,7 @@ class Nav extends Component {
   }
 
   _onProgress() {
-    let inb = document.getElementById('inb');
+    const inb = document.getElementById('inb');
     let step = (Math.random() > 0.7) * 5;
     if (this._progress + step > 98) return;
     else if (this._progress + step > 90) step = 0.1;
@@ -157,8 +158,8 @@ class Nav extends Component {
   }
 
   joinProgress() {
-    let inb = document.getElementById('inb');
-    let step = Math.random() * 10 + 20;
+    const inb = document.getElementById('inb');
+    const step = Math.random() * 10 + 20;
     if (this._progress >= 90) return;
     else if (this._progress + step > 90) this._progress = 90;
     else this._progress += step;
@@ -167,7 +168,7 @@ class Nav extends Component {
 
   doneProgress() {
     if (!this._progressing) return;
-    let inb = document.getElementById('inb');
+    const inb = document.getElementById('inb');
     this._progress = 100;
     clearInterval(this._progressing);
     inb.style.width = '100%';
@@ -179,7 +180,7 @@ class Nav extends Component {
 
   startProgress() {
     if (this._progressing) return;
-    let inb = document.getElementById('inb');
+    const inb = document.getElementById('inb');
     inb.style.width = 0;
     inb.style.height = '100%';
     this._progress = 0;
@@ -222,7 +223,7 @@ class Nav extends Component {
             <div className="mobile-show icon">
               <a href="" onClick={(e) => {
                 this.setSidebarOpen(true);
-                e.preventDefault()
+                e.preventDefault();
               }} title="菜单" className="fas fa-bars" />
             </div>
             <div className={`logo-container ${this.state.collapse}`}>
@@ -250,8 +251,8 @@ class Nav extends Component {
           </div>
         </div>
       </Sidebar>
-    </div>)
+    </div>);
   }
 }
 
-export default Nav
+export default Nav;

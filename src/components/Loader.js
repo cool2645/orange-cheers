@@ -1,5 +1,6 @@
 import React from 'react';
-import '../styles/Loader.css'
+
+import '../styles/Loader.css';
 
 const FullPageLoader = (
   <div className="full-page-loader">
@@ -51,4 +52,4 @@ const InlineLoader = (
   </div>
 );
 
-export { FullPageLoader, ClassicalLoader, InlineLoader }
+export { FullPageLoader, ClassicalLoader, InlineLoader };

@@ -1,15 +1,17 @@
-import React, { Component } from 'react'
-import '../styles/Comments.css'
-import '../styles/themes/orange-cheers.css'
-import { ClassicalLoader as Loader } from './Loader'
-import { Link } from 'react-router-dom'
-import Unreachable from "./000"
-import honoka from "honoka";
-import { comment as config } from "../config"
-import urlEncode from "../utils/url";
-import { human } from "../utils/datetime";
+import honoka from 'honoka';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
-let getElementTop = function (element) {
+import { comment as config } from '../config';
+import '../styles/Comments.css';
+import '../styles/themes/orange-cheers.css';
+import { human } from '../utils/datetime';
+import urlEncode from '../utils/url';
+
+import { ClassicalLoader as Loader } from './Loader';
+import Unreachable from './Unreachable';
+
+const getElementTop = function (element) {
   let actualTop = element.offsetTop;
   let current = element.offsetParent;
   while (current !== null) {
@@ -74,9 +76,9 @@ class Comments extends Component {
   fetchReply(id, page, totalPage, comment) {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       page: page,
-      parent: id
+      parent: id,
     })).then(response => {
-      let total = response.headers.get("x-wp-totalpages");
+      const total = response.headers.get('x-wp-totalpages');
       totalPage = +total;
       return response.json();
     }).then(data => {
@@ -85,32 +87,32 @@ class Comments extends Component {
       if (page <= totalPage) {
         this.setState({
           comments: [...this.state.comments.map(c => {
-            return c.id !== comment.id ? c : comment
-          })]
+            return c.id !== comment.id ? c : comment;
+          })],
         });
-        return this.fetchReply(id, page, totalPage, comment)
+        return this.fetchReply(id, page, totalPage, comment);
       }
-    })
+    });
   }
 
   fetchReplies(comments) {
     let promise = new Promise((resolve, reject) => {
       resolve();
     });
-    for (let comment of comments) {
+    for (const comment of comments) {
       comment.children = [];
       promise = promise.then(() => this.fetchReply(comment.id, 1, 1, comment))
         .then(() => {
           this.setState({
             comments: [...this.state.comments.map(c => {
-              return c.id !== comment.id ? c : comment
-            })]
+              return c.id !== comment.id ? c : comment;
+            })],
           });
         });
     }
     return promise.then(() => {
       return comments;
-    })
+    });
   }
 
   fetchComments(id, page) {
@@ -120,46 +122,46 @@ class Comments extends Component {
         parent: 0,
         per_page: config.perPage,
         page: page,
-      }
+      },
     })
       .then(data => {
         this.setState({
           comments: [...this.state.comments, ...data.map(comment => {
             comment.children = [];
             return comment;
-          })]
+          })],
         });
         return data;
-      })
+      });
   }
 
   update() {
-    let scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    let commentTop = getElementTop(document.getElementById('comment-ending'));
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const commentTop = getElementTop(document.getElementById('comment-ending'));
     //let scrollHeight = document.body.clientHeight;
-    let windowHeight = window.visualViewport.height || window.innerHeight + 100;
+    const windowHeight = window.visualViewport.height || window.innerHeight + 100;
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
   }
 
   fetchMoreComments() {
     if (!this.state.ready) return;
     this.setState({ ready: false, error: null }, () =>
-    this.fetchComments(this.props.id, this.state.page + 1)
-      .then((data) => {
-        let end = data.length === 0;
-        this.setState({ ready: true, page: this.state.page + 1, end: end });
-        this.update();
-        return data
-      })
-      .catch(err => {
-        console.log(err);
-        this.setState({ ready: true, error: this.fetchMoreComments });
-      })
-      .then(data => this.fetchReplies(data))
-      .catch(err => {
-        console.log(err);
-      })
-    )
+      this.fetchComments(this.props.id, this.state.page + 1)
+        .then((data) => {
+          const end = data.length === 0;
+          this.setState({ ready: true, page: this.state.page + 1, end: end });
+          this.update();
+          return data;
+        })
+        .catch(err => {
+          console.log(err);
+          this.setState({ ready: true, error: this.fetchMoreComments });
+        })
+        .then(data => this.fetchReplies(data))
+        .catch(err => {
+          console.log(err);
+        }),
+    );
   }
 
   renderComment(data) {
@@ -184,7 +186,7 @@ class Comments extends Component {
                 comments: this.state.comments.map(comment => {
                   comment.replyFocus = comment.id === data.id;
                   return comment;
-                })
+                }),
               });
               e.preventDefault();
             }}>回复</a>
@@ -198,20 +200,20 @@ class Comments extends Component {
                 comments: this.state.comments.map(comment => {
                   comment.replyFocus = false;
                   return comment;
-                })
-              })
+                }),
+              });
             }} />
             : ''
         }
       </div>
-    )
+    );
   }
 
   render() {
-    let comments = [];
-    for (let cmt of this.state.comments) {
+    const comments = [];
+    for (const cmt of this.state.comments) {
       comments.push(this.renderComment(cmt));
-      for (let chl of cmt.children) {
+      for (const chl of cmt.children) {
         comments.push(this.renderComment(chl));
       }
     }
@@ -227,7 +229,7 @@ class Comments extends Component {
           {comments}
           {!this.state.ready ? Loader : this.state.error ? <Unreachable retry={this.state.error} /> : ''}
         </div>
-        <div id="comment-ending"/>
+        <div id="comment-ending" />
         {
           this.state.end ?
             <div className="info eef page-control">
@@ -240,4 +242,4 @@ class Comments extends Component {
   }
 }
 
-export default Comments
+export default Comments;

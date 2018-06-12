@@ -1,11 +1,13 @@
-import React, { Component } from 'react'
-import '../styles/App.css'
-import '../styles/themes/orange-cheers.css'
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import Nav from "./Nav"
-import NotFound from './404'
-import Home from './Home'
-import Post from './Post'
+import React, { Component } from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+import '../styles/App.css';
+import '../styles/themes/orange-cheers.css';
+
+import Home from './Home';
+import Nav from './Nav';
+import NotFound from './NotFound';
+import Post from './Post';
 
 class App extends Component {
 
@@ -21,22 +23,26 @@ class App extends Component {
   setTyped(text) {
     if (this.nav.current) this.nav.current.setTyped(text);
   }
+
   startProgress() {
     if (this.nav.current) this.nav.current.startProgress();
   }
+
   joinProgress() {
     if (this.nav.current) this.nav.current.joinProgress();
   }
+
   doneProgress() {
     if (this.nav.current) this.nav.current.doneProgress();
   }
+
   renderComponent(Comp, props) {
     return <Comp {...props}
                  setTyped={this.setTyped}
                  startProgress={this.startProgress}
                  joinProgress={this.joinProgress}
                  doneProgress={this.doneProgress}
-    />
+    />;
   }
 
   render() {

@@ -1,0 +1,117 @@
+{
+  "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier"],
+  "linterOptions": {
+    "exclude": [
+      "src/config.js",
+      "node_modules/**/*.ts"
+    ]
+  },
+  "rules": {
+    "curly": [true, "ignore-same-line"],
+    "object-literal-sort-keys": false,
+    "quotemark": [true, "single", "jsx-double", "avoid-escape", "avoid-template"],
+    "semicolon": [true, "always", "ignore-interfaces", "ignore-bound-class-methods"],
+    "no-console": false,
+    "eofline": true,
+    "indent": [true, "spaces", 2],
+    "linebreak-style": [true, "LF"],
+    "no-require-imports": true,
+    "prefer-const": true,
+    "trailing-comma": [true, {"multiline": "always", "singleline": "never", "esSpecCompliant": true}],
+    "no-consecutive-blank-lines": true,
+    "no-irregular-whitespace": true,
+    "no-trailing-whitespace": true,
+    "no-unnecessary-callback-wrapper": true,
+    "object-literal-key-quotes": [true, "as-needed"],
+    "one-line": [true, "check-catch", "check-finally", "check-else", "check-open-brace", "check-whitespace"],
+    "ordered-imports": [
+      true,
+      {
+        "grouped-imports": true,
+        "import-sources-order": "lowercase-last",
+        "named-imports-order": "lowercase-first",
+        "module-source-path": "full"
+
+      }
+    ],
+    "prefer-while": true,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always",
+        "method": "never",
+        "constructor": "never"
+      }
+    ],
+    "space-within-parens": 0,
+    "switch-final-break": true,
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-module",
+      "check-separator",
+      "check-rest-spread",
+      "check-type",
+      "check-typecast",
+      "check-type-operator"
+    ]
+  },
+  "jsRules": {
+    "curly": [true, "ignore-same-line"],
+    "object-literal-sort-keys": false,
+    "quotemark": [true, "single", "jsx-double", "avoid-escape", "avoid-template"],
+    "semicolon": [true, "always", "ignore-interfaces", "ignore-bound-class-methods"],
+    "no-console": false,
+    "eofline": true,
+    "indent": [true, "spaces", 2],
+    "linebreak-style": [true, "LF"],
+    "no-require-imports": true,
+    "prefer-const": true,
+    "trailing-comma": [true, {"multiline": "always", "singleline": "never", "esSpecCompliant": true}],
+    "no-consecutive-blank-lines": true,
+    "no-irregular-whitespace": true,
+    "no-trailing-whitespace": true,
+    "no-unnecessary-callback-wrapper": true,
+    "object-literal-key-quotes": [true, "as-needed"],
+    "one-line": [true, "check-catch", "check-finally", "check-else", "check-open-brace", "check-whitespace"],
+    "ordered-imports": [
+      true,
+      {
+        "grouped-imports": true,
+        "import-sources-order": "lowercase-last",
+        "named-imports-order": "lowercase-first",
+        "module-source-path": "full"
+
+      }
+    ],
+    "prefer-while": true,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always",
+        "method": "never",
+        "constructor": "never"
+      }
+    ],
+    "space-within-parens": 0,
+    "switch-final-break": true,
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-module",
+      "check-separator",
+      "check-rest-spread",
+      "check-type",
+      "check-typecast",
+      "check-type-operator"
+    ]
+  }
+}
