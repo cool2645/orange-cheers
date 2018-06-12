@@ -471,7 +471,7 @@ class Post extends Component {
         return <NotFound />
       }
       return (
-        <div className="container page">
+        <div className="container page post">
           <div className="page-container">
             {this.renderPost(this.state.post, false)}
           </div>

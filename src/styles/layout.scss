@@ -14,9 +14,6 @@ body {
 
 .page {
   padding-top: 2.15rem;
-  @media (max-width: 675px) {
-    padding-top: 0;
-  }
 }
 
 .page-control {
@@ -62,7 +59,7 @@ body {
   }
 }
 
-.center,.container {
+.center, .container {
   display: block;
   margin-left: auto;
   margin-right: auto;

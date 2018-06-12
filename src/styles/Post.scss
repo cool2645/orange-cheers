@@ -37,3 +37,9 @@
   .content {
   }
 }
+
+.post {
+  @media (max-width: 675px) {
+    padding-top: 0;
+  }
+}
