@@ -44,6 +44,8 @@ class Post extends Component {
     this.fetchTagData = this.fetchTagData.bind(this);
     this.fetchCommentCount = this.fetchCommentCount.bind(this);
     this.fetchCommentCounts = this.fetchCommentCounts.bind(this);
+    this.buildAndUpdateQuery = this.buildAndUpdateQuery.bind(this);
+    this.buildAndUpdateQuery();
   }
 
   componentDidMount() {
@@ -76,6 +78,18 @@ class Post extends Component {
     this.props.startProgress();
     this.setState(initialState);
     this.setState({ params: nextProps.match.params, page: page }, this.update);
+  }
+
+  buildAndUpdateQuery() {
+    let params = {
+      per_page: config.perPage,
+    };
+    if (this.state.category) params.categories = this.state.category;
+    if (this.state.tag) params.tags = this.state.tag;
+    if (this.state.params.search) params.search = this.state.params.search;
+    let query = urlEncode(params);
+    this.query = { key: query, params: params };
+    return Object.assign({}, params);
   }
 
   update() {
@@ -171,67 +185,76 @@ class Post extends Component {
     let page = Math.floor(this.query.offset / config.perPage) + 1;
     let j = this.query.offset % config.perPage;
 
-    // Need to look at previous page
-    if (j === 0) {
-      // No previous page, no need any more
-      if (page === 1) siblings.prev = null;
-      // Try previous page
-      else {
-        let prevPage = this.indexes[this.query.key].posts[page - 1];
-        if (prevPage && prevPage.length) {
-          siblings.prev = this.posts[prevPage[prevPage.length - 1]]
+    if (this.indexes[this.query.key]) {
+      // Need to look at previous page
+      if (j === 0) {
+        // No previous page, no need any more
+        if (page === 1) siblings.prev = null;
+        // Try previous page
+        else {
+          let prevPage = this.indexes[this.query.key].posts[page - 1];
+          if (prevPage && prevPage.length) {
+            siblings.prev = this.posts[prevPage[prevPage.length - 1].slug]
+          }
         }
       }
-    }
-    // Need to look at next page
-    if (j === config.perPage - 1) {
-      // No next page, no need any more
-      if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
-      // Try next page
-      else {
-        let nextPage = this.indexes[this.query.key].posts[page + 1];
-        if (nextPage && nextPage.length) {
-          siblings.next = this.posts[nextPage[0]]
+      // Need to look at next page
+      if (j === config.perPage - 1) {
+        // No next page, no need any more
+        if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
+        // Try next page
+        else {
+          let nextPage = this.indexes[this.query.key].posts[page + 1];
+          if (nextPage && nextPage.length) {
+            siblings.next = this.posts[nextPage[0].slug]
+          }
         }
       }
-    }
-    // Look at current page
-    let currPage = this.indexes[this.query.key].posts[page];
-    if (currPage && currPage.length) {
-      siblings.prev = j > 0 ? this.posts[currPage[j - 1]] : siblings.prev;
-      siblings.next = j < currPage.length - 1 ? this.posts[currPage[j + 1]] : siblings.next;
+      // Look at current page
+      let currPage = this.indexes[this.query.key].posts[page];
+      if (currPage && currPage.length) {
+        siblings.prev = j > 0 ? this.posts[currPage[j - 1].slug] : siblings.prev;
+        siblings.next = j < currPage.length - 1 ? this.posts[currPage[j + 1].slug] : siblings.next;
+      }
     }
 
     if (siblings.prev === undefined) {
       let params = Object.assign({}, this.query.params);
       params.per_page = 1;
-      params.offset = siblings.prevOffset;
+      params.after = post.date;
+      params.order = 'asc';
       honoka.get('/posts', {
         data: params
       })
         .then(data => {
-          if (data.length === 0) siblings.prev = null;
+          if (!data.length) siblings.prev = null;
           else {
             this.posts[data[0].slug] = data[0];
             siblings.prev = data[0];
           }
           this.setState({ siblings: siblings });
         })
+        .catch(err => {
+          console.log(err)
+        })
     }
     if (siblings.next === undefined) {
       let params = Object.assign({}, this.query.params);
       params.per_page = 1;
-      params.offset = siblings.nextOffset;
+      params.before = post.date;
       honoka.get('/posts', {
         data: params
       })
         .then(data => {
-          if (data.length === 0) siblings.next = null;
+          if (!data.length) siblings.next = null;
           else {
             this.posts[data[0].slug] = data[0];
             siblings.next = data[0];
           }
           this.setState({ siblings: siblings });
+        })
+        .catch(err => {
+          console.log(err)
         })
     }
     this.setState({ siblings: siblings });
@@ -239,15 +262,9 @@ class Post extends Component {
   }
 
   fetchPosts(page) {
-    let params = {
-      per_page: config.perPage,
-    };
-    if (this.state.category) params.categories = this.state.category;
-    if (this.state.tag) params.tags = this.state.tag;
-    if (this.state.params.search) params.search = this.state.params.search;
-    let query = urlEncode(params);
+    let params = this.buildAndUpdateQuery();
+    let query = this.query.key;
     if (this.indexes[query] && this.indexes[query].posts[page]) {
-      this.query = { key: query, params: params };
       let data = this.indexes[query].posts[page].map(index => {
         let post = this.posts[index.slug];
         post.offset = index.offset;
@@ -274,7 +291,6 @@ class Post extends Component {
             this.indexes[query].posts[page] = data.map(post => {
               return { slug: post.slug, offset: post.offset }
             });
-            this.query = { key: query, params: params };
             this.setState({
               posts: data,
             }, () => this.fetchCommentCounts(data));
@@ -470,21 +486,23 @@ class Post extends Component {
           this.state.siblings ?
             <div className="info eef sibling page-control">
               {
-                this.state.siblings.prev === null ?
-                  <span>已经是第一篇了</span> : this.state.siblings.prev ?
-                  <span>
-                    上一篇：<Link to={`/${this.state.siblings.prev.slug}`}
-                              onClick={() => this.query.offset = this.state.siblings.prevOffset}
-                              dangerouslySetInnerHTML={{ __html: this.state.siblings.prev.title.rendered }} />
+                // next on the list (i.e. older published)
+                this.state.siblings.next === null ?
+                  <span>已经是第一篇了</span> : this.state.siblings.next ?
+                  <span>上一篇：<Link to={`/${this.state.siblings.next.slug}`}
+                                  onClick={() => this.query.offset = this.state.siblings.nextOffset}
+                                  dangerouslySetInnerHTML={{ __html: this.state.siblings.next.title.rendered }} />
                   </span> :
                   <span>上一篇：加载中 {InlineLoader} </span>
               }
               {
-                this.state.siblings.next === null ?
-                  <span>已经是最后一篇了</span> : this.state.siblings.next ?
-                  <span>下一篇：<Link to={`/${this.state.siblings.next.slug}`}
-                                  onClick={() => this.query.offset = this.state.siblings.nextOffset}
-                                  dangerouslySetInnerHTML={{ __html: this.state.siblings.next.title.rendered }} />
+                // previous on the list (i.e. newer published)
+                this.state.siblings.prev === null ?
+                  <span>已经是最后一篇了</span> : this.state.siblings.prev ?
+                  <span>
+                    下一篇：<Link to={`/${this.state.siblings.prev.slug}`}
+                              onClick={() => this.query.offset = this.state.siblings.prevOffset}
+                              dangerouslySetInnerHTML={{ __html: this.state.siblings.prev.title.rendered }} />
                   </span> :
                   <span>下一篇：加载中 {InlineLoader} </span>
               }
