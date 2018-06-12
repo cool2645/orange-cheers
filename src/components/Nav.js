@@ -170,9 +170,11 @@ class Nav extends Component {
     let inb = document.getElementById('inb');
     this._progress = 100;
     clearInterval(this._progressing);
-    this._progressing = null;
     inb.style.width = '100%';
-    setTimeout(() => inb.style.height = '0', 500);
+    setTimeout(() => {
+      inb.style.height = '0';
+      this._progressing = null;
+    }, 500);
   }
 
   startProgress() {

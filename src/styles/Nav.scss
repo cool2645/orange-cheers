@@ -200,12 +200,16 @@
   z-index: 999 !important;
   width: 14.375rem !important;
   position: fixed !important;
-  top: 0 !important;
-  height: 100% !important;
 }
 .out-sidebar-content {
-  position: static !important;
   overflow: auto !important;
+  position: static !important;
+}
+
+.fix-mobile {
+  top: 0 !important;
+  height: 100% !important;
+  bottom: auto !important;
 }
 
 .sidebar {
