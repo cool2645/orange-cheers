@@ -7,13 +7,13 @@ const FullPageLoader = (
     <div className="lds-css ng-scope">
       <div className="lds-pacman">
         <div>
-          <div></div>
-          <div></div>
-          <div></div>
+          <div />
+          <div />
+          <div />
         </div>
         <div>
-          <div></div>
-          <div></div>
+          <div />
+          <div />
         </div>
       </div>
     </div>
@@ -47,7 +47,7 @@ const ClassicalLoader = (
 const InlineLoader = (
   <div className="inline-loader">
     <div className="loader-inner ball-clip-rotate">
-      <div></div>
+      <div />
     </div>
   </div>
 );

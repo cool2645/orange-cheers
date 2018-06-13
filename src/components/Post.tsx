@@ -1,6 +1,7 @@
 import honoka from 'honoka';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import ReactRouter, { Link } from 'react-router-dom';
+import * as WP from 'wordpress';
 
 import { post as config } from '../config';
 import '../styles/Post.css';
@@ -14,7 +15,71 @@ import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import NotFound from './NotFound';
 import Unreachable from './Unreachable';
 
-const initialState = {
+interface IQueryParams {
+  per_page: number;
+  categories?: number[];
+  tags?: number[];
+  search?: string;
+
+  page?: number;
+
+  after?: string;
+  before?: string;
+  order?: string;
+}
+
+interface IQuery {
+  key: string;
+  params: IQueryParams;
+  offset: number;
+}
+
+interface IIndex {
+  posts: { [key: string]: WP.Post[]; };
+  totalPage: number;
+}
+
+interface ISiblings {
+  prev: undefined | null | WP.Post;
+  prevOffset: number;
+  next: undefined | null | WP.Post;
+  nextOffset: number;
+}
+
+interface IParams {
+  page?: number;
+  slug?: string;
+  category?: string;
+  tag?: string;
+  search?: string;
+}
+
+interface IPostProps {
+  match: ReactRouter.match<IParams>;
+
+  startProgress(): void;
+
+  joinProgress(): void;
+
+  doneProgress(): void;
+
+  setTyped(text: string): void;
+}
+
+interface IPostState {
+  params: IParams;
+  page: number;
+  totalPage: number;
+  ready: boolean;
+  post: null | WP.Post;
+  posts: null | WP.Post[];
+  category: null | number[];
+  tag: null | number[];
+  siblings: null | ISiblings;
+  error: (() => void) | null;
+}
+
+const initialState: IPostState = {
   ready: false,
   post: null,
   posts: null,
@@ -22,17 +87,25 @@ const initialState = {
   totalPage: 0,
   category: null,
   tag: null,
-  params: null,
+  params: {},
   siblings: null,
   error: null,
 };
 
-class Post extends Component {
-  constructor(props) {
+class Post extends Component<IPostProps, IPostState> {
+
+  private categories: { [key: number]: WP.Category; };
+  private tags: { [key: number]: WP.Tag; };
+  private posts: { [key: string]: WP.Post; };
+  private indexes: { [key: string]: IIndex; };
+  private query: IQuery;
+
+  constructor(props: IPostProps) {
     super(props);
-    this.state = initialState;
-    this.state.params = props.match.params;
-    this.state.page = +props.match.params.page || 1;
+    const state = initialState;
+    state.params = props.match.params;
+    state.page = +props.match.params.page || 1;
+    this.state = state;
     this.categories = {};
     this.tags = {};
     this.posts = {};
@@ -50,7 +123,7 @@ class Post extends Component {
     this.buildAndUpdateQuery();
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     this.props.startProgress();
     document.onreadystatechange = () => {
       if (document.readyState === 'complete') {
@@ -61,16 +134,8 @@ class Post extends Component {
     this.update();
   }
 
-  onReady(error) {
-    if (error === null) this.setState({ ready: true, error: null }, window.initMonacoEditor);
-    else if (typeof error === 'function') this.setState({ ready: true, error: error });
-    else this.setState({ ready: true });
-    if (document.readyState === 'complete') this.props.doneProgress();
-    else this.props.joinProgress();
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const page = +nextProps.match.params.page || 1;
+  public componentWillReceiveProps(nextProps: IPostProps) {
+    const page: number = +nextProps.match.params.page || 1;
     if (nextProps.match.params.slug === this.state.params.slug &&
       page === this.state.page &&
       nextProps.match.params.category === this.state.params.category &&
@@ -79,28 +144,36 @@ class Post extends Component {
     ) return;
     this.props.startProgress();
     this.setState(initialState);
-    this.setState({ params: nextProps.match.params, page: page }, this.update);
+    this.setState({ params: nextProps.match.params, page }, this.update);
   }
 
-  buildAndUpdateQuery() {
-    const params = {
+  private onReady(error: any): void {
+    if (error === null) this.setState({ ready: true, error: null }, (window as any).initMonacoEditor);
+    else if (typeof error === 'function') this.setState({ ready: true, error });
+    else this.setState({ ready: true });
+    if (document.readyState === 'complete') this.props.doneProgress();
+    else this.props.joinProgress();
+  }
+
+  private buildAndUpdateQuery(): IQueryParams {
+    const params: IQueryParams = {
       per_page: config.perPage,
     };
     if (this.state.category) params.categories = this.state.category;
     if (this.state.tag) params.tags = this.state.tag;
     if (this.state.params.search) params.search = this.state.params.search;
     const query = urlEncode(params);
-    this.query = { key: query, params: params };
+    this.query = { key: query, params, offset: 0 };
     return Object.assign({}, params);
   }
 
-  update() {
+  private update(): void {
     this.challengeParams()
       .then(() => this.fetchData());
   }
 
-  challengeParams() {
-    let promise = new Promise((resolve, reject) => {
+  private challengeParams(): Promise<void> {
+    let promise = new Promise<void>((resolve, reject) => {
       resolve();
     });
     if (this.state.params.slug) return promise;
@@ -139,34 +212,34 @@ class Post extends Component {
     return promise;
   }
 
-  fetchData() {
+  private fetchData() {
     if (this.state.params.slug) {
       this.setState({ ready: false, error: null }, () =>
         this.fetchPostData(this.state.params.slug)
           .then(post => this.fetchCategoryData(post.categories, post))
-          .then(post => this.fetchTagData(post.tags, post))
-          .then(post => this.getSiblings(post))
+          .then(post => this.fetchTagData((post as WP.Post).tags, post))
+          .then(post => this.getSiblings(post as WP.Post))
           .then(() => {
             this.onReady(null);
           })
           .catch(err => {
             console.log(err);
-            if (err !== '404') this.onReady(this.fetchData);
-          }),
+            if (err.message !== '404') this.onReady(this.fetchData);
+          })
       );
     } else {
       this.setState({ ready: false, error: null }, () =>
         this.fetchPosts(this.state.page)
           .then(posts => {
-            let categories = [];
-            posts.forEach(post => {
+            let categories: number[] = [];
+            posts.forEach((post: WP.Post) => {
               categories = categories.concat(post.categories);
             });
             return this.fetchCategoryData(categories, posts);
           })
           .then(posts => {
-            let tags = [];
-            posts.forEach(post => {
+            let tags: number[] = [];
+            (posts as WP.Post[]).forEach((post: WP.Post) => {
               tags = tags.concat(post.tags);
             });
             return this.fetchTagData(tags, posts);
@@ -177,15 +250,15 @@ class Post extends Component {
           })
           .catch(err => {
             console.log(err);
-            if (err !== '404') this.onReady(this.fetchData);
-          }),
+            if (err.message !== '404') this.onReady(this.fetchData);
+          })
       );
     }
   }
 
-  getSiblings(post) {
+  private getSiblings(post: WP.Post): WP.Post {
     if (!this.query) return post;
-    const siblings = {
+    const siblings: ISiblings = {
       prev: undefined,
       prevOffset: this.query.offset - 1,
       next: undefined,
@@ -195,11 +268,11 @@ class Post extends Component {
     const j = this.query.offset % config.perPage;
 
     if (this.indexes[this.query.key]) {
-      // Need to look at previous page
+      // need to look at previous page
       if (j === 0) {
-        // No previous page, no need any more
+        // no previous page, no need any more
         if (page === 1) siblings.prev = null;
-        // Try previous page
+        // try previous page
         else {
           const prevPage = this.indexes[this.query.key].posts[page - 1];
           if (prevPage && prevPage.length) {
@@ -207,11 +280,11 @@ class Post extends Component {
           }
         }
       }
-      // Need to look at next page
+      // need to look at next page
       if (j === config.perPage - 1) {
-        // No next page, no need any more
+        // no next page, no need any more
         if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
-        // Try next page
+        // try next page
         else {
           const nextPage = this.indexes[this.query.key].posts[page + 1];
           if (nextPage && nextPage.length) {
@@ -219,7 +292,7 @@ class Post extends Component {
           }
         }
       }
-      // Look at current page
+      // look at current page
       const currPage = this.indexes[this.query.key].posts[page];
       if (currPage && currPage.length) {
         siblings.prev = j > 0 ? this.posts[currPage[j - 1].slug] : siblings.prev;
@@ -228,7 +301,7 @@ class Post extends Component {
     }
 
     if (siblings.prev === undefined) {
-      const params = Object.assign({}, this.query.params);
+      const params: IQueryParams = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.after = post.date;
       params.order = 'asc';
@@ -241,7 +314,7 @@ class Post extends Component {
             this.posts[data[0].slug] = data[0];
             siblings.prev = data[0];
           }
-          this.setState({ siblings: siblings });
+          this.setState({ siblings });
         })
         .catch(err => {
           console.log(err);
@@ -260,21 +333,21 @@ class Post extends Component {
             this.posts[data[0].slug] = data[0];
             siblings.next = data[0];
           }
-          this.setState({ siblings: siblings });
+          this.setState({ siblings });
         })
         .catch(err => {
           console.log(err);
         });
     }
-    this.setState({ siblings: siblings });
+    this.setState({ siblings });
     return post;
   }
 
-  fetchPosts(page) {
+  private fetchPosts(page: number): Promise<WP.Post[]> {
     const params = this.buildAndUpdateQuery();
     const query = this.query.key;
     if (this.indexes[query] && this.indexes[query].posts[page]) {
-      const data = this.indexes[query].posts[page].map(index => {
+      const data = this.indexes[query].posts[page].map((index: WP.Post) => {
         const post = this.posts[index.slug];
         post.offset = index.offset;
         return post;
@@ -287,19 +360,18 @@ class Post extends Component {
     params.page = page;
     return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
       .then(response => {
-        const totalPage = response.headers.get('x-wp-totalpages');
-        this.setState({ totalPage: +totalPage });
+        const totalPage = +response.headers.get('x-wp-totalpages');
+        this.setState({ totalPage });
         return response.json()
           .then(data => {
-            data.forEach((post, i) => {
+            data.forEach((post: WP.Post, i: number) => {
               this.posts[post.slug] = post;
               post.offset = (page - 1) * config.perPage + i;
             });
-            if (!this.indexes[query]) this.indexes[query] = { posts: {} };
+            if (!this.indexes[query]) this.indexes[query] = { posts: {}, totalPage: 0 };
             this.indexes[query].totalPage = totalPage;
-            this.indexes[query].posts[page] = data.map(post => {
-              return { slug: post.slug, offset: post.offset };
-            });
+            this.indexes[query].posts[page] = data.map((post: WP.Post) =>
+              ({ slug: post.slug, offset: post.offset }));
             this.setState({
               posts: data,
             }, () => this.fetchCommentCounts(data));
@@ -308,16 +380,16 @@ class Post extends Component {
       });
   }
 
-  fetchPostData(slug) {
-    if (this.posts[this.state.params.slug]) {
-      this.setState({ post: this.posts[this.state.params.slug] });
+  private fetchPostData(slug: string): Promise<WP.Post> {
+    if (this.posts[slug]) {
+      this.setState({ post: this.posts[slug] });
       return new Promise(resolve => {
-        resolve(this.posts[this.state.params.slug]);
+        resolve(this.posts[slug]);
       });
     }
     return honoka.get('/posts', {
       data: {
-        slug: slug,
+        slug,
       },
     })
       .then(data => {
@@ -330,46 +402,44 @@ class Post extends Component {
       })
       .then(post => {
         this.posts[post.slug] = post;
-        if (this.state.params.slug === post.slug) this.setState({ post: post });
+        if (this.state.params.slug === post.slug) this.setState({ post });
         this.fetchCommentCount(post);
         return post;
       });
   }
 
-  fetchCommentCounts(posts) {
+  private fetchCommentCounts(posts: WP.Post[]): Promise<WP.Post[]> {
     let promise = new Promise((resolve, reject) => {
       resolve();
     });
     for (const post of posts) {
       promise = promise.then(() => this.fetchCommentCount(post));
     }
-    return promise.then(() => {
-      return posts;
-    });
+    return promise.then(() =>
+      posts);
   }
 
-  fetchCommentCount(post) {
+  private fetchCommentCount(post: WP.Post): Promise<WP.Post> {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       post: post.id,
       per_page: 1,
     }))
       .then(response => {
-        const total = response.headers.get('x-wp-total');
-        post.commentCount = +total;
+        const total = +response.headers.get('x-wp-total');
+        post.commentCount = total;
         this.posts[post.slug].commentCount = total;
-        if (this.state.post !== null && this.state.post.slug === post.slug) this.setState({ post: post });
+        if (this.state.post !== null && this.state.post.slug === post.slug) this.setState({ post });
         else if (this.state.posts !== null) {
           this.setState({
-            posts: this.state.posts.map(p => {
-              return p.id === post.id ? post : p;
-            }),
+            posts: this.state.posts.map(p =>
+              p.id === post.id ? post : p),
           });
         }
         return post;
       });
   }
 
-  fetchCategoryData(cats, o) {
+  private fetchCategoryData(cats: number[], o: WP.Post | WP.Post[]): WP.Post | WP.Post[] | Promise<WP.Post | WP.Post[]> {
     let flag = true;
     for (const cat of cats) {
       if (!this.categories[cat]) {
@@ -385,14 +455,14 @@ class Post extends Component {
       },
     })
       .then(data => {
-        data.forEach(cat => {
+        data.forEach((cat: WP.Category) => {
           this.categories[cat.id] = cat;
         });
         return o;
       });
   }
 
-  fetchTagData(tags, o) {
+  private fetchTagData(tags: number[], o: WP.Post | WP.Post[]): WP.Post | WP.Post[] | Promise<WP.Post | WP.Post[]> {
     if (tags.length === 0) {
       return o;
     }
@@ -411,26 +481,22 @@ class Post extends Component {
       },
     })
       .then(data => {
-        data.forEach(tag => {
+        data.forEach((tag: WP.Tag) => {
           this.tags[tag.id] = tag;
         });
         return o;
       });
   }
 
-  renderPost(post, fold) {
-    const categories = post.categories.filter(cate => {
-      return this.categories[cate];
-    }).map(cate => {
-      return <Link key={this.categories[cate].slug} className="category-link"
-                   to={`/category/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>;
-    });
-    const tags = post.tags.filter(tag => {
-      return this.tags[tag];
-    }).map(tag => {
-      return <Link key={this.tags[tag].slug} className="tag-link"
-                   to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>;
-    });
+  private renderPost(post: WP.Post, fold: boolean) {
+    const categories = post.categories.filter(cate =>
+      this.categories[cate]).map(cate =>
+      <Link key={this.categories[cate].slug} className="category-link"
+            to={`/category/${this.categories[cate].slug}`}>{this.categories[cate].name}</Link>);
+    const tags = post.tags.filter(tag =>
+      this.tags[tag]).map(tag =>
+      <Link key={this.tags[tag].slug} className="tag-link"
+            to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>);
     let commentCount;
     if (post.commentCount === undefined) {
       commentCount =
@@ -448,10 +514,19 @@ class Post extends Component {
       date.push(<span key="modified"
                       className="fas fa-pencil-alt">最后更新于 {human(post.modified_gmt + '.000Z')}</span>);
     }
+    const setPostOffset = () => {
+      if (post.offset) this.query.offset = post.offset;
+    };
+    const setNextOffset = () => {
+      if (this.state.siblings) this.query.offset = this.state.siblings.nextOffset;
+    };
+    const setPrevOffset = () => {
+      if (this.state.siblings) this.query.offset = this.state.siblings.prevOffset;
+    };
     return fold ? (
       <div className="post">
         <Link className="post-title-link" to={`/${post.slug}`}
-              onClick={() => this.query.offset = post.offset}>
+              onClick={setPostOffset}>
           <h1 className="title fee page-control" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
         </Link>
         <div className="content page-control">
@@ -500,7 +575,7 @@ class Post extends Component {
                 this.state.siblings.next === null ?
                   <span>已经是第一篇了</span> : this.state.siblings.next ?
                   <span>上一篇：<Link to={`/${this.state.siblings.next.slug}`}
-                                  onClick={() => this.query.offset = this.state.siblings.nextOffset}
+                                  onClick={setNextOffset}
                                   dangerouslySetInnerHTML={{ __html: this.state.siblings.next.title.rendered }} />
                   </span> :
                   <span>上一篇：加载中 {InlineLoader} </span>
@@ -511,7 +586,7 @@ class Post extends Component {
                   <span>已经是最后一篇了</span> : this.state.siblings.prev ?
                   <span>
                     下一篇：<Link to={`/${this.state.siblings.prev.slug}`}
-                              onClick={() => this.query.offset = this.state.siblings.prevOffset}
+                              onClick={setPrevOffset}
                               dangerouslySetInnerHTML={{ __html: this.state.siblings.prev.title.rendered }} />
                   </span> :
                   <span>下一篇：加载中 {InlineLoader} </span>
@@ -522,7 +597,7 @@ class Post extends Component {
     );
   }
 
-  renderPagination() {
+  private renderPagination() {
     if (this.state.totalPage === 1) return '';
     let slug = '';
     if (this.state.params.category) slug += `/category/${this.state.params.category}`;
@@ -588,7 +663,7 @@ class Post extends Component {
     );
   }
 
-  render() {
+  public render() {
     if (!this.state.ready) {
       return (
         <div className="container page">
@@ -624,11 +699,10 @@ class Post extends Component {
     return (
       <div className="container page">
         {
-          this.state.posts.map(post => {
-            return <div key={post.id} className="page-container">
+          this.state.posts.map(post =>
+            <div key={post.id} className="page-container">
               {this.renderPost(post, true)}
-            </div>;
-          })
+            </div>)
         }
         {this.renderPagination()}
       </div>

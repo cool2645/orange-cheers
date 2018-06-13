@@ -1,6 +1,6 @@
 import honoka from 'honoka';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import * as WP from 'wordpress';
 
 import { comment as config } from '../config';
 import '../styles/Comments.css';
@@ -11,33 +11,39 @@ import urlEncode from '../utils/url';
 import { ClassicalLoader as Loader } from './Loader';
 import Unreachable from './Unreachable';
 
-const getElementTop = function (element) {
+const getElementTop = (element: HTMLElement | null): number => {
+  if (element === null) return 0;
   let actualTop = element.offsetTop;
   let current = element.offsetParent;
   while (current !== null) {
-    actualTop += current.offsetTop;
-    current = current.offsetParent;
+    actualTop += (current as HTMLElement).offsetTop;
+    current = (current as HTMLElement).offsetParent;
   }
   return actualTop;
 };
 
-class CommentSender extends Component {
-  render() {
+interface ICommentSenderProps {
+  replyId?: number; // TODO: send reply
+  cancel?(f: React.MouseEvent<HTMLInputElement>): void;
+}
+
+class CommentSender extends Component<ICommentSenderProps> {
+  public render() {
     return (
       <div className="comment-box">
         <div className="comment-send">
-          <textarea name="text" id="textarea" cols="100%" rows="10" tabIndex="4"
-                    placeholder="把你变成小鸟的点心 (・8・)"></textarea>
+          <textarea name="text" id="textarea" rows={10} tabIndex={4}
+                    placeholder="把你变成小鸟的点心 (・8・)" />
           <div className="author-info nf">
-            <input type="text" name="author" id="author" value="" placeholder="昵称" size="22" tabIndex="1"
+            <input type="text" name="author" id="author" value="" placeholder="昵称" size={22} tabIndex={1}
                    aria-required="true" />
-            <input type="text" name="mail" id="mail" value="" placeholder="邮箱" size="22" tabIndex="2" />
-            <input type="text" name="url" id="url" value="" placeholder="网址" size="22" tabIndex="3" />
+            <input type="text" name="mail" id="mail" value="" placeholder="邮箱" size={22} tabIndex={2} />
+            <input type="text" name="url" id="url" value="" placeholder="网址" size={22} tabIndex={3} />
             {this.props.replyId ?
-              <input name="submit" className="btn reply-btn" type="button" tabIndex="5" value="取消"
+              <input name="submit" className="btn reply-btn" type="button" tabIndex={5} value="取消"
                      onClick={this.props.cancel} /> : ''
             }
-            <input name="submit" className={this.props.replyId ? 'btn reply-btn' : 'btn'} type="button" tabIndex="5"
+            <input name="submit" className={this.props.replyId ? 'btn reply-btn' : 'btn'} type="button" tabIndex={5}
                    value="发射=A=" />
           </div>
         </div>
@@ -46,9 +52,22 @@ class CommentSender extends Component {
   }
 }
 
-class Comments extends Component {
-  constructor() {
-    super();
+interface ICommentsProps {
+  id: number;
+}
+
+interface ICommentsStates {
+  ready: boolean;
+  comments: WP.Comment[];
+  replyFocus: boolean;
+  page: number;
+  end: boolean;
+  error: (() => void) | null;
+}
+
+class Comments extends Component<ICommentsProps, ICommentsStates> {
+  constructor(props: ICommentsProps) {
+    super(props);
     this.state = {
       ready: true,
       comments: [],
@@ -64,69 +83,67 @@ class Comments extends Component {
     this.fetchReply = this.fetchReply.bind(this);
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     this.fetchMoreComments();
     window.onscroll = this.update;
   }
 
-  componentWillUnmount() {
+  public componentWillUnmount() {
     window.onscroll = null;
   }
 
-  fetchReply(id, page, totalPage, comment) {
+  private fetchReply(id: number, page: number, totalPage: number, comment: WP.Comment): Promise<object> {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
-      page: page,
+      page,
       parent: id,
     })).then(response => {
       const total = response.headers.get('x-wp-totalpages');
-      totalPage = +total;
+      totalPage = total !== null ? +total : 1;
       return response.json();
     }).then(data => {
       comment.children = [...comment.children, ...data];
       page++;
       if (page <= totalPage) {
         this.setState({
-          comments: [...this.state.comments.map(c => {
-            return c.id !== comment.id ? c : comment;
-          })],
+          comments: [...this.state.comments.map(c =>
+            c.id !== comment.id ? c : comment)],
         });
         return this.fetchReply(id, page, totalPage, comment);
       }
+      return {};
     });
   }
 
-  fetchReplies(comments) {
-    let promise = new Promise((resolve, reject) => {
+  private fetchReplies(comments: WP.Comment[]): Promise<WP.Comment[]> {
+    let promise = new Promise<void>((resolve, reject) => {
       resolve();
     });
     for (const comment of comments) {
       comment.children = [];
       promise = promise.then(() => this.fetchReply(comment.id, 1, 1, comment))
-        .then(() => {
+        .then((o: object) => {
           this.setState({
-            comments: [...this.state.comments.map(c => {
-              return c.id !== comment.id ? c : comment;
-            })],
+            comments: [...this.state.comments.map(c =>
+              c.id !== comment.id ? c : comment)],
           });
         });
     }
-    return promise.then(() => {
-      return comments;
-    });
+    return promise.then(() =>
+      comments);
   }
 
-  fetchComments(id, page) {
+  private fetchComments(id: number, page: number) {
     return honoka.get('/comments', {
       data: {
         post: id,
         parent: 0,
         per_page: config.perPage,
-        page: page,
+        page,
       },
     })
       .then(data => {
         this.setState({
-          comments: [...this.state.comments, ...data.map(comment => {
+          comments: [...this.state.comments, ...data.map((comment: WP.Comment) => {
             comment.children = [];
             return comment;
           })],
@@ -135,21 +152,21 @@ class Comments extends Component {
       });
   }
 
-  update() {
+  private update() {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('comment-ending'));
-    //let scrollHeight = document.body.clientHeight;
-    const windowHeight = window.visualViewport.height || window.innerHeight + 100;
+    // let scrollHeight = document.body.clientHeight;
+    const windowHeight = (window as any).visualViewport ? (window as any).visualViewport.height : window.innerHeight + 100;
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
   }
 
-  fetchMoreComments() {
+  private fetchMoreComments() {
     if (!this.state.ready) return;
     this.setState({ ready: false, error: null }, () =>
       this.fetchComments(this.props.id, this.state.page + 1)
         .then((data) => {
           const end = data.length === 0;
-          this.setState({ ready: true, page: this.state.page + 1, end: end });
+          this.setState({ ready: true, page: this.state.page + 1, end });
           this.update();
           return data;
         })
@@ -160,12 +177,31 @@ class Comments extends Component {
         .then(data => this.fetchReplies(data))
         .catch(err => {
           console.log(err);
-        }),
+        })
     );
   }
 
-  renderComment(data) {
+  private renderComment(data: WP.Comment) {
     const isReply = data.parent === 0 ? '' : 'reply';
+    const reply = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      this.setState({
+        replyFocus: false,
+        comments: this.state.comments.map(comment => {
+          comment.replyFocus = comment.id === data.id;
+          return comment;
+        }),
+      });
+      e.preventDefault();
+    };
+    const cacel = (e: React.MouseEvent<HTMLInputElement>) => {
+      this.setState({
+        replyFocus: true,
+        comments: this.state.comments.map(comment => {
+          comment.replyFocus = false;
+          return comment;
+        }),
+      });
+    };
     return (
       <div key={data.id} className={`comment ${isReply} nf`}>
         <div className="avatar-control">
@@ -180,36 +216,19 @@ class Comments extends Component {
             </a>
             <span>学院生</span>
             <label>{human(data.date_gmt + '.000Z')}</label>
-            <a href="" onClick={(e) => {
-              this.setState({
-                replyFocus: false,
-                comments: this.state.comments.map(comment => {
-                  comment.replyFocus = comment.id === data.id;
-                  return comment;
-                }),
-              });
-              e.preventDefault();
-            }}>回复</a>
+            <a href="" onClick={reply}>回复</a>
           </div>
         </div>
         {
           data.replyFocus ?
-            <CommentSender replyId={data.id} cancel={() => {
-              this.setState({
-                replyFocus: true,
-                comments: this.state.comments.map(comment => {
-                  comment.replyFocus = false;
-                  return comment;
-                }),
-              });
-            }} />
+            <CommentSender replyId={data.id} cancel={cacel} />
             : ''
         }
       </div>
     );
   }
 
-  render() {
+  public render() {
     const comments = [];
     for (const cmt of this.state.comments) {
       comments.push(this.renderComment(cmt));
@@ -232,8 +251,8 @@ class Comments extends Component {
         <div id="comment-ending" />
         {
           this.state.end ?
-            <div className="info eef page-control">
-              <center>{this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧 |･ω･｀)'}</center>
+            <div className="info eef page-control no-more">
+              {this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧 |･ω･｀)'}
             </div>
             : ''
         }
