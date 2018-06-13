@@ -1,7 +1,7 @@
-From 4e83dbdb72a2b44b984114b8e712a434beb2fc15 Mon Sep 17 00:00:00 2001
+From bb57c7d5d8cc88e7ff91feb63c564a89e11228d6 Mon Sep 17 00:00:00 2001
 From: LI JIAHAO <lijiahao99131@gmail.com>
 Date: Mon, 11 Jun 2018 01:01:16 +0800
-Subject: [PATCH] :green_heart: github pages homepage
+Subject: [PATCH] green_heart: github pages homepage
 
 Signed-off-by: LI JIAHAO <lijiahao99131@gmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: LI JIAHAO <lijiahao99131@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/package.json b/package.json
-index c1e360c..9c7bc06 100644
+index 5d03340..1e8c53b 100644
 --- a/package.json
 +++ b/package.json
 @@ -2,7 +2,7 @@
@@ -19,8 +19,8 @@ index c1e360c..9c7bc06 100644
 -  "homepage": "/",
 +  "homepage": "https://cool2645.github.io/orange-cheers/",
    "devDependencies": {
-     "honoka": "^0.4.17",
-     "node-sass-chokidar": "^1.3.0",
+     "@types/jest": "^23.0.2",
+     "@types/node": "^10.3.2",
 -- 
 2.17.1
 
