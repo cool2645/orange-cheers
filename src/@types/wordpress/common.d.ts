@@ -1,5 +1,5 @@
 declare module 'wordpress' {
-  export interface IContent {
+  export interface Content {
     rendered: string;
   }
 }

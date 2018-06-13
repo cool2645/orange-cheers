@@ -35,14 +35,14 @@ interface IQuery {
 }
 
 interface IIndex {
-  posts: { [key: string]: WP.Post[]; };
+  posts: { [key: string]: IPost[]; };
   totalPage: number;
 }
 
 interface ISiblings {
-  prev: undefined | null | WP.Post;
+  prev: undefined | null | IPost;
   prevOffset: number;
-  next: undefined | null | WP.Post;
+  next: undefined | null | IPost;
   nextOffset: number;
 }
 
@@ -52,6 +52,11 @@ interface IParams {
   category?: string;
   tag?: string;
   search?: string;
+}
+
+interface IPost extends WP.Post {
+  offset?: number;
+  commentCount?: number;
 }
 
 interface IPostProps {
@@ -71,8 +76,8 @@ interface IPostState {
   page: number;
   totalPage: number;
   ready: boolean;
-  post: null | WP.Post;
-  posts: null | WP.Post[];
+  post: null | IPost;
+  posts: null | IPost[];
   category: null | number[];
   tag: null | number[];
   siblings: null | ISiblings;
@@ -96,7 +101,7 @@ class Post extends Component<IPostProps, IPostState> {
 
   private categories: { [key: number]: WP.Category; };
   private tags: { [key: number]: WP.Tag; };
-  private posts: { [key: string]: WP.Post; };
+  private posts: { [key: string]: IPost; };
   private indexes: { [key: string]: IIndex; };
   private query: IQuery;
 
@@ -217,8 +222,8 @@ class Post extends Component<IPostProps, IPostState> {
       this.setState({ ready: false, error: null }, () =>
         this.fetchPostData(this.state.params.slug)
           .then(post => this.fetchCategoryData(post.categories, post))
-          .then(post => this.fetchTagData((post as WP.Post).tags, post))
-          .then(post => this.getSiblings(post as WP.Post))
+          .then(post => this.fetchTagData((post as IPost).tags, post))
+          .then(post => this.getSiblings(post as IPost))
           .then(() => {
             this.onReady(null);
           })
@@ -232,14 +237,14 @@ class Post extends Component<IPostProps, IPostState> {
         this.fetchPosts(this.state.page)
           .then(posts => {
             let categories: number[] = [];
-            posts.forEach((post: WP.Post) => {
+            posts.forEach((post: IPost) => {
               categories = categories.concat(post.categories);
             });
             return this.fetchCategoryData(categories, posts);
           })
           .then(posts => {
             let tags: number[] = [];
-            (posts as WP.Post[]).forEach((post: WP.Post) => {
+            (posts as IPost[]).forEach((post: IPost) => {
               tags = tags.concat(post.tags);
             });
             return this.fetchTagData(tags, posts);
@@ -256,7 +261,7 @@ class Post extends Component<IPostProps, IPostState> {
     }
   }
 
-  private getSiblings(post: WP.Post): WP.Post {
+  private getSiblings(post: IPost): IPost {
     if (!this.query) return post;
     const siblings: ISiblings = {
       prev: undefined,
@@ -343,11 +348,11 @@ class Post extends Component<IPostProps, IPostState> {
     return post;
   }
 
-  private fetchPosts(page: number): Promise<WP.Post[]> {
+  private fetchPosts(page: number): Promise<IPost[]> {
     const params = this.buildAndUpdateQuery();
     const query = this.query.key;
     if (this.indexes[query] && this.indexes[query].posts[page]) {
-      const data = this.indexes[query].posts[page].map((index: WP.Post) => {
+      const data = this.indexes[query].posts[page].map((index: IPost) => {
         const post = this.posts[index.slug];
         post.offset = index.offset;
         return post;
@@ -364,13 +369,13 @@ class Post extends Component<IPostProps, IPostState> {
         this.setState({ totalPage });
         return response.json()
           .then(data => {
-            data.forEach((post: WP.Post, i: number) => {
+            data.forEach((post: IPost, i: number) => {
               this.posts[post.slug] = post;
               post.offset = (page - 1) * config.perPage + i;
             });
             if (!this.indexes[query]) this.indexes[query] = { posts: {}, totalPage: 0 };
             this.indexes[query].totalPage = totalPage;
-            this.indexes[query].posts[page] = data.map((post: WP.Post) =>
+            this.indexes[query].posts[page] = data.map((post: IPost) =>
               ({ slug: post.slug, offset: post.offset }));
             this.setState({
               posts: data,
@@ -380,7 +385,7 @@ class Post extends Component<IPostProps, IPostState> {
       });
   }
 
-  private fetchPostData(slug: string): Promise<WP.Post> {
+  private fetchPostData(slug: string): Promise<IPost> {
     if (this.posts[slug]) {
       this.setState({ post: this.posts[slug] });
       return new Promise(resolve => {
@@ -408,7 +413,7 @@ class Post extends Component<IPostProps, IPostState> {
       });
   }
 
-  private fetchCommentCounts(posts: WP.Post[]): Promise<WP.Post[]> {
+  private fetchCommentCounts(posts: IPost[]): Promise<IPost[]> {
     let promise = new Promise((resolve, reject) => {
       resolve();
     });
@@ -419,7 +424,7 @@ class Post extends Component<IPostProps, IPostState> {
       posts);
   }
 
-  private fetchCommentCount(post: WP.Post): Promise<WP.Post> {
+  private fetchCommentCount(post: IPost): Promise<IPost> {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       post: post.id,
       per_page: 1,
@@ -439,7 +444,7 @@ class Post extends Component<IPostProps, IPostState> {
       });
   }
 
-  private fetchCategoryData(cats: number[], o: WP.Post | WP.Post[]): WP.Post | WP.Post[] | Promise<WP.Post | WP.Post[]> {
+  private fetchCategoryData(cats: number[], o: IPost | IPost[]): IPost | IPost[] | Promise<IPost | IPost[]> {
     let flag = true;
     for (const cat of cats) {
       if (!this.categories[cat]) {
@@ -462,7 +467,7 @@ class Post extends Component<IPostProps, IPostState> {
       });
   }
 
-  private fetchTagData(tags: number[], o: WP.Post | WP.Post[]): WP.Post | WP.Post[] | Promise<WP.Post | WP.Post[]> {
+  private fetchTagData(tags: number[], o: IPost | IPost[]): IPost | IPost[] | Promise<IPost | IPost[]> {
     if (tags.length === 0) {
       return o;
     }
@@ -488,7 +493,7 @@ class Post extends Component<IPostProps, IPostState> {
       });
   }
 
-  private renderPost(post: WP.Post, fold: boolean) {
+  private renderPost(post: IPost, fold: boolean) {
     const categories = post.categories.filter(cate =>
       this.categories[cate]).map(cate =>
       <Link key={this.categories[cate].slug} className="category-link"

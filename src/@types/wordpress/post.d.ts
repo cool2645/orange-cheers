@@ -1,7 +1,7 @@
 declare module 'wordpress' {
     export interface Post {
     id: number;
-    title: IContent;
+    title: Content;
     categories: number[];
     tags: number[];
     date: string;
@@ -9,10 +9,8 @@ declare module 'wordpress' {
     modified: string;
     modified_gmt: string;
     slug: string;
-    excerpt: IContent;
-    content: IContent;
+    excerpt: Content;
+    content: Content;
     comment_status: string;
-    offset?: number;
-    commentCount?: number;
   }
 }

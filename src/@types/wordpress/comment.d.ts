@@ -1,5 +1,7 @@
 declare module 'wordpress' {
   export interface AvatarURLs {
+    24: string;
+    48: string;
     96: string;
   }
 
@@ -12,7 +14,7 @@ declare module 'wordpress' {
     author_url: string;
     date: string;
     date_gmt: string;
-    content: IContent;
+    content: Content;
 
     replyFocus: boolean;
   }
