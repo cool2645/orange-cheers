@@ -77,3 +77,15 @@
     color: $theme-color;
   }
 }
+
+> a > {
+  .color {
+    background-color: $theme-color !important;
+  }
+  .name {
+    color: $theme-color
+  }
+}
+&.active > a > .color {
+  border-color: $background-color !important;
+}

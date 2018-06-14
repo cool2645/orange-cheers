@@ -1,0 +1,44 @@
+.settings {
+  ul.themes {
+    padding: 0.25rem;
+    display: block;
+    li {
+      float: left;
+      display: block;
+      list-style-type: none;
+      width: calc(100% / 3);
+      @media (max-width: 900px) and(min-width: 675px) {
+        width: 50%;
+      }
+      @media (max-width: 675px) {
+        width: 100%;
+      }
+      a {
+        display: block;
+        vertical-align: center;
+        div {
+          float: left;
+        }
+        .color {
+          width: 32px;
+          height: 32px;
+          background-color: #000;
+          border-radius: 50%;
+        }
+        .name {
+          line-height: 32px;
+          margin-left: 10px;
+          font-size: 20px;
+          font-family: 'PT Serif', Georgia, Times, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+      }
+      margin: 10px 0;
+    }
+    li.active .color {
+      width: 22px;
+      height: 22px;
+      background-color: white !important;
+      border: #000 5px solid;
+    }
+  }
+}

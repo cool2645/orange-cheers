@@ -43,13 +43,6 @@ input[type=button], input[type=reset], input[type=submit] {
   cursor: pointer;
 }
 
-.nf:after {
-  content: " ";
-  display: block;
-  height: 0;
-  clear: both;
-}
-
 input, textarea, button, select,
 a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);

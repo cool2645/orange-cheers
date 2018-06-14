@@ -2,6 +2,7 @@
   "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier"],
   "linterOptions": {
     "exclude": [
+      "src/themes.js",
       "src/config.js",
       "src/registerServiceWorker.js",
       "src/@types/**/*.d.ts",

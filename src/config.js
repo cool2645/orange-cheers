@@ -85,10 +85,10 @@ const nav = {
       path: "https://www.cool2645.com",
     },
     {
-      title: "主题",
-      typed: "主题",
-      icon: "fas fa-paint-brush",
-      path: "/theme",
+      title: "选项",
+      typed: "选项",
+      icon: "fas fa-cog",
+      path: "/settings",
     },
   ],
 };

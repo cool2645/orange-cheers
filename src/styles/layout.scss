@@ -64,3 +64,10 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
+
+.nf:after {
+  content: " ";
+  display: block;
+  height: 0;
+  clear: both;
+}

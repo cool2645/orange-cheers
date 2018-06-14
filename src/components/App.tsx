@@ -11,10 +11,12 @@ import '../styles/themes/ring-a-yellow-bell.css';
 import '../styles/themes/scarlet-princess.css';
 import '../styles/themes/violet-moon.css';
 import '../styles/themes/wakakusa-no-season.css';
+import themes from '../themes';
 
 import Nav from './Nav';
 import NotFound from './NotFound';
 import Post from './Post';
+import Settings from './Settings';
 
 class App extends Component {
 
@@ -28,7 +30,10 @@ class App extends Component {
     this.joinProgress = this.joinProgress.bind(this);
     this.doneProgress = this.doneProgress.bind(this);
     this.renderPost = this.renderPost.bind(this);
+    this.renderSettings = this.renderSettings.bind(this);
     this.renderComponent = this.renderComponent.bind(this);
+    if (!localStorage.theme) localStorage.theme = themes.default;
+    document.body.className = localStorage.theme;
   }
 
   public setTyped(text: string) {
@@ -51,6 +56,10 @@ class App extends Component {
     return this.renderComponent(Post, props);
   }
 
+  private renderSettings(props: object) {
+    return this.renderComponent(Settings, props);
+  }
+
   private renderComponent(Comp: ComponentClass<any>, props: object) {
     return <Comp {...props}
                  setTyped={this.setTyped}
@@ -67,6 +76,7 @@ class App extends Component {
           <Nav ref={this.nav} />
           <Switch>
             <Route exact={true} path="/" render={this.renderPost} />
+            <Route exact={true} path="/settings" render={this.renderSettings} />
             <Route exact={true} path="/page/:page" render={this.renderPost} />
             <Route exact={true} path="/category/:category" render={this.renderPost} />} />
             <Route exact={true} path="/category/:category/page/:page"
