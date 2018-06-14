@@ -5,6 +5,14 @@
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.22);
 }
 
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%
+}
+
 body, button, input, select, textarea {
   font-size: 0.875rem;
   font-weight: 400;

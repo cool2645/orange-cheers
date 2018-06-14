@@ -55,7 +55,7 @@ class App extends Component {
   public render() {
     return (
       <Router basename={process.env.PUBLIC_URL}>
-        <div className="App orange-cheers">
+        <div className="app">
           <Nav ref={this.nav} />
           <Switch>
             <Route exact={true} path="/" render={this.renderPost} />
