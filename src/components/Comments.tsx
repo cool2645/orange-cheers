@@ -4,7 +4,6 @@ import * as WP from 'wordpress';
 
 import { comment as config } from '../config';
 import '../styles/Comments.css';
-import '../styles/themes/orange-cheers.css';
 import { human } from '../utils/datetime';
 import urlEncode from '../utils/url';
 

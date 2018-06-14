@@ -1,0 +1,12 @@
+.ice-blue-no-shunkan {
+  $background-color: #489efe;
+  $background-dark-color: #4090e5;
+  $theme-color: #bce2e8;
+  $theme-dark-color: #c8e3ff;
+
+  @import "../_theme";
+}
+
+body.ice-blue-no-shunkan {
+  background-image: url('../../images/e.jpg');
+}

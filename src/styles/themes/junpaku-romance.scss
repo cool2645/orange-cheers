@@ -1,0 +1,12 @@
+.junpaku-romance {
+  $background-color: #6d6d6d;
+  $background-dark-color: #545454;
+  $theme-color: #808080;
+  $theme-dark-color: #efefef;
+
+  @import "../_theme";
+}
+
+body.junpaku-romance {
+  background-image: url('../../images/ko.jpg');
+}

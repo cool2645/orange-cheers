@@ -6,7 +6,6 @@ import * as WP from 'wordpress';
 import { post as config } from '../config';
 import '../styles/Post.css';
 import '../styles/PostContent.css';
-import '../styles/themes/orange-cheers.css';
 import { formatDate, human } from '../utils/datetime';
 import urlEncode from '../utils/url';
 

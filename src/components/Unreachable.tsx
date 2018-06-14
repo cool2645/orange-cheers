@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 
-import '../styles/App.css';
-import '../styles/themes/orange-cheers.css';
-
 interface IUnreachableProps {
   retry(): void;
 }

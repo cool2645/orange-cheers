@@ -2,7 +2,15 @@ import React, { Component, ComponentClass } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 import '../styles/App.css';
+import '../styles/themes/aoi-no-shinwa.css';
+import '../styles/themes/ice-blue-no-shunkan.css';
+import '../styles/themes/junpaku-romance.css';
+import '../styles/themes/momoiro-egao.css';
 import '../styles/themes/orange-cheers.css';
+import '../styles/themes/ring-a-yellow-bell.css';
+import '../styles/themes/scarlet-princess.css';
+import '../styles/themes/violet-moon.css';
+import '../styles/themes/wakakusa-no-season.css';
 
 import Nav from './Nav';
 import NotFound from './NotFound';

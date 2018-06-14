@@ -1,0 +1,12 @@
+.aoi-no-shinwa {
+  $background-color: #2b57c5;
+  $background-dark-color: #254dac;
+  $theme-color: #4c6cb3;
+  $theme-dark-color: #cdddff;
+
+  @import "../_theme";
+}
+
+body.aoi-no-shinwa {
+  background-image: url('../../images/u.jpg');
+}

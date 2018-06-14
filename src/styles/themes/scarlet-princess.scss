@@ -1,0 +1,12 @@
+.scarlet-princess {
+  $background-color: #ff6000;
+  $background-dark-color: #eb5200;
+  $theme-color: #e60033;
+  $theme-dark-color: #ffe0cd;
+
+  @import "../_theme";
+}
+
+body.scarlet-princess {
+  background-image: url('../../images/ma.jpg');
+}
