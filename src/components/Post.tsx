@@ -110,10 +110,10 @@ class Post extends Component<IPostProps, IPostState> {
     state.params = props.match.params;
     state.page = +props.match.params.page || 1;
     this.state = state;
-    this.categories = {};
-    this.tags = {};
-    this.posts = {};
-    this.indexes = {};
+    this.categories = localStorage.categories ? JSON.parse(localStorage.categories) : {};
+    this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
+    this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
+    this.indexes = localStorage.indexes ? JSON.parse(localStorage.indexes) : {};
     this.update = this.update.bind(this);
     this.onReady = this.onReady.bind(this);
     this.challengeParams = this.challengeParams.bind(this);
@@ -149,6 +149,13 @@ class Post extends Component<IPostProps, IPostState> {
     this.props.startProgress();
     this.setState(initialState);
     this.setState({ params: nextProps.match.params, page }, this.update);
+  }
+
+  public componentWillUnmount() {
+    localStorage.categories = JSON.stringify(this.categories);
+    localStorage.tags = JSON.stringify(this.tags);
+    localStorage.posts = JSON.stringify(this.posts);
+    localStorage.indexes = JSON.stringify(this.indexes);
   }
 
   private onReady(error: any): void {
