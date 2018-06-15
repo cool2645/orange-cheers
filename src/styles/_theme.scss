@@ -78,6 +78,18 @@
   }
 }
 
+.settings {
+  .color {
+    background-color: $theme-color;
+  }
+  .name {
+    color: $theme-color;
+  }
+  li.active .color {
+    border-color: $background-color;
+  }
+}
+
 > a > {
   .color {
     background-color: $theme-color !important;

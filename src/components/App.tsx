@@ -11,12 +11,11 @@ import '../styles/themes/ring-a-yellow-bell.css';
 import '../styles/themes/scarlet-princess.css';
 import '../styles/themes/violet-moon.css';
 import '../styles/themes/wakakusa-no-season.css';
-import themes from '../themes';
 
 import Nav from './Nav';
 import NotFound from './NotFound';
 import Post from './Post';
-import Settings from './Settings';
+import Settings, { initSettings } from './Settings';
 
 class App extends Component {
 
@@ -32,8 +31,7 @@ class App extends Component {
     this.renderPost = this.renderPost.bind(this);
     this.renderSettings = this.renderSettings.bind(this);
     this.renderComponent = this.renderComponent.bind(this);
-    if (!localStorage.theme) localStorage.theme = themes.default;
-    document.body.className = localStorage.theme;
+    initSettings();
   }
 
   public setTyped(text: string) {
