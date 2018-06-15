@@ -82,11 +82,11 @@
   .color {
     background-color: $theme-color;
   }
-  .name {
-    color: $theme-color;
-  }
   li.active .color {
     border-color: $background-color;
+  }
+  input {
+    background-color: $background-color;
   }
 }
 
@@ -95,7 +95,7 @@
     background-color: $theme-color !important;
   }
   .name {
-    color: $theme-color
+    color: $theme-color !important;
   }
 }
 &.active > a > .color {

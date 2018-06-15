@@ -12,6 +12,7 @@ import urlEncode from '../utils/url';
 import Comments from './Comments';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import NotFound from './NotFound';
+import { IRefreshConfig, RefreshLevel } from './Settings';
 import Unreachable from './Unreachable';
 
 interface IQueryParams {
@@ -98,11 +99,12 @@ const initialState: IPostState = {
 
 class Post extends Component<IPostProps, IPostState> {
 
-  private categories: { [key: number]: WP.Category; };
-  private tags: { [key: number]: WP.Tag; };
-  private posts: { [key: string]: IPost; };
-  private indexes: { [key: string]: IIndex; };
+  private categories: Map<number, WP.Category>;
+  private tags: Map<number, WP.Tag>;
+  private posts: Map<string, IPost>;
+  private indexes: Map<string, IIndex>;
   private query: IQuery;
+  private refreshConfig: IRefreshConfig;
 
   constructor(props: IPostProps) {
     super(props);
@@ -110,6 +112,7 @@ class Post extends Component<IPostProps, IPostState> {
     state.params = props.match.params;
     state.page = +props.match.params.page || 1;
     this.state = state;
+    this.refreshConfig = JSON.parse(localStorage.refreshConfig);
     this.categories = localStorage.categories ? JSON.parse(localStorage.categories) : {};
     this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
     this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
@@ -229,7 +232,9 @@ class Post extends Component<IPostProps, IPostState> {
         this.fetchPostData(this.state.params.slug)
           .then(post => this.fetchCategoryData(post.categories, post))
           .then(post => this.fetchTagData((post as IPost).tags, post))
-          .then(post => this.getSiblings(post as IPost))
+          .then(post => {
+            if (this.refreshConfig.siblings !== RefreshLevel.Never) this.getSiblings(post as IPost);
+          })
           .then(() => {
             this.onReady(null);
           })
@@ -311,7 +316,7 @@ class Post extends Component<IPostProps, IPostState> {
       }
     }
 
-    if (siblings.prev === undefined) {
+    if (this.refreshConfig.siblings === RefreshLevel.Always || siblings.prev === undefined) {
       const params: IQueryParams = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.after = post.date;
@@ -331,7 +336,7 @@ class Post extends Component<IPostProps, IPostState> {
           console.log(err);
         });
     }
-    if (siblings.next === undefined) {
+    if (this.refreshConfig.siblings === RefreshLevel.Always || siblings.next === undefined) {
       const params = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.before = post.date;
@@ -357,25 +362,34 @@ class Post extends Component<IPostProps, IPostState> {
   private fetchPosts(page: number): Promise<IPost[]> {
     const params = this.buildAndUpdateQuery();
     const query = this.query.key;
+    let cached = false;
+    let cachedData: IPost[];
     if (this.indexes[query] && this.indexes[query].posts[page]) {
-      const data = this.indexes[query].posts[page].map((index: IPost) => {
+      cachedData = this.indexes[query].posts[page].map((index: IPost) => {
         const post = this.posts[index.slug];
         post.offset = index.offset;
         return post;
       });
-      this.setState({ posts: data, totalPage: this.indexes[query].totalPage });
-      return new Promise(resolve => {
-        resolve(data);
-      });
+      this.setState({ posts: cachedData, totalPage: this.indexes[query].totalPage },
+        () => {
+          if (this.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(cachedData);
+        });
+      if (this.refreshConfig.indexes === RefreshLevel.Cache) {
+        return new Promise(resolve => {
+          resolve(cachedData);
+        });
+      }
+      cached = true;
     }
     params.page = page;
-    return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
+    const promise = fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
       .then(response => {
         const totalPage = +response.headers.get('x-wp-totalpages');
         this.setState({ totalPage });
         return response.json()
           .then(data => {
             data.forEach((post: IPost, i: number) => {
+              if (this.posts[post.slug]) post.commentCount = this.posts[post.slug].commentCount;
               this.posts[post.slug] = post;
               post.offset = (page - 1) * config.perPage + i;
             });
@@ -385,20 +399,33 @@ class Post extends Component<IPostProps, IPostState> {
               ({ slug: post.slug, offset: post.offset }));
             this.setState({
               posts: data,
-            }, () => this.fetchCommentCounts(data));
+            }, () => {
+              if (this.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(data);
+            });
             return data;
           });
       });
+    if (cached) {
+      return new Promise(resolve => {
+        resolve(cachedData);
+      });
+    } else {
+      return promise;
+    }
   }
 
   private fetchPostData(slug: string): Promise<IPost> {
+    let cached = false;
     if (this.posts[slug]) {
       this.setState({ post: this.posts[slug] });
-      return new Promise(resolve => {
-        resolve(this.posts[slug]);
-      });
+      if (this.refreshConfig.posts === RefreshLevel.Cache) {
+        return new Promise(resolve => {
+          resolve(this.posts[slug]);
+        });
+      }
+      cached = true;
     }
-    return honoka.get('/posts', {
+    const promise = honoka.get('/posts', {
       data: {
         slug,
       },
@@ -414,9 +441,16 @@ class Post extends Component<IPostProps, IPostState> {
       .then(post => {
         this.posts[post.slug] = post;
         if (this.state.params.slug === post.slug) this.setState({ post });
-        this.fetchCommentCount(post);
+        if (this.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCount(post);
         return post;
       });
+    if (cached) {
+      return new Promise(resolve => {
+        resolve(this.posts[slug]);
+      });
+    } else {
+      return promise;
+    }
   }
 
   private fetchCommentCounts(posts: IPost[]): Promise<IPost[]> {
@@ -424,6 +458,7 @@ class Post extends Component<IPostProps, IPostState> {
       resolve();
     });
     for (const post of posts) {
+      if (post.commentCount !== undefined && this.refreshConfig.commentCounts === RefreshLevel.Cache) continue;
       promise = promise.then(() => this.fetchCommentCount(post));
     }
     return promise.then(() =>
@@ -458,7 +493,7 @@ class Post extends Component<IPostProps, IPostState> {
         break;
       }
     }
-    if (flag) return o;
+    if (flag && this.refreshConfig.categories === RefreshLevel.Cache) return o;
     return honoka.get('/categories', {
       data: {
         include: cats.join(','),
@@ -484,7 +519,7 @@ class Post extends Component<IPostProps, IPostState> {
         break;
       }
     }
-    if (flag) return o;
+    if (flag && this.refreshConfig.tags === RefreshLevel.Cache) return o;
     return honoka.get('/tags', {
       data: {
         include: tags.join(','),
@@ -509,14 +544,16 @@ class Post extends Component<IPostProps, IPostState> {
       <Link key={this.tags[tag].slug} className="tag-link"
             to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>);
     let commentCount;
-    if (post.commentCount === undefined) {
-      commentCount =
-        <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
-    } else {
-      commentCount = post.commentCount === 0 ? '还没有评论耶' : post.commentCount === 1 ?
-        `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
-      commentCount =
-        <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
+    if (this.refreshConfig.comments !== RefreshLevel.Never) {
+      if (post.commentCount === undefined) {
+        commentCount =
+          <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
+      } else {
+        commentCount = post.commentCount === 0 ? '还没有评论耶' : post.commentCount === 1 ?
+          `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
+        commentCount =
+          <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
+      }
     }
     const dateStr = formatDate(post.date_gmt + '.000Z');
     const date = [];
@@ -697,7 +734,7 @@ class Post extends Component<IPostProps, IPostState> {
             {this.renderPost(this.state.post, false)}
           </div>
           {
-            this.state.post.comment_status === 'open' ?
+            this.state.post.comment_status === 'open' && this.refreshConfig.comments !== RefreshLevel.Never ?
               <Comments id={this.state.post.id} />
               : ''
           }
