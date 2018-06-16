@@ -65,7 +65,7 @@ interface IPostHelperState {
   data: null | IPostData | IPostsData;
 }
 
-function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>) {
+function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentProps>) {
   return class PostHelper extends Component<P, IPostHelperState> {
 
     private categories: Map<number, WP.Category>;
@@ -91,6 +91,21 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
       this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
       this.indexes = localStorage.indexes ? JSON.parse(localStorage.indexes) : {};
       this.seq = 0;
+      this.state = {
+        refreshConfig: JSON.parse(localStorage.refreshConfig),
+        data: null,
+      };
+      this.fetchCommentCounts = this.fetchCommentCounts.bind(this);
+      this.fetchCommentCount = this.fetchCommentCount.bind(this);
+      this.fetchTags = this.fetchTags.bind(this);
+      this.fetchCategories = this.fetchCategories.bind(this);
+      this.fetchPosts = this.fetchPosts.bind(this);
+      this.fetchPostsFromCache = this.fetchPostsFromCache.bind(this);
+      this.fetchPost = this.fetchPost.bind(this);
+      this.fetchPostFromCache = this.fetchPostFromCache.bind(this);
+      this.fetchSiblings = this.fetchSiblings.bind(this);
+      this.getPostData = this.getPostData.bind(this);
+      this.getPostsData = this.getPostsData.bind(this);
     }
 
     public componentDidMount() {
@@ -320,11 +335,11 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
     // update data state of corresponding post
     private fetchSiblings(seq: number, post: IPostData, params: IQueryParams, offset?: number): IPostData {
       const key = urlEncode(params);
-      const siblings: ISiblings = {
+      post.siblings = {
         prev: undefined,
         next: undefined,
       };
-      post.siblings = siblings;
+      const siblings = post.siblings;
 
       // has query
       if (offset !== undefined) {
@@ -370,18 +385,18 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
       }
 
       if (this.state.refreshConfig.siblings === RefreshLevel.Always || siblings.prev === undefined) {
-        params = Object.assign({}, params);
-        params.per_page = 1;
-        params.after = post.post.date;
-        params.order = 'asc';
+        const p1 = Object.assign({}, params);
+        p1.per_page = 1;
+        p1.after = post.post.date;
+        p1.order = 'asc';
         honoka.get('/posts', {
-          data: params,
+          data: p1,
         })
           .then(data => {
             if (!data.length) siblings.prev = null;
             else {
               this.posts[data[0].slug] = data[0];
-              siblings.prev = data[0];
+              siblings.prev = { post: data[0] };
             }
             if ((this.state.data as IPostData).post && (this.state.data as IPostData).post.slug === post.post.slug) {
               this.setState({ data: post }, seq);
@@ -392,17 +407,17 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
           });
       }
       if (this.state.refreshConfig.siblings === RefreshLevel.Always || siblings.next === undefined) {
-        params = Object.assign({}, params);
-        params.per_page = 1;
-        params.before = post.post.date;
+        const p2 = Object.assign({}, params);
+        p2.per_page = 1;
+        p2.before = post.post.date;
         honoka.get('/posts', {
-          data: params,
+          data: p2,
         })
           .then(data => {
             if (!data.length) siblings.next = null;
             else {
               this.posts[data[0].slug] = data[0];
-              siblings.next = data[0];
+              siblings.next = { post: data[0] };
             }
             if ((this.state.data as IPostData).post && (this.state.data as IPostData).post.slug === post.post.slug) {
               this.setState({ data: post }, seq);
