@@ -82,6 +82,7 @@ interface IPostState {
   tag: null | number[];
   siblings: null | ISiblings;
   error: (() => void) | null;
+  refreshConfig: IRefreshConfig;
 }
 
 const initialState: IPostState = {
@@ -95,6 +96,7 @@ const initialState: IPostState = {
   params: {},
   siblings: null,
   error: null,
+  refreshConfig: JSON.parse(localStorage.refreshConfig),
 };
 
 class Post extends Component<IPostProps, IPostState> {
@@ -104,7 +106,6 @@ class Post extends Component<IPostProps, IPostState> {
   private posts: Map<string, IPost>;
   private indexes: Map<string, IIndex>;
   private query: IQuery;
-  private refreshConfig: IRefreshConfig;
 
   constructor(props: IPostProps) {
     super(props);
@@ -112,7 +113,6 @@ class Post extends Component<IPostProps, IPostState> {
     state.params = props.match.params;
     state.page = +props.match.params.page || 1;
     this.state = state;
-    this.refreshConfig = JSON.parse(localStorage.refreshConfig);
     this.categories = localStorage.categories ? JSON.parse(localStorage.categories) : {};
     this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
     this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
@@ -132,6 +132,9 @@ class Post extends Component<IPostProps, IPostState> {
 
   public componentDidMount() {
     this.props.startProgress();
+    const refreshConfig = JSON.parse(localStorage.refreshConfig);
+    this.setState({ refreshConfig });
+    initialState.refreshConfig = refreshConfig;
     document.onreadystatechange = () => {
       if (document.readyState === 'complete') {
         if (this.state.ready) this.props.doneProgress();
@@ -233,7 +236,7 @@ class Post extends Component<IPostProps, IPostState> {
           .then(post => this.fetchCategoryData(post.categories, post))
           .then(post => this.fetchTagData((post as IPost).tags, post))
           .then(post => {
-            if (this.refreshConfig.siblings !== RefreshLevel.Never) this.getSiblings(post as IPost);
+            if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.getSiblings(post as IPost);
           })
           .then(() => {
             this.onReady(null);
@@ -316,7 +319,7 @@ class Post extends Component<IPostProps, IPostState> {
       }
     }
 
-    if (this.refreshConfig.siblings === RefreshLevel.Always || siblings.prev === undefined) {
+    if (this.state.refreshConfig.siblings === RefreshLevel.Always || siblings.prev === undefined) {
       const params: IQueryParams = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.after = post.date;
@@ -336,7 +339,7 @@ class Post extends Component<IPostProps, IPostState> {
           console.log(err);
         });
     }
-    if (this.refreshConfig.siblings === RefreshLevel.Always || siblings.next === undefined) {
+    if (this.state.refreshConfig.siblings === RefreshLevel.Always || siblings.next === undefined) {
       const params = Object.assign({}, this.query.params);
       params.per_page = 1;
       params.before = post.date;
@@ -372,9 +375,9 @@ class Post extends Component<IPostProps, IPostState> {
       });
       this.setState({ posts: cachedData, totalPage: this.indexes[query].totalPage },
         () => {
-          if (this.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(cachedData);
+          if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(cachedData);
         });
-      if (this.refreshConfig.indexes === RefreshLevel.Cache) {
+      if (this.state.refreshConfig.indexes === RefreshLevel.Cache) {
         return new Promise(resolve => {
           resolve(cachedData);
         });
@@ -400,7 +403,7 @@ class Post extends Component<IPostProps, IPostState> {
             this.setState({
               posts: data,
             }, () => {
-              if (this.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(data);
+              if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(data);
             });
             return data;
           });
@@ -418,7 +421,7 @@ class Post extends Component<IPostProps, IPostState> {
     let cached = false;
     if (this.posts[slug]) {
       this.setState({ post: this.posts[slug] });
-      if (this.refreshConfig.posts === RefreshLevel.Cache) {
+      if (this.state.refreshConfig.posts === RefreshLevel.Cache) {
         return new Promise(resolve => {
           resolve(this.posts[slug]);
         });
@@ -441,7 +444,7 @@ class Post extends Component<IPostProps, IPostState> {
       .then(post => {
         this.posts[post.slug] = post;
         if (this.state.params.slug === post.slug) this.setState({ post });
-        if (this.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCount(post);
+        if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCount(post);
         return post;
       });
     if (cached) {
@@ -458,7 +461,7 @@ class Post extends Component<IPostProps, IPostState> {
       resolve();
     });
     for (const post of posts) {
-      if (post.commentCount !== undefined && this.refreshConfig.commentCounts === RefreshLevel.Cache) continue;
+      if (post.commentCount !== undefined && this.state.refreshConfig.commentCounts === RefreshLevel.Cache) continue;
       promise = promise.then(() => this.fetchCommentCount(post));
     }
     return promise.then(() =>
@@ -493,7 +496,7 @@ class Post extends Component<IPostProps, IPostState> {
         break;
       }
     }
-    if (flag && this.refreshConfig.categories === RefreshLevel.Cache) return o;
+    if (flag && this.state.refreshConfig.categories === RefreshLevel.Cache) return o;
     return honoka.get('/categories', {
       data: {
         include: cats.join(','),
@@ -519,7 +522,7 @@ class Post extends Component<IPostProps, IPostState> {
         break;
       }
     }
-    if (flag && this.refreshConfig.tags === RefreshLevel.Cache) return o;
+    if (flag && this.state.refreshConfig.tags === RefreshLevel.Cache) return o;
     return honoka.get('/tags', {
       data: {
         include: tags.join(','),
@@ -544,7 +547,7 @@ class Post extends Component<IPostProps, IPostState> {
       <Link key={this.tags[tag].slug} className="tag-link"
             to={`/tag/${this.tags[tag].slug}`}>{this.tags[tag].name}</Link>);
     let commentCount;
-    if (this.refreshConfig.comments !== RefreshLevel.Never) {
+    if (this.state.refreshConfig.comments !== RefreshLevel.Never) {
       if (post.commentCount === undefined) {
         commentCount =
           <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
@@ -585,7 +588,7 @@ class Post extends Component<IPostProps, IPostState> {
           {commentCount}
           <span className="fas fa-folder">
             {categories}
-            </span>
+          </span>
           {/*<span className="fas fa-eye" >498 Hits</span>*/}
           {
             tags.length === 0 ? '' :
@@ -734,7 +737,7 @@ class Post extends Component<IPostProps, IPostState> {
             {this.renderPost(this.state.post, false)}
           </div>
           {
-            this.state.post.comment_status === 'open' && this.refreshConfig.comments !== RefreshLevel.Never ?
+            this.state.post.comment_status === 'open' && this.state.refreshConfig.comments !== RefreshLevel.Never ?
               <Comments id={this.state.post.id} />
               : ''
           }
