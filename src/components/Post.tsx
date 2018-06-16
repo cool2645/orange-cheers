@@ -106,6 +106,17 @@ class Post extends Component<IPostProps, IPostState> {
   private posts: Map<string, IPost>;
   private indexes: Map<string, IIndex>;
   private query: IQuery;
+  private seq: number;
+
+  public setState<K extends keyof IPostState>(
+    newState: ((prevState: Readonly<IPostState>, props: IPostProps) =>
+      (Pick<IPostState, K> | IPostState | null)) | (Pick<IPostState, K> | IPostState | null),
+    seq?: number | (() => void),
+    callback?: () => void
+  ): void {
+    if (typeof seq !== 'number') super.setState(newState, seq);
+    else if (seq === this.seq) super.setState(newState, callback);
+  }
 
   constructor(props: IPostProps) {
     super(props);
@@ -117,6 +128,7 @@ class Post extends Component<IPostProps, IPostState> {
     this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
     this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
     this.indexes = localStorage.indexes ? JSON.parse(localStorage.indexes) : {};
+    this.seq = 0;
     this.update = this.update.bind(this);
     this.onReady = this.onReady.bind(this);
     this.challengeParams = this.challengeParams.bind(this);
@@ -141,7 +153,8 @@ class Post extends Component<IPostProps, IPostState> {
         else this.props.joinProgress();
       }
     };
-    this.update();
+    this.seq++;
+    this.update(this.seq);
   }
 
   public componentWillReceiveProps(nextProps: IPostProps) {
@@ -154,7 +167,8 @@ class Post extends Component<IPostProps, IPostState> {
     ) return;
     this.props.startProgress();
     this.setState(initialState);
-    this.setState({ params: nextProps.match.params, page }, this.update);
+    this.seq++;
+    this.setState({ params: nextProps.match.params, page }, () => this.update(this.seq));
   }
 
   public componentWillUnmount() {
@@ -162,12 +176,13 @@ class Post extends Component<IPostProps, IPostState> {
     localStorage.tags = JSON.stringify(this.tags);
     localStorage.posts = JSON.stringify(this.posts);
     localStorage.indexes = JSON.stringify(this.indexes);
+    this.seq++;
   }
 
-  private onReady(error: any): void {
-    if (error === null) this.setState({ ready: true, error: null }, (window as any).initMonacoEditor);
-    else if (typeof error === 'function') this.setState({ ready: true, error });
-    else this.setState({ ready: true });
+  private onReady(seq: number, error: any): void {
+    if (error === null) this.setState({ ready: true, error: null }, seq, (window as any).initMonacoEditor);
+    else if (typeof error === 'function') this.setState({ ready: true, error }, seq);
+    else this.setState({ ready: true }, seq);
     if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
   }
@@ -184,12 +199,12 @@ class Post extends Component<IPostProps, IPostState> {
     return Object.assign({}, params);
   }
 
-  private update(): void {
-    this.challengeParams()
-      .then(() => this.fetchData());
+  private update(seq: number): void {
+    this.challengeParams(seq)
+      .then(() => this.fetchData(seq));
   }
 
-  private challengeParams(): Promise<void> {
+  private challengeParams(seq: number): Promise<void> {
     let promise = new Promise<void>((resolve, reject) => {
       resolve();
     });
@@ -203,10 +218,10 @@ class Post extends Component<IPostProps, IPostState> {
         .then(data => {
           const cat = data.length === 0 ? null : data[0];
           if (cat === null) {
-            this.onReady(404);
+            this.onReady(seq, 404);
             throw new Error('404');
           }
-          this.setState({ category: cat.id });
+          this.setState({ category: cat.id }, seq);
           this.props.setTyped(cat.name);
         }));
     }
@@ -219,36 +234,36 @@ class Post extends Component<IPostProps, IPostState> {
         .then(data => {
           const tag = data.length === 0 ? null : data[0];
           if (tag === null) {
-            this.onReady(404);
+            this.onReady(seq, 404);
             throw new Error('404');
           }
-          this.setState({ tag: tag.id });
+          this.setState({ tag: tag.id }, seq);
           this.props.setTyped(tag.name);
         }));
     }
     return promise;
   }
 
-  private fetchData() {
+  private fetchData(seq: number) {
     if (this.state.params.slug) {
-      this.setState({ ready: false, error: null }, () =>
-        this.fetchPostData(this.state.params.slug)
+      this.setState({ ready: false, error: null }, seq, () =>
+        this.fetchPostData(seq, this.state.params.slug)
           .then(post => this.fetchCategoryData(post.categories, post))
           .then(post => this.fetchTagData((post as IPost).tags, post))
           .then(post => {
-            if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.getSiblings(post as IPost);
+            if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.getSiblings(seq, post as IPost);
           })
           .then(() => {
-            this.onReady(null);
+            this.onReady(seq, null);
           })
           .catch(err => {
             console.log(err);
-            if (err.message !== '404') this.onReady(this.fetchData);
+            if (err.message !== '404') this.onReady(seq, this.fetchData);
           })
       );
     } else {
-      this.setState({ ready: false, error: null }, () =>
-        this.fetchPosts(this.state.page)
+      this.setState({ ready: false, error: null }, seq, () =>
+        this.fetchPosts(seq, this.state.page)
           .then(posts => {
             let categories: number[] = [];
             posts.forEach((post: IPost) => {
@@ -264,18 +279,18 @@ class Post extends Component<IPostProps, IPostState> {
             return this.fetchTagData(tags, posts);
           })
           .then(data => {
-            this.onReady(null);
+            this.onReady(seq, null);
             return data;
           })
           .catch(err => {
             console.log(err);
-            if (err.message !== '404') this.onReady(this.fetchData);
+            if (err.message !== '404') this.onReady(seq, this.fetchData);
           })
       );
     }
   }
 
-  private getSiblings(post: IPost): IPost {
+  private getSiblings(seq: number, post: IPost): IPost {
     if (!this.query) return post;
     const siblings: ISiblings = {
       prev: undefined,
@@ -333,7 +348,7 @@ class Post extends Component<IPostProps, IPostState> {
             this.posts[data[0].slug] = data[0];
             siblings.prev = data[0];
           }
-          this.setState({ siblings });
+          this.setState({ siblings }, seq);
         })
         .catch(err => {
           console.log(err);
@@ -352,17 +367,17 @@ class Post extends Component<IPostProps, IPostState> {
             this.posts[data[0].slug] = data[0];
             siblings.next = data[0];
           }
-          this.setState({ siblings });
+          this.setState({ siblings }, seq);
         })
         .catch(err => {
           console.log(err);
         });
     }
-    this.setState({ siblings });
+    this.setState({ siblings }, seq);
     return post;
   }
 
-  private fetchPosts(page: number): Promise<IPost[]> {
+  private fetchPosts(seq: number, page: number): Promise<IPost[]> {
     const params = this.buildAndUpdateQuery();
     const query = this.query.key;
     let cached = false;
@@ -374,8 +389,8 @@ class Post extends Component<IPostProps, IPostState> {
         return post;
       });
       this.setState({ posts: cachedData, totalPage: this.indexes[query].totalPage },
-        () => {
-          if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(cachedData);
+        seq, () => {
+          if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(seq, cachedData);
         });
       if (this.state.refreshConfig.indexes === RefreshLevel.Cache) {
         return new Promise(resolve => {
@@ -388,7 +403,7 @@ class Post extends Component<IPostProps, IPostState> {
     const promise = fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
       .then(response => {
         const totalPage = +response.headers.get('x-wp-totalpages');
-        this.setState({ totalPage });
+        this.setState({ totalPage }, seq);
         return response.json()
           .then(data => {
             data.forEach((post: IPost, i: number) => {
@@ -402,8 +417,8 @@ class Post extends Component<IPostProps, IPostState> {
               ({ slug: post.slug, offset: post.offset }));
             this.setState({
               posts: data,
-            }, () => {
-              if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(data);
+            }, seq, () => {
+              if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCounts(seq, data);
             });
             return data;
           });
@@ -417,10 +432,10 @@ class Post extends Component<IPostProps, IPostState> {
     }
   }
 
-  private fetchPostData(slug: string): Promise<IPost> {
+  private fetchPostData(seq: number, slug: string): Promise<IPost> {
     let cached = false;
     if (this.posts[slug]) {
-      this.setState({ post: this.posts[slug] });
+      this.setState({ post: this.posts[slug] }, seq);
       if (this.state.refreshConfig.posts === RefreshLevel.Cache) {
         return new Promise(resolve => {
           resolve(this.posts[slug]);
@@ -436,15 +451,15 @@ class Post extends Component<IPostProps, IPostState> {
       .then(data => {
         const post = data.length === 0 ? null : data[0];
         if (post === null) {
-          this.onReady(404);
+          this.onReady(seq, 404);
           throw new Error('404');
         }
         return post;
       })
       .then(post => {
         this.posts[post.slug] = post;
-        if (this.state.params.slug === post.slug) this.setState({ post });
-        if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCount(post);
+        if (this.state.params.slug === post.slug) this.setState({ post }, seq);
+        if (this.state.refreshConfig.commentCounts !== RefreshLevel.Never) this.fetchCommentCount(seq, post);
         return post;
       });
     if (cached) {
@@ -456,19 +471,19 @@ class Post extends Component<IPostProps, IPostState> {
     }
   }
 
-  private fetchCommentCounts(posts: IPost[]): Promise<IPost[]> {
+  private fetchCommentCounts(seq: number, posts: IPost[]): Promise<IPost[]> {
     let promise = new Promise((resolve, reject) => {
       resolve();
     });
     for (const post of posts) {
       if (post.commentCount !== undefined && this.state.refreshConfig.commentCounts === RefreshLevel.Cache) continue;
-      promise = promise.then(() => this.fetchCommentCount(post));
+      promise = promise.then(() => this.fetchCommentCount(seq, post));
     }
     return promise.then(() =>
       posts);
   }
 
-  private fetchCommentCount(post: IPost): Promise<IPost> {
+  private fetchCommentCount(seq: number, post: IPost): Promise<IPost> {
     return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       post: post.id,
       per_page: 1,
@@ -477,12 +492,12 @@ class Post extends Component<IPostProps, IPostState> {
         const total = +response.headers.get('x-wp-total');
         post.commentCount = total;
         this.posts[post.slug].commentCount = total;
-        if (this.state.post !== null && this.state.post.slug === post.slug) this.setState({ post });
+        if (this.state.post !== null && this.state.post.slug === post.slug) this.setState({ post }, seq);
         else if (this.state.posts !== null) {
           this.setState({
             posts: this.state.posts.map(p =>
               p.id === post.id ? post : p),
-          });
+          }, seq);
         }
         return post;
       });

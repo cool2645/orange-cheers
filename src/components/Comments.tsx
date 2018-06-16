@@ -55,7 +55,7 @@ interface ICommentsProps {
   id: number;
 }
 
-interface ICommentsStates {
+interface ICommentsState {
   ready: boolean;
   comments: WP.Comment[];
   replyFocus: boolean;
@@ -64,7 +64,18 @@ interface ICommentsStates {
   error: (() => void) | null;
 }
 
-class Comments extends Component<ICommentsProps, ICommentsStates> {
+class Comments extends Component<ICommentsProps, ICommentsState> {
+
+  private unmounted: boolean;
+
+  public setState<K extends keyof ICommentsState>(
+    newState: ((prevState: Readonly<ICommentsState>, props: ICommentsProps) =>
+      (Pick<ICommentsState, K> | ICommentsState | null)) | (Pick<ICommentsState, K> | ICommentsState | null),
+    callback?: () => void
+  ): void {
+    if (!this.unmounted) super.setState(newState, callback);
+  }
+
   constructor(props: ICommentsProps) {
     super(props);
     this.state = {
@@ -85,10 +96,12 @@ class Comments extends Component<ICommentsProps, ICommentsStates> {
   public componentDidMount() {
     this.fetchMoreComments();
     window.onscroll = this.update;
+    this.unmounted = false;
   }
 
   public componentWillUnmount() {
     window.onscroll = null;
+    this.unmounted = true;
   }
 
   private fetchReply(id: number, page: number, totalPage: number, comment: WP.Comment): Promise<object> {
