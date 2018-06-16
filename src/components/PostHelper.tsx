@@ -36,6 +36,8 @@ interface IPost extends WP.Post {
 
 interface IPostData {
   post: IPost;
+  categories?: WP.Category[];
+  tags?: WP.Tag[];
   siblings?: ISiblings;
   offset?: number;
 }
@@ -115,10 +117,10 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
       let cached = true;
       if (filter !== undefined) {
         const cats = [];
-        for (const cat of filter) {
-          if (!this.categories[cat]) {
+        for (const id of filter) {
+          if (!this.categories[id]) {
             cached = false;
-            cats.push(cat);
+            cats.push(id);
           }
         }
         (params as any).include = cats.join(',');
@@ -135,7 +137,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
           data.forEach((cat: WP.Category) => {
             this.categories[cat.id] = cat;
           });
-          return data;
+          return filter.map(id => this.categories[id]);
         });
     }
 
@@ -150,10 +152,10 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
       let cached = true;
       if (filter !== undefined) {
         const tags = [];
-        for (const tag of filter) {
-          if (!this.tags[tag]) {
+        for (const id of filter) {
+          if (!this.tags[id]) {
             cached = false;
-            tags.push(tag);
+            tags.push(id);
           }
         }
         (params as any).include = tags.join(',');
@@ -170,7 +172,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
           data.forEach((tag: WP.Tag) => {
             this.tags[tag.id] = tag;
           });
-          return data;
+          return filter.map(id => this.tags[id]);
         });
     }
 
@@ -194,7 +196,13 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
             this.setState({
               data: {
                 posts: (this.state.data as IPostsData).posts.map(p =>
-                  p.post.id === post.id ? { post, offset: p.offset, siblings: p.siblings } : p),
+                  p.post.id === post.id ? {
+                    post,
+                    offset: p.offset,
+                    siblings: p.siblings,
+                    categories: p.categories,
+                    tags: p.tags,
+                  } : p),
                 totalPage: (this.state.data as IPostsData).totalPage,
               },
             }, seq);
@@ -204,6 +212,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
                 post,
                 siblings: (this.state.data as IPostData).siblings,
                 offset: (this.state.data as IPostData).offset,
+                categories: (this.state.data as IPostData).categories,
+                tags: (this.state.data as IPostData).tags,
               },
             }, seq);
           }
@@ -409,7 +419,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
     }
 
     // get posts as well as the dependencies and push them to data state
-    public getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any) {
+    public getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (err: any) => any) {
       if (!append) this.seq++;
       const seq = this.seq;
       this.fetchPostsFromCache(page, params)
@@ -421,17 +431,27 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
           }
         })
         .then(posts => {
-          let categories: number[] = [];
+          let cats: number[] = [];
           posts.posts.forEach((post: IPostData) => {
-            categories = categories.concat(post.post.categories);
+            cats = cats.concat(post.post.categories);
           });
-          return this.fetchCategories(categories)
+          return this.fetchCategories(cats)
+            .then(categories => {
+              posts.posts.forEach((post: IPostData) => {
+                post.categories = post.post.categories.map(id => categories[id]);
+              });
+            })
             .then(() => {
               let tags: number[] = [];
               posts.posts.forEach((post: IPostData) => {
                 tags = tags.concat(post.post.tags);
               });
               return this.fetchTags(tags);
+            })
+            .then(tags => {
+              posts.posts.forEach((post: IPostData) => {
+                post.tags = post.post.tags.map(id => tags[id]);
+              });
             })
             .then(() => {
               const ps = posts.posts;
@@ -449,7 +469,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
     }
 
     // get post as well as the dependencies and push it to data state
-    public getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any) {
+    public getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (err: any) => any) {
       this.seq++;
       const seq = this.seq;
       this.fetchPostFromCache(slug)
@@ -460,13 +480,19 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
             return post;
           }
         })
-        .then(post => this.fetchCategories(post.categories)
-          .then(() => this.fetchTags(post.tags))
+        .then(post => ({ post, offset }))
+        .then((postData: IPostData) => this.fetchCategories(postData.post.categories)
+          .then((categories) => {
+            postData.categories = categories;
+          })
+          .then(() => this.fetchTags(postData.post.tags))
+          .then((tags) => {
+            postData.tags = tags;
+          })
           .then(() => {
-            const postData = { post, offset };
             this.setState({ data: postData }, seq, () => {
               callback(null);
-              this.fetchCommentCount(seq, post);
+              this.fetchCommentCount(seq, postData.post);
               if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.fetchSiblings(seq, postData, params, offset);
             });
           })
