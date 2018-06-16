@@ -206,7 +206,7 @@ class Post extends Component<IPostProps, IPostState> {
   }
 
   private challengeParams(seq: number): Promise<void> {
-    let promise = new Promise<void>((resolve, reject) => {
+    let promise = new Promise<void>((resolve) => {
       resolve();
     });
     if (this.state.params.slug) {
@@ -480,7 +480,7 @@ class Post extends Component<IPostProps, IPostState> {
   }
 
   private fetchCommentCounts(seq: number, posts: IPost[]): Promise<IPost[]> {
-    let promise = new Promise((resolve, reject) => {
+    let promise = new Promise((resolve) => {
       resolve();
     });
     for (const post of posts) {

@@ -117,13 +117,13 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
   }
 
   private fetchReplies(comments: WP.Comment[]): Promise<WP.Comment[]> {
-    let promise = new Promise<void>((resolve, reject) => {
+    let promise = new Promise<void>((resolve) => {
       resolve();
     });
     for (const comment of comments) {
       comment.children = [];
       promise = promise.then(() => this.fetchReply(comment.id, 1, 1, comment))
-        .then((o: object) => {
+        .then(() => {
           this.setState({
             comments: [...this.state.comments.map(c =>
               c.id !== comment.id ? c : comment)],
@@ -195,7 +195,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
       });
       e.preventDefault();
     };
-    const cacel = (e: React.MouseEvent<HTMLInputElement>) => {
+    const cancel = (e: React.MouseEvent<HTMLInputElement>) => {
       this.setState({
         replyFocus: true,
         comments: this.state.comments.map(comment => {
@@ -223,7 +223,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
         </div>
         {
           data.replyFocus ?
-            <CommentSender replyId={data.id} cancel={cacel} />
+            <CommentSender replyId={data.id} cancel={cancel} />
             : ''
         }
       </div>

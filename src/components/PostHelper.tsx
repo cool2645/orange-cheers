@@ -239,7 +239,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
     // fetch given posts' comment count
     // update data state of corresponding posts
     private fetchCommentCounts(seq: number, posts: IPost[]): Promise<IPost[]> {
-      let promise = new Promise((resolve, reject) => {
+      let promise = new Promise((resolve) => {
         resolve();
       });
       for (const post of posts) {
