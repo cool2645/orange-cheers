@@ -12,6 +12,7 @@ import '../styles/themes/scarlet-princess.css';
 import '../styles/themes/violet-moon.css';
 import '../styles/themes/wakakusa-no-season.css';
 
+import Archives from './Archives';
 import Nav from './Nav';
 import NotFound from './NotFound';
 import Post from './Post';
@@ -28,6 +29,7 @@ class App extends Component {
     this.startProgress = this.startProgress.bind(this);
     this.joinProgress = this.joinProgress.bind(this);
     this.doneProgress = this.doneProgress.bind(this);
+    this.renderArchives = this.renderArchives.bind(this);
     this.renderPost = this.renderPost.bind(this);
     this.renderSettings = this.renderSettings.bind(this);
     this.renderComponent = this.renderComponent.bind(this);
@@ -54,6 +56,10 @@ class App extends Component {
     return this.renderComponent(Post, props);
   }
 
+  private renderArchives(props: object) {
+    return this.renderComponent(Archives, props);
+  }
+
   private renderSettings(props: object) {
     return this.renderComponent(Settings, props);
   }
@@ -74,6 +80,7 @@ class App extends Component {
           <Nav ref={this.nav} />
           <Switch>
             <Route exact={true} path="/" render={this.renderPost} />
+            <Route exact={true} path="/archives" render={this.renderArchives} />
             <Route exact={true} path="/settings" render={this.renderSettings} />
             <Route exact={true} path="/page/:page" render={this.renderPost} />
             <Route exact={true} path="/category/:category" render={this.renderPost} />} />

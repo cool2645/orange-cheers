@@ -70,6 +70,10 @@
     border-color: $theme-color;
     background-color: $theme-dark-color;
   }
+  .tag {
+    background-color: $theme-dark-color;
+    color: $background-color;
+  }
 }
 
 .comment {

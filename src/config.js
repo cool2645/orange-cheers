@@ -68,10 +68,9 @@ const nav = {
   ],
   icons: [
     {
-      title: "搜索",
-      typed: "搜索",
-      icon: "fas fa-search",
-      path: "/search",
+      title: "2645 工作室",
+      icon: "fas fa-home",
+      path: "https://www.cool2645.com",
     },
     {
       title: "RSS",
@@ -80,9 +79,10 @@ const nav = {
       path: "/rss",
     },
     {
-      title: "2645 工作室",
-      icon: "fas fa-home",
-      path: "https://www.cool2645.com",
+      title: "登录",
+      typed: "登录",
+      icon: "fas fa-sign-in-alt",
+      path: "/wp-login.php",
     },
     {
       title: "选项",

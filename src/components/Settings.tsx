@@ -111,6 +111,10 @@ class Settings extends Component<ISettingsProps, ISettingsState> {
     };
   }
 
+  public componentWillUnmount() {
+    document.onreadystatechange = null;
+  }
+
   private setTheme(theme: string) {
     localStorage.theme = theme;
     document.body.className = theme;
@@ -141,7 +145,7 @@ class Settings extends Component<ISettingsProps, ISettingsState> {
     };
     return (
       <div className="container page">
-        <div className="page-container settings">
+        <div className="page-container settings page-box">
           <div className="page-control">
             <h1>主题</h1>
             <ul className="themes nf">

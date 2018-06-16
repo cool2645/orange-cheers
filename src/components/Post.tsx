@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import ReactRouter, { Link } from 'react-router-dom';
 import * as WP from 'wordpress';
 
-import { post as config } from '../config';
+import { post as config, site } from '../config';
 import '../styles/Post.css';
 import '../styles/PostContent.css';
 import { formatDate, human } from '../utils/datetime';
@@ -31,7 +31,7 @@ interface IQueryParams {
 interface IQuery {
   key: string;
   params: IQueryParams;
-  offset: number;
+  offset: number | null;
 }
 
 interface IIndex {
@@ -177,6 +177,7 @@ class Post extends Component<IPostProps, IPostState> {
     localStorage.posts = JSON.stringify(this.posts);
     localStorage.indexes = JSON.stringify(this.indexes);
     this.seq++;
+    document.onreadystatechange = null;
   }
 
   private onReady(seq: number, error: any): void {
@@ -195,7 +196,7 @@ class Post extends Component<IPostProps, IPostState> {
     if (this.state.tag) params.tags = this.state.tag;
     if (this.state.params.search) params.search = this.state.params.search;
     const query = urlEncode(params);
-    this.query = { key: query, params, offset: 0 };
+    this.query = { key: query, params, offset: null };
     return Object.assign({}, params);
   }
 
@@ -208,7 +209,10 @@ class Post extends Component<IPostProps, IPostState> {
     let promise = new Promise<void>((resolve, reject) => {
       resolve();
     });
-    if (this.state.params.slug) return promise;
+    if (this.state.params.slug) {
+      this.props.setTyped(site.banner);
+      return promise;
+    }
     if (this.state.params.category) {
       promise = promise.then(() => honoka.get('/categories', {
         data: {
@@ -291,46 +295,50 @@ class Post extends Component<IPostProps, IPostState> {
   }
 
   private getSiblings(seq: number, post: IPost): IPost {
-    if (!this.query) return post;
     const siblings: ISiblings = {
       prev: undefined,
       prevOffset: this.query.offset - 1,
       next: undefined,
       nextOffset: this.query.offset + 1,
     };
-    const page = Math.floor(this.query.offset / config.perPage) + 1;
-    const j = this.query.offset % config.perPage;
 
-    if (this.indexes[this.query.key]) {
-      // need to look at previous page
-      if (j === 0) {
-        // no previous page, no need any more
-        if (page === 1) siblings.prev = null;
-        // try previous page
-        else {
-          const prevPage = this.indexes[this.query.key].posts[page - 1];
-          if (prevPage && prevPage.length) {
-            siblings.prev = this.posts[prevPage[prevPage.length - 1].slug];
+    // has query
+    if (this.query.offset !== null) {
+      const page = Math.floor(this.query.offset / config.perPage) + 1;
+      const j = this.query.offset % config.perPage;
+
+      // has cache
+      if (this.indexes[this.query.key]) {
+        // need to look at previous page
+        if (j === 0) {
+          // no previous page, no need any more
+          if (page === 1) siblings.prev = null;
+          // try previous page
+          else {
+            const prevPage = this.indexes[this.query.key].posts[page - 1];
+            if (prevPage && prevPage.length) {
+              siblings.prev = this.posts[prevPage[prevPage.length - 1].slug];
+            }
           }
         }
-      }
-      // need to look at next page
-      if (j === config.perPage - 1) {
-        // no next page, no need any more
-        if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
-        // try next page
-        else {
-          const nextPage = this.indexes[this.query.key].posts[page + 1];
-          if (nextPage && nextPage.length) {
-            siblings.next = this.posts[nextPage[0].slug];
+        // need to look at next page
+        if (j === config.perPage - 1) {
+          // no next page, no need any more
+          if (page === this.indexes[this.query.key].totalPage) siblings.next = null;
+          // try next page
+          else {
+            const nextPage = this.indexes[this.query.key].posts[page + 1];
+            if (nextPage && nextPage.length) {
+              siblings.next = this.posts[nextPage[0].slug];
+            }
           }
         }
-      }
-      // look at current page
-      const currPage = this.indexes[this.query.key].posts[page];
-      if (currPage && currPage.length) {
-        siblings.prev = j > 0 ? this.posts[currPage[j - 1].slug] : siblings.prev;
-        siblings.next = j < currPage.length - 1 ? this.posts[currPage[j + 1].slug] : siblings.next;
+        // look at current page
+        const currPage = this.indexes[this.query.key].posts[page];
+        if (currPage && currPage.length) {
+          siblings.prev = j > 0 ? this.posts[currPage[j - 1].slug] : siblings.prev;
+          siblings.next = j < currPage.length - 1 ? this.posts[currPage[j + 1].slug] : siblings.next;
+        }
       }
     }
 

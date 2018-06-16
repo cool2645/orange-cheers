@@ -5,21 +5,11 @@ import * as WP from 'wordpress';
 import { comment as config } from '../config';
 import '../styles/Comments.css';
 import { human } from '../utils/datetime';
+import { getElementTop } from '../utils/element';
 import urlEncode from '../utils/url';
 
 import { ClassicalLoader as Loader } from './Loader';
 import Unreachable from './Unreachable';
-
-const getElementTop = (element: HTMLElement | null): number => {
-  if (element === null) return 0;
-  let actualTop = element.offsetTop;
-  let current = element.offsetParent;
-  while (current !== null) {
-    actualTop += (current as HTMLElement).offsetTop;
-    current = (current as HTMLElement).offsetParent;
-  }
-  return actualTop;
-};
 
 interface ICommentSenderProps {
   replyId?: number; // TODO: send reply

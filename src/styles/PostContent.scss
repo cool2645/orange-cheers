@@ -93,4 +93,17 @@
   .aligncenter {
     margin: 5px auto;
   }
+  .tag {
+    display: inline-block;
+    position: relative;
+    padding: .5rem 1rem;
+    margin: 5px;
+    border-radius: 9rem;
+    font-size: 1rem;
+    border-bottom: 0!important;
+    text-decoration: none;
+    a {
+      text-decoration: none;
+    }
+  }
 }
