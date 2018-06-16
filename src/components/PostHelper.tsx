@@ -53,9 +53,9 @@ interface ISiblings {
 interface IViewComponentProps {
   data: null | IPostData | IPostsData;
 
-  getPostsData(seq: number, params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any): void;
+  getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any): void;
 
-  getPostData(seq: number, slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any): void;
+  getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any): void;
 }
 
 interface IPostHelperState {
@@ -84,6 +84,24 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
 
     constructor(props: P) {
       super(props);
+      this.categories = localStorage.categories ? JSON.parse(localStorage.categories) : {};
+      this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
+      this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
+      this.indexes = localStorage.indexes ? JSON.parse(localStorage.indexes) : {};
+      this.seq = 0;
+    }
+
+    public componentDidMount() {
+      const refreshConfig = JSON.parse(localStorage.refreshConfig);
+      this.setState({ refreshConfig });
+    }
+
+    public componentWillUnmount() {
+      localStorage.categories = JSON.stringify(this.categories);
+      localStorage.tags = JSON.stringify(this.tags);
+      localStorage.posts = JSON.stringify(this.posts);
+      localStorage.indexes = JSON.stringify(this.indexes);
+      this.seq++;
     }
 
     // fetch given categories
@@ -391,7 +409,9 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
     }
 
     // get posts as well as the dependencies and push them to data state
-    public getPostsData(seq: number, params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any) {
+    public getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any) {
+      if (!append) this.seq++;
+      const seq = this.seq;
       this.fetchPostsFromCache(page, params)
         .then(posts => {
           if (posts === null) return this.fetchPosts(page, params);
@@ -414,9 +434,11 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
               return this.fetchTags(tags);
             })
             .then(() => {
+              const ps = posts.posts;
+              if (append && (this.state.data as IPostsData).posts) posts.posts = [...(this.state.data as IPostsData).posts, ...ps];
               this.setState({ data: posts }, seq, () => {
                 callback(null);
-                this.fetchCommentCounts(seq, posts.posts.map(postData => postData.post));
+                this.fetchCommentCounts(seq, ps.map(postData => postData.post));
               });
             });
         })
@@ -427,7 +449,9 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
     }
 
     // get post as well as the dependencies and push it to data state
-    public getPostData(seq: number, slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any) {
+    public getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any) {
+      this.seq++;
+      const seq = this.seq;
       this.fetchPostFromCache(slug)
         .then(post => {
           if (post === null) return this.fetchPost(slug);
@@ -464,5 +488,5 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<P>
   };
 }
 
-export { IPostData, IPostsData, IViewComponentProps };
+export { IQueryParams, IPostData, IPostsData, IViewComponentProps };
 export default withPost;
