@@ -34,7 +34,7 @@ interface IIndexState {
   ready: boolean;
   query?: IQuery;
   error: (() => void) | null;
-  refreshConfig: IRefreshConfig;
+  refreshConfig?: IRefreshConfig;
 }
 
 const initialState: IIndexState = {
@@ -42,7 +42,6 @@ const initialState: IIndexState = {
   page: 1,
   params: {},
   error: null,
-  refreshConfig: JSON.parse(localStorage.refreshConfig),
 };
 
 class Index extends Component<IIndexProps, IIndexState> {

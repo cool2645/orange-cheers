@@ -30,14 +30,13 @@ interface IPostState {
   ready: boolean;
   query?: IQuery;
   error: (() => void) | null;
-  refreshConfig: IRefreshConfig;
+  refreshConfig?: IRefreshConfig;
 }
 
 const initialState: IPostState = {
   slug: '',
   ready: false,
   error: null,
-  refreshConfig: JSON.parse(localStorage.refreshConfig),
 };
 
 class Post extends Component<IPostProps, IPostState> {
