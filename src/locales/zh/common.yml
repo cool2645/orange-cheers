@@ -1,0 +1,5 @@
+notfound: "請求的網址不存在"
+unreachable:
+  title: "網路連接出現了問題"
+  retry: "重試"
+  refresh: "刷新"

@@ -7,7 +7,7 @@ import { getElementTop } from '../utils/element';
 
 import { ClassicalLoader as Loader } from './Loader';
 import { INavControlProps } from './Nav';
-import { IPostsData, IViewComponentProps } from './PostHelper';
+import { default as withPost, IPostsData, IViewComponentProps } from './PostHelper';
 
 interface IPost {
   date: number;
@@ -161,4 +161,4 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   }
 }
 
-export default Archives;
+export default withPost(Archives);

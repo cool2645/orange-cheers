@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
+import { translate, InjectedTranslateProps } from 'react-i18next';
 
 import '../styles/Loader.css';
 
-class NotFound extends Component {
+class NotFound extends Component<InjectedTranslateProps> {
   public render() {
-    return  (
+
+    const { t } = this.props;
+
+    return (
       <div className="container page">
         <div className="page-container">
           <div className="full-page-loader">
-            <h1>404 Not Found</h1>
+            <h1>{t('notfound')}</h1>
           </div>
         </div>
       </div>
@@ -16,4 +20,4 @@ class NotFound extends Component {
   }
 }
 
-export default NotFound;
+export default translate()(NotFound);

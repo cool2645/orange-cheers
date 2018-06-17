@@ -9,7 +9,7 @@ import Comments from './Comments';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
-import { IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
+import { default as withPost, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
 import Unreachable from './Unreachable';
 
@@ -75,7 +75,7 @@ class Post extends Component<IPostProps, IPostState> {
     this.setState(initialState);
     this.setState({
       slug: nextProps.match.params.slug,
-      query: this.props.location.state ? {
+      query: nextProps.location.state ? {
         params: nextProps.location.state.params,
         offset: nextProps.location.state.offset,
       } : { params: undefined, offset: undefined },
@@ -223,4 +223,4 @@ class Post extends Component<IPostProps, IPostState> {
   }
 }
 
-export default Post;
+export default withPost(Post);

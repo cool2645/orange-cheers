@@ -11,6 +11,7 @@ import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
 import { IPostsData, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
+import withPost from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
 import Unreachable from './Unreachable';
 
@@ -324,4 +325,4 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 }
 
-export default Index;
+export default withPost(Index);

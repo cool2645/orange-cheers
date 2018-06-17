@@ -68,7 +68,7 @@ interface IPostHelperState {
   data: null | IPostData | IPostsData;
 }
 
-function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentProps>) {
+function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IViewComponentProps>) {
   return class PostHelper extends Component<P, IPostHelperState> {
 
     private categories: { [key: number]: WP.Category };

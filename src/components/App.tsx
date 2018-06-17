@@ -17,7 +17,6 @@ import Index from './Index';
 import Nav from './Nav';
 import NotFound from './NotFound';
 import Post from './Post';
-import withPost from './PostHelper';
 import Settings, { initSettings } from './Settings';
 
 class App extends Component {
@@ -36,7 +35,6 @@ class App extends Component {
     this.renderPost = this.renderPost.bind(this);
     this.renderSettings = this.renderSettings.bind(this);
     this.renderComponent = this.renderComponent.bind(this);
-    this.renderComponentWithPost = this.renderComponentWithPost.bind(this);
     initSettings();
   }
 
@@ -57,15 +55,15 @@ class App extends Component {
   }
 
   private renderIndex(props: object) {
-    return this.renderComponentWithPost(Index, props);
+    return this.renderComponent(Index, props);
   }
 
   private renderPost(props: object) {
-    return this.renderComponentWithPost(Post, props);
+    return this.renderComponent(Post, props);
   }
 
   private renderArchives(props: object) {
-    return this.renderComponentWithPost(Archives, props);
+    return this.renderComponent(Archives, props);
   }
 
   private renderSettings(props: object) {
@@ -79,16 +77,6 @@ class App extends Component {
                  joinProgress={this.joinProgress}
                  doneProgress={this.doneProgress}
     />;
-  }
-
-  private renderComponentWithPost(Comp: ComponentClass<any>, props: object) {
-    const WithPostComp = withPost<any>(Comp);
-    return (<WithPostComp {...props}
-                 setTyped={this.setTyped}
-                 startProgress={this.startProgress}
-                 joinProgress={this.joinProgress}
-                 doneProgress={this.doneProgress}
-    />);
   }
 
   public render() {
