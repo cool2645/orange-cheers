@@ -1,0 +1,79 @@
+theme:
+  title: "Theme"
+  orange-cheers: "Orange Cheers!"
+  ice-blue-no-shunkan: "Ice blue no shunkan"
+  junpaku-romance: "Junpaku Romance"
+  aoi-no-shinwa: "Aoi no shinwa"
+  ring-a-yellow-bell: "Ring a yellow bell"
+  scarlet-princess: "SCARLET PRINCESS"
+  violet-moon: "Violet Moon"
+  wakakusa-no-season: "Wakakusa no Season"
+  momoiro-egao: "Momoiro ♡ egao"
+datasaving:
+  title: "Data Saving"
+clearcache:
+  title: "Clear all cache"
+  btn: "Clear local storage"
+default: "(Default)"
+indexes:
+  name: "Post List"
+  '0':
+    level: "Always Update"
+    prompt: "Retrieve the latest post data."
+  '1':
+    level: "Use Cache"
+    prompt: "Warning: Post list will not be updated!"
+posts:
+  name: "Post"
+  '0':
+    level: "Always Update"
+    prompt: "Retrieve the latest post data on showing post page."
+  '1':
+    level: "Use Cache"
+    prompt: "Will not update post in post page，posts will get updates while post lists update."
+categories:
+  name: "Categories"
+  '0':
+    level: "Always Update"
+    prompt: "Always retrieve category data from server."
+  '1':
+    level: "Use Cache"
+    prompt: "Will not update known category's data."
+tags:
+  name: "Tags"
+  '0':
+    level: "Always Update"
+    prompt: "Always retrieve tag data from server."
+  '1':
+    level: "Use Cache"
+    prompt: "Will not update known tag's data."
+commentCounts:
+  name: "Comment Count"
+  '0':
+    level: "Always Update"
+    prompt: "Always retrieve comment counts from server."
+  '1':
+    level: "Use Cache"
+    prompt: "Will not update comment counts once shown."
+  '2':
+    level: "Disable"
+    prompt: "Stop showing comment counts."
+siblings:
+  name: "Previous and Next Post"
+  '0':
+    level: "Always Update"
+    prompt: "Always retrieve previous and next posts from server."
+  '1':
+    level: "Use Post List Cache"
+    prompt: "Use the data loaded from post list cache whenever possible."
+  '2':
+    level: "Disable"
+    prompt: "Stop showing previous and next posts."
+comments:
+  name: "Comments"
+  '0':
+    level: "Always Update"
+    prompt: "Always retrieve comments."
+  '2':
+    level: "Disable"
+    prompt: "Disable comments."

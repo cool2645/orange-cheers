@@ -1,0 +1,79 @@
+theme:
+  title: "主題"
+  orange-cheers: "Orange Cheers!"
+  ice-blue-no-shunkan: "Ice blueの瞬間"
+  junpaku-romance: "純白Romance"
+  aoi-no-shinwa: "蒼の神話"
+  ring-a-yellow-bell: "Ring a yellow bell"
+  scarlet-princess: "SCARLET PRINCESS"
+  violet-moon: "Violet Moon"
+  wakakusa-no-season: "若草のSeason"
+  momoiro-egao: "桃色♡笑顔"
+datasaving:
+  title: "流量節省"
+clearcache:
+  title: "清除所有緩存"
+  btn: "清空本地緩存"
+default: "（默認）"
+indexes:
+  name: "文章列表"
+  '0':
+    level: "總是刷新"
+    prompt: "拉取最新的文章列表數據。"
+  '1':
+    level: "使用緩存"
+    prompt: "警告：將不會更新文章列表。"
+posts:
+  name: "文章"
+  '0':
+    level: "總是刷新"
+    prompt: "顯示文章頁面時重新拉取最新的文章數據。"
+  '1':
+    level: "使用緩存"
+    prompt: "顯示文章頁面時不會拉取文章更新，文章將會在刷新文章列表時更新。"
+categories:
+  name: "分類目錄"
+  '0':
+    level: "總是刷新"
+    prompt: "總是重新拉取分類數據。"
+  '1':
+    level: "使用緩存"
+    prompt: "不更新已知分類數據。"
+tags:
+  name: "標籤"
+  '0':
+    level: "總是刷新"
+    prompt: "總是重新拉取標籤數據。"
+  '1':
+    level: "使用緩存"
+    prompt: "不更新已知標籤數據。"
+commentCounts:
+  name: "評論數"
+  '0':
+    level: "總是刷新"
+    prompt: "總是重新拉取評論數。"
+  '1':
+    level: "使用緩存"
+    prompt: "不更新已載入過的評論數。"
+  '2':
+    level: "禁用"
+    prompt: "不顯示評論數。"
+siblings:
+  name: "相鄰的文章"
+  '0':
+    level: "總是刷新"
+    prompt: "總是重新拉取相鄰的文章。"
+  '1':
+    level: "使用文章列表緩存"
+    prompt: "如果能夠從緩存的文章列表中讀取相鄰的文章，則使用此數據。"
+  '2':
+    level: "禁用"
+    prompt: "不顯示相鄰的文章。"
+comments:
+  name: "評論"
+  '0':
+    level: "總是刷新"
+    prompt: "總是重新拉取文章評論。"
+  '2':
+    level: "禁用"
+    prompt: "不顯示文章評論。"
