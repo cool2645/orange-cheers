@@ -9,8 +9,8 @@ import { IRefreshConfig, RefreshLevel } from './Settings';
 
 interface IQueryParams {
   per_page: number;
-  categories?: number[];
-  tags?: number[];
+  categories?: number[] | number;
+  tags?: number[] | number;
   search?: string;
 
   page?: number;
@@ -21,7 +21,7 @@ interface IQueryParams {
 }
 
 interface IIndex {
-  pages: Map<number, IPostIndex[]>;
+  pages: { [key: number]: IPostIndex[] };
   totalPage: number;
 }
 
@@ -68,10 +68,10 @@ interface IPostHelperState {
 function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentProps>) {
   return class PostHelper extends Component<P, IPostHelperState> {
 
-    private categories: Map<number, WP.Category>;
-    private tags: Map<number, WP.Tag>;
-    private posts: Map<string, IPost>;
-    private indexes: Map<string, IIndex>;
+    private categories: { [key: number]: WP.Category };
+    private tags: { [key: number]: WP.Tag };
+    private posts: { [key: string]: IPost };
+    private indexes: { [key: string]: IIndex };
     private seq: number;
 
     public setState<K extends keyof IPostHelperState>(
@@ -86,10 +86,6 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
 
     constructor(props: P) {
       super(props);
-      this.categories = localStorage.categories ? JSON.parse(localStorage.categories) : {};
-      this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
-      this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
-      this.indexes = localStorage.indexes ? JSON.parse(localStorage.indexes) : {};
       this.seq = 0;
       this.state = {
         refreshConfig: JSON.parse(localStorage.refreshConfig),
@@ -110,6 +106,10 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
 
     public componentDidMount() {
       const refreshConfig = JSON.parse(localStorage.refreshConfig);
+      this.categories = localStorage.categories ? JSON.parse(localStorage.categories) : {};
+      this.tags = localStorage.tags ? JSON.parse(localStorage.tags) : {};
+      this.posts = localStorage.posts ? JSON.parse(localStorage.posts) : {};
+      this.indexes = localStorage.indexes ? JSON.parse(localStorage.indexes) : {};
       this.setState({ refreshConfig });
     }
 
@@ -123,7 +123,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
 
     // fetch given categories
     // if no category given, fetch categories with most posts
-    private fetchCategories(filter?: number[]): Promise<WP.Category[]> {
+    private fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category }> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -141,8 +141,10 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
         (params as any).include = cats.join(',');
       } else cached = false;
       if (cached && this.state.refreshConfig.categories === RefreshLevel.Cache) {
-        return new Promise<WP.Category[]>((resolve) => {
-          resolve(filter.map(id => this.categories[id]));
+        return new Promise<{ [key: number]: WP.Category }>((resolve) => {
+          const categories = {};
+          filter.forEach(id => categories[id] = this.categories[id]);
+          resolve(categories);
         });
       }
       return honoka.get('/categories', {
@@ -152,13 +154,15 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
           data.forEach((cat: WP.Category) => {
             this.categories[cat.id] = cat;
           });
-          return filter.map(id => this.categories[id]);
+          const categories = {};
+          filter.forEach(id => categories[id] = this.categories[id]);
+          return categories;
         });
     }
 
     // fetch given tags
     // if no tags given, fetch tags with most posts
-    private fetchTags(filter?: number[]): Promise<WP.Tag[]> {
+    private fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag }> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -176,8 +180,10 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
         (params as any).include = tags.join(',');
       } else cached = false;
       if (cached && this.state.refreshConfig.tags === RefreshLevel.Cache) {
-        return new Promise<WP.Tag[]>((resolve) => {
-          resolve(filter.map(id => this.tags[id]));
+        return new Promise<{ [key: number]: WP.Tag }>((resolve) => {
+          const tags = {};
+          filter.forEach(id => tags[id] = this.tags[id]);
+          resolve(tags);
         });
       }
       return honoka.get('/tags', {
@@ -187,7 +193,9 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
           data.forEach((tag: WP.Tag) => {
             this.tags[tag.id] = tag;
           });
-          return filter.map(id => this.tags[id]);
+          const tags = {};
+          filter.forEach(id => tags[id] = this.tags[id]);
+          return tags;
         });
     }
 
@@ -254,7 +262,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
     // return post if succeed
     // return null if fail
     private fetchPostFromCache(slug: string): Promise<null | IPost> {
-      if (this.state.refreshConfig.posts === RefreshLevel.Cache && this.posts[slug]) {
+      if (this.posts[slug]) {
         return new Promise<IPost>(resolve => {
           resolve(this.posts[slug]);
         });
@@ -289,13 +297,10 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
     // return null if fail
     private fetchPostsFromCache(page: number, params: IQueryParams): Promise<null | IPostsData> {
       const query = urlEncode(params);
-      if (this.state.refreshConfig.indexes === RefreshLevel.Cache &&
-        this.indexes[query] && this.indexes[query].pages[page]) {
-        const cachedData = this.indexes[query].pages[page].map((index: IPostIndex) => {
-          const post = this.posts[index.slug];
-          post.offset = index.offset;
-          return post;
-        });
+      if (this.indexes[query] && this.indexes[query].pages[page]) {
+        const cachedData: IPostData[] = this.indexes[query].pages[page].map((index: IPostIndex) => (
+          { post: this.posts[index.slug], offset: index.offset }
+        ));
         return new Promise<IPostsData>(resolve => {
           resolve({ posts: cachedData, totalPage: this.indexes[query].totalPage });
         });
@@ -322,7 +327,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
                   offset: (page - 1) * config.perPage + i,
                 });
               });
-              if (!this.indexes[query]) this.indexes[query] = { posts: {}, totalPage: 0 };
+              if (!this.indexes[query]) this.indexes[query] = { pages: {}, totalPage: 0 };
               this.indexes[query].totalPage = totalPage;
               this.indexes[query].pages[page] = postsData.posts.map((post: IPostData) =>
                 ({ slug: post.post.slug, offset: post.offset }));
@@ -437,6 +442,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
     public getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (err: any) => any) {
       if (!append) this.seq++;
       const seq = this.seq;
+      params = Object.assign({}, params);
       this.fetchPostsFromCache(page, params)
         .then(posts => {
           if (posts === null) return this.fetchPosts(page, params);
@@ -487,6 +493,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
     public getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (err: any) => any) {
       this.seq++;
       const seq = this.seq;
+      params = Object.assign({}, params);
       this.fetchPostFromCache(slug)
         .then(post => {
           if (post === null) return this.fetchPost(slug);
@@ -498,11 +505,11 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
         .then(post => ({ post, offset }))
         .then((postData: IPostData) => this.fetchCategories(postData.post.categories)
           .then((categories) => {
-            postData.categories = categories;
+            postData.categories = Object.values(categories);
           })
           .then(() => this.fetchTags(postData.post.tags))
           .then((tags) => {
-            postData.tags = tags;
+            postData.tags = Object.values(tags);
           })
           .then(() => {
             this.setState({ data: postData }, seq, () => {

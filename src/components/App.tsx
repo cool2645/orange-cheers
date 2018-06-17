@@ -57,7 +57,7 @@ class App extends Component {
   }
 
   private renderIndex(props: object) {
-    return this.renderComponent(Index, props);
+    return this.renderComponentWithPost(Index, props);
   }
 
   private renderPost(props: object) {

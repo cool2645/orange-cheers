@@ -13,7 +13,7 @@ interface IPost {
   post: WP.Post;
 }
 
-type Archive = Map<string, Map<string, IPost[]>>;
+type Archive = ({ [key: string]: { [key: string]: IPost[] } });
 
 interface IArchivesProps {
   startProgress(): void;
@@ -52,7 +52,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
       categories: null,
       tags: null,
       page: 0,
-      posts: new Map(),
+      posts: {},
     };
     this.fetchCategories = this.fetchCategories.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
@@ -130,7 +130,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
         const posts: Archive = Object.assign({}, this.state.posts);
         data.forEach((post: WP.Post) => {
           const date = new Date(post.date_gmt + '.000Z');
-          if (!posts[date.getFullYear() + ' ']) posts[date.getFullYear() + ' '] = new Map();
+          if (!posts[date.getFullYear() + ' ']) posts[date.getFullYear() + ' '] = {};
           if (!posts[date.getFullYear() + ' '][date.getMonth() + ' ']) posts[date.getFullYear() + ' '][date.getMonth() + ' '] = [];
           posts[date.getFullYear() + ' '][date.getMonth() + ' '].push({ date: date.getDate(), post });
         });
@@ -164,22 +164,22 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
               <h1>分类目录</h1>
               {
                 this.state.categories === null ? Loader :
-                this.state.categories.map((cate) => (
-                  <Link key={cate.id} className="tag" to={`/category/${cate.slug}`}>
-                    {`${cate.name} (${cate.count})`}
-                  </Link>
-                ))
+                  this.state.categories.map((cate) => (
+                    <Link key={cate.id} className="tag" to={`/category/${cate.slug}`}>
+                      {`${cate.name} (${cate.count})`}
+                    </Link>
+                  ))
               }
             </div>
             <div className="content fee page-control post-content">
               <h1>标签</h1>
               {
                 this.state.tags === null ? Loader :
-                this.state.tags.map((tag) => (
-                  <Link key={tag.id} className="tag" title={`${tag.count} 次`} to={`/tag/${tag.slug}`}>
-                    {tag.name}
-                  </Link>
-                ))
+                  this.state.tags.map((tag) => (
+                    <Link key={tag.id} className="tag" title={`${tag.count} 次`} to={`/tag/${tag.slug}`}>
+                      {tag.name}
+                    </Link>
+                  ))
               }
             </div>
             <div className="content page-control post-content">
