@@ -8,6 +8,7 @@ import '../styles/PostContent.css';
 import { formatDate, human } from '../utils/datetime';
 
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
+import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
 import { IPostsData, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
@@ -24,14 +25,7 @@ interface IParams {
   search?: string;
 }
 
-interface IIndexProps extends RouteComponentProps<IParams>, IViewComponentProps {
-  startProgress(): void;
-
-  joinProgress(): void;
-
-  doneProgress(): void;
-
-  setTyped(text: string): void;
+interface IIndexProps extends RouteComponentProps<IParams>, IViewComponentProps, INavControlProps {
 }
 
 interface IIndexState {

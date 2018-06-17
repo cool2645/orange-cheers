@@ -2,7 +2,6 @@ import honoka from 'honoka';
 import React, { Component, ComponentType } from 'react';
 import * as WP from 'wordpress';
 
-import { post as config } from '../config';
 import urlEncode from '../utils/url';
 
 import { IRefreshConfig, RefreshLevel } from './Settings';
@@ -58,6 +57,10 @@ interface IViewComponentProps {
   getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any): void;
 
   getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any): void;
+
+  fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category }>;
+
+  fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag }>;
 }
 
 interface IPostHelperState {
@@ -123,7 +126,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
 
     // fetch given categories
     // if no category given, fetch categories with most posts
-    private fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category }> {
+    public fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category }> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -155,14 +158,15 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
             this.categories[cat.id] = cat;
           });
           const categories = {};
-          filter.forEach(id => categories[id] = this.categories[id]);
+          filter ? filter.forEach(id => categories[id] = this.categories[id])
+            : data.forEach((cat: WP.Category) => categories[cat.id] = cat);
           return categories;
         });
     }
 
     // fetch given tags
     // if no tags given, fetch tags with most posts
-    private fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag }> {
+    public fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag }> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -194,7 +198,8 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
             this.tags[tag.id] = tag;
           });
           const tags = {};
-          filter.forEach(id => tags[id] = this.tags[id]);
+          filter ? filter.forEach(id => tags[id] = this.tags[id])
+            : data.forEach((tag: WP.Tag) => tags[tag.id] = tag);
           return tags;
         });
     }
@@ -313,6 +318,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
     // fetch posts
     private fetchPosts(page: number, params: IQueryParams): Promise<IPostsData> {
       const query = urlEncode(params);
+      params.page = page;
       return fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params))
         .then(response => {
           const totalPage = +response.headers.get('x-wp-totalpages');
@@ -324,7 +330,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
                 this.posts[post.slug] = post;
                 postsData.posts.push({
                   post,
-                  offset: (page - 1) * config.perPage + i,
+                  offset: (page - 1) * params.per_page + i,
                 });
               });
               if (!this.indexes[query]) this.indexes[query] = { pages: {}, totalPage: 0 };
@@ -348,8 +354,8 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
 
       // has query
       if (offset !== undefined) {
-        const page = Math.floor(offset / config.perPage) + 1;
-        const j = offset % config.perPage;
+        const page = Math.floor(offset / params.per_page) + 1;
+        const j = offset % params.per_page;
 
         // has cache
         if (this.indexes[key]) {
@@ -366,7 +372,7 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
             }
           }
           // need to look at next page
-          if (j === config.perPage - 1) {
+          if (j === params.per_page - 1) {
             // no next page, no need any more
             if (page === this.indexes[key].totalPage) siblings.next = null;
             // try next page
@@ -530,6 +536,8 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
         data={this.state.data}
         getPostData={this.getPostData}
         getPostsData={this.getPostsData}
+        fetchCategories={this.fetchCategories}
+        fetchTags={this.fetchTags}
         {...this.props}
       />;
     }

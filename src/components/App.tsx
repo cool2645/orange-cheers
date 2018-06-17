@@ -65,7 +65,7 @@ class App extends Component {
   }
 
   private renderArchives(props: object) {
-    return this.renderComponent(Archives, props);
+    return this.renderComponentWithPost(Archives, props);
   }
 
   private renderSettings(props: object) {

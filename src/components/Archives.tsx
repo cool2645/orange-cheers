@@ -1,4 +1,3 @@
-import honoka from 'honoka';
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import * as WP from 'wordpress';
@@ -7,6 +6,8 @@ import '../styles/Post.css';
 import { getElementTop } from '../utils/element';
 
 import { ClassicalLoader as Loader } from './Loader';
+import { INavControlProps } from './Nav';
+import { IPostsData, IViewComponentProps } from './PostHelper';
 
 interface IPost {
   date: number;
@@ -15,12 +16,7 @@ interface IPost {
 
 type Archive = ({ [key: string]: { [key: string]: IPost[] } });
 
-interface IArchivesProps {
-  startProgress(): void;
-
-  joinProgress(): void;
-
-  doneProgress(): void;
+interface IArchivesProps extends IViewComponentProps, INavControlProps {
 }
 
 interface IArchivesState {
@@ -54,17 +50,18 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
       page: 0,
       posts: {},
     };
-    this.fetchCategories = this.fetchCategories.bind(this);
-    this.fetchTags = this.fetchTags.bind(this);
-    this.fetchPosts = this.fetchPosts.bind(this);
     this.fetchMorePosts = this.fetchMorePosts.bind(this);
     this.update = this.update.bind(this);
   }
 
   public componentDidMount() {
     this.props.startProgress();
-    this.fetchCategories();
-    this.fetchTags();
+    this.props.fetchCategories().then(categories =>
+      this.setState({ categories: Object.values(categories) })
+    );
+    this.props.fetchTags().then(tags =>
+      this.setState({ tags: Object.values(tags) })
+    );
     this.fetchMorePosts();
     window.onscroll = this.update;
     this.unmounted = false;
@@ -85,32 +82,6 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     document.onreadystatechange = null;
   }
 
-  private fetchCategories() {
-    return honoka.get('/categories', {
-      data: {
-        orderby: 'count',
-        order: 'desc',
-        per_page: 100,
-      },
-    })
-      .then(data => {
-        this.setState({ categories: data });
-      });
-  }
-
-  private fetchTags() {
-    return honoka.get('/tags', {
-      data: {
-        orderby: 'count',
-        order: 'desc',
-        per_page: 100,
-      },
-    })
-      .then(data => {
-        this.setState({ tags: data });
-      });
-  }
-
   private update() {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('archive-ending'));
@@ -119,39 +90,25 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMorePosts();
   }
 
-  private fetchPosts(page: number): Promise<WP.Post[]> {
-    return honoka.get('/posts', {
-      data: {
-        page,
-        per_page: 15,
-      },
-    })
-      .then(data => {
+  private fetchMorePosts() {
+    if (!this.state.ready) return;
+    this.setState({ ready: false }, () =>
+      this.props.getPostsData({ per_page: 15 }, this.state.page + 1, false, (err) => {
+        if (err) {
+          this.setState({ ready: true, end: true });
+          return;
+        }
         const posts: Archive = Object.assign({}, this.state.posts);
-        data.forEach((post: WP.Post) => {
+        (this.props.data as IPostsData).posts.forEach(postData => {
+          const post = postData.post;
           const date = new Date(post.date_gmt + '.000Z');
           if (!posts[date.getFullYear() + ' ']) posts[date.getFullYear() + ' '] = {};
           if (!posts[date.getFullYear() + ' '][date.getMonth() + ' ']) posts[date.getFullYear() + ' '][date.getMonth() + ' '] = [];
           posts[date.getFullYear() + ' '][date.getMonth() + ' '].push({ date: date.getDate(), post });
         });
-        this.setState({ posts });
-        return data;
-      });
-  }
-
-  private fetchMorePosts() {
-    if (!this.state.ready) return;
-    this.setState({ ready: false }, () =>
-      this.fetchPosts(this.state.page + 1)
-        .then((data) => {
-          this.setState({ ready: true, page: this.state.page + 1 });
-          this.update();
-          return data;
-        })
-        .catch(err => {
-          console.log(err);
-          this.setState({ ready: true, end: true });
-        })
+        const end = (this.props.data as IPostsData).totalPage === this.state.page + 1;
+        this.setState({ posts, page: this.state.page + 1, ready: true, end });
+      })
     );
   }
 

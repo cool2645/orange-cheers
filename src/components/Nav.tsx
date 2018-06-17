@@ -10,6 +10,16 @@ interface INavProps {
   ref: React.RefObject<Nav>;
 }
 
+interface INavControlProps {
+  startProgress(): void;
+
+  joinProgress(): void;
+
+  doneProgress(): void;
+
+  setTyped(text: string): void;
+}
+
 enum Collapse {
   true = 'collapse',
   false = '',
@@ -287,4 +297,5 @@ class Nav extends Component<INavProps, INavStates> {
   }
 }
 
+export { INavControlProps };
 export default Nav;

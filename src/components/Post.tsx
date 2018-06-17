@@ -7,6 +7,7 @@ import { formatDate, human } from '../utils/datetime';
 
 import Comments from './Comments';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
+import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
 import { IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
@@ -21,14 +22,7 @@ interface IParams {
   slug: string;
 }
 
-interface IPostProps extends RouteComponentProps<IParams>, IViewComponentProps {
-  startProgress(): void;
-
-  joinProgress(): void;
-
-  doneProgress(): void;
-
-  setTyped(text: string): void;
+interface IPostProps extends RouteComponentProps<IParams>, IViewComponentProps, INavControlProps {
 }
 
 interface IPostState {
