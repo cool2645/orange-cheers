@@ -46,6 +46,16 @@ const initialState: IIndexState = {
 
 class Index extends Component<IIndexProps, IIndexState> {
 
+  private unmounted: boolean;
+
+  public setState<K extends keyof IIndexState>(
+    newState: ((prevState: Readonly<IIndexState>, props: IIndexProps) =>
+      (Pick<IIndexState, K> | IIndexState | null)) | (Pick<IIndexState, K> | IIndexState | null),
+    callback?: () => void
+  ): void {
+    if (!this.unmounted) super.setState(newState, callback);
+  }
+
   constructor(props: IIndexProps) {
     super(props);
     const state = initialState;
@@ -60,6 +70,7 @@ class Index extends Component<IIndexProps, IIndexState> {
 
   public componentDidMount() {
     this.props.startProgress();
+    this.unmounted = false;
     const refreshConfig = JSON.parse(localStorage.refreshConfig);
     this.setState({ refreshConfig });
     initialState.refreshConfig = refreshConfig;
@@ -86,6 +97,7 @@ class Index extends Component<IIndexProps, IIndexState> {
 
   public componentWillUnmount() {
     document.onreadystatechange = null;
+    this.unmounted = true;
   }
 
   private onReady(error: any): void {

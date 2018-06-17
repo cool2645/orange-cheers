@@ -30,16 +30,6 @@ interface IArchivesState {
 
 class Archives extends Component<IArchivesProps, IArchivesState> {
 
-  private unmounted: boolean;
-
-  public setState<K extends keyof IArchivesState>(
-    newState: ((prevState: Readonly<IArchivesState>, props: IArchivesProps) =>
-      (Pick<IArchivesState, K> | IArchivesState | null)) | (Pick<IArchivesState, K> | IArchivesState | null),
-    callback?: () => void
-  ): void {
-    if (!this.unmounted) super.setState(newState, callback);
-  }
-
   constructor(props: IArchivesProps) {
     super(props);
     this.state = {
@@ -64,7 +54,6 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     );
     this.fetchMorePosts();
     window.onscroll = this.update;
-    this.unmounted = false;
     if (document.readyState === 'complete') {
       this.props.doneProgress();
       return;
@@ -78,7 +67,6 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
 
   public componentWillUnmount() {
     window.onscroll = null;
-    this.unmounted = true;
     document.onreadystatechange = null;
   }
 
