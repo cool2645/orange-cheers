@@ -124,9 +124,9 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
       this.seq++;
     }
 
-    // fetch given categories
-    // if no category given, fetch categories with most posts
-    public fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category }> {
+    // fetch given categories, return an object whose keys are values in filter
+    // if no category given, fetch categories with most posts, return an array of results
+    public fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category } | WP.Category[]> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -157,16 +157,18 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
           data.forEach((cat: WP.Category) => {
             this.categories[cat.id] = cat;
           });
-          const categories = {};
-          filter ? filter.forEach(id => categories[id] = this.categories[id])
-            : data.forEach((cat: WP.Category) => categories[cat.id] = cat);
-          return categories;
+          if (filter) {
+            const categories = {};
+            filter.forEach(id => categories[id] = this.categories[id]);
+            return categories;
+          }
+          return data;
         });
     }
 
-    // fetch given tags
-    // if no tags given, fetch tags with most posts
-    public fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag }> {
+    // fetch given tags, return an object whose keys are values in filter
+    // if no tags given, fetch tags with most posts, return an array of results
+    public fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag } | WP.Tag[]> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -197,10 +199,12 @@ function withPost<P extends object>(ViewComponent: ComponentType<IViewComponentP
           data.forEach((tag: WP.Tag) => {
             this.tags[tag.id] = tag;
           });
-          const tags = {};
-          filter ? filter.forEach(id => tags[id] = this.tags[id])
-            : data.forEach((tag: WP.Tag) => tags[tag.id] = tag);
-          return tags;
+          if (filter) {
+            const tags = {};
+            filter.forEach(id => tags[id] = this.tags[id]);
+            return tags;
+          }
+          return data;
         });
     }
 
