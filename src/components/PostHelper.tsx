@@ -448,50 +448,79 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
       return post;
     }
 
+    private afterGetPosts(posts: IPostsData, seq: number, append?: boolean, callback?: (err: any) => any) {
+      let cats: number[] = [];
+      posts.posts.forEach((post: IPostData) => {
+        cats = cats.concat(post.post.categories);
+      });
+      return this.fetchCategories(cats)
+        .then(categories => {
+          posts.posts.forEach((post: IPostData) => {
+            post.categories = post.post.categories.map(id => categories[id]);
+          });
+        })
+        .then(() => {
+          let tags: number[] = [];
+          posts.posts.forEach((post: IPostData) => {
+            tags = tags.concat(post.post.tags);
+          });
+          return this.fetchTags(tags);
+        })
+        .then(tags => {
+          posts.posts.forEach((post: IPostData) => {
+            post.tags = post.post.tags.map(id => tags[id]);
+          });
+        })
+        .then(() => {
+          const ps = posts.posts;
+          if (append && (this.state.data as IPostsData).posts) posts.posts = [...(this.state.data as IPostsData).posts, ...ps];
+          this.setState({ data: posts }, seq, () => {
+            if (callback) callback(null);
+            this.fetchCommentCounts(seq, ps.map(postData => postData.post));
+          });
+        })
+        .catch(err => {
+          console.log(err);
+          if (callback) callback(err);
+        });
+    }
+
     // get posts as well as the dependencies and push them to data state
-    public getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (err: any) => any) {
+    // will call onready once get data, call onupdated after data updated against onready.
+    public getPostsData(params: IQueryParams, page: number, append?: boolean,
+                        onready?: (err: any) => any, onupdated?: (err: any) => any) {
       if (!append) this.seq++;
       const seq = this.seq;
       params = Object.assign({}, params);
-      this.fetchPostsFromCache(page, params)
+      return this.fetchPostsFromCache(page, params)
         .then(posts => {
           if (posts === null) return this.fetchPosts(page, params);
           else {
-            if (this.state.refreshConfig.indexes === RefreshLevel.Always) this.fetchPosts(page, params);
+            if (this.state.refreshConfig.indexes === RefreshLevel.Always) {
+              this.fetchPosts(page, params)
+                .then(newPosts => this.afterGetPosts(newPosts, seq, append, onupdated));
+            }
             return posts;
           }
         })
-        .then(posts => {
-          let cats: number[] = [];
-          posts.posts.forEach((post: IPostData) => {
-            cats = cats.concat(post.post.categories);
+        .then(posts => this.afterGetPosts(posts, seq, append, onready));
+    }
+
+    private afterGetPost(postData: IPostData, seq: number, params?: IQueryParams, offset?: number, callback?: (err: any) => any) {
+      this.fetchCategories(postData.post.categories)
+        .then((categories) => {
+          postData.categories = Object.values(categories);
+        })
+        .then(() => this.fetchTags(postData.post.tags))
+        .then((tags) => {
+          postData.tags = Object.values(tags);
+        })
+        .then(() => {
+          this.setState({ data: postData }, seq, () => {
+            callback(null);
+            this.fetchCommentCount(seq, postData.post);
+            if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.fetchSiblings(seq, postData, params, offset);
           });
-          return this.fetchCategories(cats)
-            .then(categories => {
-              posts.posts.forEach((post: IPostData) => {
-                post.categories = post.post.categories.map(id => categories[id]);
-              });
-            })
-            .then(() => {
-              let tags: number[] = [];
-              posts.posts.forEach((post: IPostData) => {
-                tags = tags.concat(post.post.tags);
-              });
-              return this.fetchTags(tags);
-            })
-            .then(tags => {
-              posts.posts.forEach((post: IPostData) => {
-                post.tags = post.post.tags.map(id => tags[id]);
-              });
-            })
-            .then(() => {
-              const ps = posts.posts;
-              if (append && (this.state.data as IPostsData).posts) posts.posts = [...(this.state.data as IPostsData).posts, ...ps];
-              this.setState({ data: posts }, seq, () => {
-                callback(null);
-                this.fetchCommentCounts(seq, ps.map(postData => postData.post));
-              });
-            });
         })
         .catch(err => {
           console.log(err);
@@ -500,7 +529,9 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
     }
 
     // get post as well as the dependencies and push it to data state
-    public getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (err: any) => any) {
+    // will call onready once get data, call onupdated after data updated against onready.
+    public getPostData(slug: string, params?: IQueryParams, offset?: number,
+                       onready?: (err: any) => any, onupdated?: (err: any) => any) {
       this.seq++;
       const seq = this.seq;
       params = Object.assign({}, params);
@@ -508,31 +539,16 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
         .then(post => {
           if (post === null) return this.fetchPost(slug);
           else {
-            if (this.state.refreshConfig.posts === RefreshLevel.Always) this.fetchPost(slug);
+            if (this.state.refreshConfig.posts === RefreshLevel.Always) {
+              this.fetchPost(slug)
+                .then(newPost => ({ post: newPost, offset }))
+                .then((postData: IPostData) => this.afterGetPost(postData, seq, params, offset, onupdated));
+            }
             return post;
           }
         })
         .then(post => ({ post, offset }))
-        .then((postData: IPostData) => this.fetchCategories(postData.post.categories)
-          .then((categories) => {
-            postData.categories = Object.values(categories);
-          })
-          .then(() => this.fetchTags(postData.post.tags))
-          .then((tags) => {
-            postData.tags = Object.values(tags);
-          })
-          .then(() => {
-            this.setState({ data: postData }, seq, () => {
-              callback(null);
-              this.fetchCommentCount(seq, postData.post);
-              if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.fetchSiblings(seq, postData, params, offset);
-            });
-          })
-        )
-        .catch(err => {
-          console.log(err);
-          callback(err);
-        });
+        .then((postData: IPostData) => this.afterGetPost(postData, seq, params, offset, onready));
     }
 
     public render() {
