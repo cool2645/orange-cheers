@@ -7,7 +7,6 @@ i18n.use(LanguageDetector).init({
   // we init with resources
   resources,
   fallbackLng: 'en',
-  debug: true,
 
   // have a common namespace used around the full app
   ns: ['common'],

@@ -8,7 +8,6 @@ declare module 'wordpress' {
   export interface Comment {
     id: number;
     parent: number;
-    children: Comment[];
     author_name: string;
     author_avatar_urls: AvatarURLs;
     author_url: string;

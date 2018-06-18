@@ -39,11 +39,13 @@ const initialState: IPostState = {
   error: null,
 };
 
+const initState = (): IPostState => Object.assign({}, initialState);
+
 class Post extends Component<IPostProps, IPostState> {
 
   constructor(props: IPostProps) {
     super(props);
-    this.state = initialState;
+    this.state = initState();
     this.onReady = this.onReady.bind(this);
     this.fetchData = this.fetchData.bind(this);
   }
@@ -72,7 +74,7 @@ class Post extends Component<IPostProps, IPostState> {
   public componentWillReceiveProps(nextProps: IPostProps) {
     if (nextProps.match.params.slug === this.state.slug) return;
     this.props.startProgress();
-    this.setState(initialState);
+    this.setState(initState());
     this.setState({
       slug: nextProps.match.params.slug,
       query: nextProps.location.state ? {

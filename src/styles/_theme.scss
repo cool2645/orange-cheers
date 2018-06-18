@@ -50,7 +50,7 @@
 
 .comment-box {
   .comment-send {
-    input[type=button] {
+    input[type=button], input[type=submit] {
       background-color: $background-color;
       color: #fff;
     }
@@ -102,6 +102,7 @@
     color: $theme-color !important;
   }
 }
+
 &.active > a > .color {
   border-color: $background-color !important;
 }
