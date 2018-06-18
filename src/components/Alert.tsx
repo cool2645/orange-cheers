@@ -3,9 +3,10 @@ import React, { Component } from 'react';
 import '../styles/Alert.css';
 
 interface IAlertProps {
+  rootClassName?: string;
   className?: string;
   type?: string;
-  content: string;
+  content?: string;
   show?: boolean;
   dismiss?: number;
   handle?: IAlertHandle | IAlertHandle[];
@@ -35,6 +36,8 @@ class Alert extends Component<IAlertProps, IAlertState> {
       className: 'danger',
       content: '',
     };
+    this.show = this.show.bind(this);
+    this.hide = this.hide.bind(this);
   }
 
   public componentDidMount() {
@@ -82,23 +85,23 @@ class Alert extends Component<IAlertProps, IAlertState> {
     if (this.state.handle) {
       if (this.state.handle instanceof Array) {
         next = this.state.handle.map(handle => {
-          const callback = () => {
-            handle.callback();
-            this.setState({ hide: true });
+          const callback = (e: React.MouseEvent<HTMLAnchorElement>) => {
+            e.preventDefault();
+            this.setState({ hide: true }, handle.callback);
           };
           return <a key={handle.title} href="" onClick={callback}>{handle.title}</a>;
         });
       } else {
-        const callback = () => {
-          (this.state.handle as IAlertHandle).callback();
-          this.setState({ hide: true });
+        const callback = (e: React.MouseEvent<HTMLAnchorElement>) => {
+          e.preventDefault();
+          this.setState({ hide: true }, (this.state.handle as IAlertHandle).callback);
         };
-        return <a key={(this.state.handle as IAlertHandle).title} href=""
+        next = <a key={(this.state.handle as IAlertHandle).title} href=""
                   onClick={callback}>{(this.state.handle as IAlertHandle).title}</a>;
       }
     }
     return (
-      <div className={`${shadow} ${hide}`}>
+      <div className={`${shadow} ${hide} ${this.props.rootClassName}`}>
         <div className={`alert ${this.state.className}`}>
           <p>{this.state.content} {next}</p>
         </div>

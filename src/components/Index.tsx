@@ -11,8 +11,7 @@ import Alert from './Alert';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
-import { IPostsData, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
-import withPost from './PostHelper';
+import withPost, { IPostsData, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
 
 interface IQuery {
@@ -34,20 +33,21 @@ interface IIndexState {
   page: number;
   ready: boolean;
   query?: IQuery;
-  error: (() => void) | null;
   refreshConfig?: IRefreshConfig;
+  notfound: boolean;
 }
 
 const initialState: IIndexState = {
   ready: false,
   page: 1,
   params: {},
-  error: null,
+  notfound: false,
 };
 
 class Index extends Component<IIndexProps, IIndexState> {
 
   private unmounted: boolean;
+  private readonly alert: React.RefObject<Alert>;
 
   public setState<K extends keyof IIndexState>(
     newState: ((prevState: Readonly<IIndexState>, props: IIndexProps) =>
@@ -63,6 +63,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     state.params = props.match.params;
     state.page = +props.match.params.page || 1;
     this.state = state;
+    this.alert = React.createRef();
     this.update = this.update.bind(this);
     this.onReady = this.onReady.bind(this);
     this.challengeParams = this.challengeParams.bind(this);
@@ -102,16 +103,32 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   private onReady(error: any): void {
-    if (error === null) this.setState({ ready: true, error: null });
-    else if (typeof error === 'function') this.setState({ ready: true, error });
-    else this.setState({ ready: true });
+    if (error instanceof Error) {
+      if (error.message === '404') this.setState({ ready: true, notfound: true });
+      else {
+        this.setState({ ready: true }, () => {
+          if (this.alert) {
+            this.alert.current.show(
+              '电波收不到喵', 'danger', null, {
+                title: '重试',
+                callback: error.name === 'challengeParams' ? this.update : this.fetchData,
+              }
+            );
+          }
+        });
+      }
+    } else this.setState({ ready: true });
     if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
   }
 
   private update(): void {
     this.challengeParams()
-      .then(this.fetchData);
+      .then(this.fetchData)
+      .catch((err: Error) => {
+        err.name = 'challengeParams';
+        this.onReady(err);
+      });
   }
 
   private challengeParams(): Promise<void> {
@@ -130,7 +147,6 @@ class Index extends Component<IIndexProps, IIndexState> {
         .then(data => {
           const cat = data.length === 0 ? null : data[0];
           if (cat === null) {
-            this.onReady(404);
             throw new Error('404');
           }
           params.categories = cat.id;
@@ -146,7 +162,6 @@ class Index extends Component<IIndexProps, IIndexState> {
         .then(data => {
           const tag = data.length === 0 ? null : data[0];
           if (tag === null) {
-            this.onReady(404);
             throw new Error('404');
           }
           params.tags = tag.id;
@@ -160,7 +175,7 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   private fetchData() {
-    this.setState({ ready: false, error: null }, () =>
+    this.setState({ ready: false }, () =>
       this.props.getPostsData(
         this.state.query.params,
         this.state.page,
@@ -197,7 +212,7 @@ class Index extends Component<IIndexProps, IIndexState> {
       date.push(<span key="modified"
                       className="fas fa-pencil-alt">最后更新于 {human(post.modified_gmt + '.000Z')}</span>);
     }
-    return  (
+    return (
       <div className="post">
         <Link className="post-title-link" to={{
           pathname: `/${post.slug}`,
@@ -296,30 +311,27 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   public render() {
-    if (!this.state.ready) {
-      return (
-        <div className="container page">
-          <div className="page-container">
-            {Loader}
-          </div>
-        </div>
-      );
-    }
-    if (this.state.error) {
-      return <Alert content="电波收不到喵" />;
-    }
-    if (!this.props.data) {
+    if (this.state.notfound) {
       return <NotFound />;
     }
     return (
       <div className="container page">
+        <Alert ref={this.alert} rootClassName="page-container" show={false} />
         {
-          (this.props.data as IPostsData).posts.map(post =>
-            <div key={post.post.id} className="page-container">
-              {this.renderPost(post)}
-            </div>)
+          this.state.ready ? '' :
+            <div className="page-container">
+              {Loader}
+            </div>
         }
-        {this.renderPagination((this.props.data as IPostsData).totalPage)}
+        {
+          this.props.data ?
+            (this.props.data as IPostsData).posts.map(post =>
+              <div key={post.post.id} className="page-container">
+                {this.renderPost(post)}
+              </div>)
+            : ''
+        }
+        {this.props.data ? this.renderPagination((this.props.data as IPostsData).totalPage) : ''}
       </div>
     );
   }
