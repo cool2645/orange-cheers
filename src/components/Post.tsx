@@ -5,13 +5,13 @@ import '../styles/Post.css';
 import '../styles/PostContent.css';
 import { formatDate, human } from '../utils/datetime';
 
+import Alert from './Alert';
 import Comments from './Comments';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
 import { default as withPost, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
-import Unreachable from './Unreachable';
 
 interface IQuery {
   params: IQueryParams;
@@ -205,7 +205,7 @@ class Post extends Component<IPostProps, IPostState> {
       );
     }
     if (this.state.error) {
-      return <Unreachable retry={this.state.error} />;
+      return <Alert content="电波收不到喵" />;
     }
     if (!this.props.data) {
       return <NotFound />;

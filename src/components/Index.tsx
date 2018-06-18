@@ -7,13 +7,13 @@ import '../styles/Post.css';
 import '../styles/PostContent.css';
 import { formatDate, human } from '../utils/datetime';
 
+import Alert from './Alert';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
 import { IPostsData, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import withPost from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
-import Unreachable from './Unreachable';
 
 interface IQuery {
   params: IQueryParams;
@@ -306,7 +306,7 @@ class Index extends Component<IIndexProps, IIndexState> {
       );
     }
     if (this.state.error) {
-      return <Unreachable retry={this.state.error} />;
+      return <Alert content="电波收不到喵" />;
     }
     if (!this.props.data) {
       return <NotFound />;

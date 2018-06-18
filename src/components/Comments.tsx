@@ -8,8 +8,8 @@ import { human } from '../utils/datetime';
 import { getElementTop } from '../utils/element';
 import urlEncode from '../utils/url';
 
+import Alert from './Alert';
 import { ClassicalLoader as Loader } from './Loader';
-import Unreachable from './Unreachable';
 
 interface ICommentSenderProps {
   postId: number;
@@ -337,7 +337,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
             this.state.replyFocus ? <CommentSender addComment={this.addComment} postId={this.props.id} /> : ''
           }
           {comments}
-          {!this.state.ready ? Loader : this.state.error ? <Unreachable retry={this.state.error} /> : ''}
+          {!this.state.ready ? Loader : this.state.error ? <Alert content="电波收不到喵" /> : ''}
         </div>
         <div id="comment-ending" />
         {
