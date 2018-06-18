@@ -54,9 +54,9 @@ interface ISiblings {
 interface IViewComponentProps {
   data: null | IPostData | IPostsData;
 
-  getPostsData(params: IQueryParams, page: number, append?: boolean, callback?: (res: any) => any): void;
+  getPostsData(params: IQueryParams, page: number, append?: boolean, onready?: (res: any) => any, onupdated?: (res: any) => any): void;
 
-  getPostData(slug: string, params?: IQueryParams, offset?: number, callback?: (res: any) => any): void;
+  getPostData(slug: string, params?: IQueryParams, offset?: number, onready?: (res: any) => any, onupdated?: (res: any) => any): void;
 
   fetchCategories(filter?: number[]): Promise<{ [key: number]: WP.Category }>;
 
@@ -498,12 +498,20 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
           else {
             if (this.state.refreshConfig.indexes === RefreshLevel.Always) {
               this.fetchPosts(page, params)
-                .then(newPosts => this.afterGetPosts(newPosts, seq, append, onupdated));
+                .then(newPosts => this.afterGetPosts(newPosts, seq, append, onupdated))
+                .catch(err => {
+                  console.log(err);
+                  if (onupdated) onupdated(err);
+                });
             }
             return posts;
           }
         })
-        .then(posts => this.afterGetPosts(posts, seq, append, onready));
+        .then(posts => this.afterGetPosts(posts, seq, append, onready))
+        .catch(err => {
+          console.log(err);
+          if (onready) onready(err);
+        });
     }
 
     private afterGetPost(postData: IPostData, seq: number, params?: IQueryParams, offset?: number, callback?: (err: any) => any) {
@@ -517,14 +525,14 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
         })
         .then(() => {
           this.setState({ data: postData }, seq, () => {
-            callback(null);
+            if (callback) callback(null);
             this.fetchCommentCount(seq, postData.post);
             if (this.state.refreshConfig.siblings !== RefreshLevel.Never) this.fetchSiblings(seq, postData, params, offset);
           });
         })
         .catch(err => {
           console.log(err);
-          callback(err);
+          if (callback) callback(err);
         });
     }
 
@@ -542,13 +550,21 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
             if (this.state.refreshConfig.posts === RefreshLevel.Always) {
               this.fetchPost(slug)
                 .then(newPost => ({ post: newPost, offset }))
-                .then((postData: IPostData) => this.afterGetPost(postData, seq, params, offset, onupdated));
+                .then((postData: IPostData) => this.afterGetPost(postData, seq, params, offset, onupdated))
+                .catch(err => {
+                  console.log(err);
+                  if (onupdated) onupdated(err);
+                });
             }
             return post;
           }
         })
         .then(post => ({ post, offset }))
-        .then((postData: IPostData) => this.afterGetPost(postData, seq, params, offset, onready));
+        .then((postData: IPostData) => this.afterGetPost(postData, seq, params, offset, onready))
+        .catch(err => {
+          console.log(err);
+          if (onready) onready(err);
+        });
     }
 
     public render() {

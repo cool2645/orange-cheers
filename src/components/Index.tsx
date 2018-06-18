@@ -64,8 +64,9 @@ class Index extends Component<IIndexProps, IIndexState> {
     state.page = +props.match.params.page || 1;
     this.state = state;
     this.alert = React.createRef();
-    this.update = this.update.bind(this);
+    this.init = this.init.bind(this);
     this.onReady = this.onReady.bind(this);
+    this.onUpdated = this.onUpdated.bind(this);
     this.challengeParams = this.challengeParams.bind(this);
     this.fetchData = this.fetchData.bind(this);
   }
@@ -82,7 +83,7 @@ class Index extends Component<IIndexProps, IIndexState> {
         else this.props.joinProgress();
       }
     };
-    this.update();
+    this.init();
   }
 
   public componentWillReceiveProps(nextProps: IIndexProps) {
@@ -94,7 +95,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     ) return;
     this.props.startProgress();
     this.setState(initialState);
-    this.setState({ params: nextProps.match.params, page }, this.update);
+    this.setState({ params: nextProps.match.params, page }, this.init);
   }
 
   public componentWillUnmount() {
@@ -111,7 +112,7 @@ class Index extends Component<IIndexProps, IIndexState> {
             this.alert.current.show(
               '电波收不到喵', 'danger', null, {
                 title: '重试',
-                callback: error.name === 'challengeParams' ? this.update : this.fetchData,
+                callback: error.name === 'challengeParams' ? this.init : this.fetchData,
               }
             );
           }
@@ -122,7 +123,23 @@ class Index extends Component<IIndexProps, IIndexState> {
     else this.props.joinProgress();
   }
 
-  private update(): void {
+  private onUpdated(error: any): void {
+    if (!this.alert) return;
+    if (error instanceof Error) {
+      this.alert.current.show(
+        '更新出错惹', 'danger', null, {
+          title: '重试',
+          callback: this.fetchData,
+        }
+      );
+    } else {
+      this.alert.current.show(
+        '列表更新成功', 'info', 3000
+      );
+    }
+  }
+
+  private init(): void {
     this.challengeParams()
       .then(this.fetchData)
       .catch((err: Error) => {
@@ -180,7 +197,8 @@ class Index extends Component<IIndexProps, IIndexState> {
         this.state.query.params,
         this.state.page,
         false,
-        this.onReady
+        this.onReady,
+        this.onUpdated
       )
     );
   }
