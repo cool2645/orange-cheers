@@ -1,0 +1,23 @@
+commentCount:
+  loading: "loading"
+  noComment: "No comments"
+  comment: "{{count}} comment"
+  comment_plural: "{{count}} comments"
+date: "{{date}}"
+modifiedDate: "Updated at {{date}}"
+siblings:
+  loading: "loading"
+  prev: "Prev: "
+  first: "No more"
+  next: "Next:"
+  last: "No more"
+post:
+  update: "Article has been updated to latest."
+  fail: "Unreachable."
+  updateFail: "Failed retrieving update."
+  retry: "Retry"
+index:
+  update: "Article list has been updated to latest."
+  fail: "Unreachable."
+  updateFail: "Failed retrieving update."
+  retry: "Retry"

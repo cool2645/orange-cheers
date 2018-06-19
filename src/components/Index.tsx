@@ -1,5 +1,6 @@
 import honoka from 'honoka';
 import React, { Component } from 'react';
+import { translate, InjectedTranslateProps } from 'react-i18next';
 import { Link, RouteComponentProps } from 'react-router-dom';
 
 import { post as config } from '../config';
@@ -25,7 +26,7 @@ interface IParams {
   search?: string;
 }
 
-interface IIndexProps extends RouteComponentProps<IParams>, IViewComponentProps, INavControlProps {
+interface IIndexProps extends RouteComponentProps<IParams>, IViewComponentProps, INavControlProps, InjectedTranslateProps {
 }
 
 interface IIndexState {
@@ -104,14 +105,15 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   private onReady(error: any): void {
+    const { t } = this.props;
     if (error instanceof Error) {
       if (error.message === '404') this.setState({ notfound: true });
       else {
         this.setState({ ready: true }, () => {
           if (this.alert) {
             this.alert.current.show(
-              '电波收不到喵', 'danger', null, {
-                title: '重试',
+              t('index.fail'), 'danger', null, {
+                title: t('index.retry'),
                 callback: error.name === 'challengeParams' ? this.init : this.fetchData,
               }
             );
@@ -124,17 +126,18 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   private onUpdated(error: any): void {
+    const { t } = this.props;
     if (!this.alert) return;
     if (error instanceof Error) {
       this.alert.current.show(
-        '更新出错惹', 'danger', null, {
-          title: '重试',
+        t('index.updateFail'), 'danger', null, {
+          title: t('index.retry'),
           callback: this.fetchData,
         }
       );
     } else {
       this.alert.current.show(
-        '文章列表已同步为最新', 'info', 3000
+        t('index.update'), 'info', 3000
       );
     }
   }
@@ -204,6 +207,7 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   private renderPost(postData: IPostData) {
+    const { t } = this.props;
     const post = postData.post;
     const categories = postData.categories.map(cate =>
       <Link key={cate.slug} className="category-link"
@@ -215,20 +219,19 @@ class Index extends Component<IIndexProps, IIndexState> {
     if (this.state.refreshConfig.comments !== RefreshLevel.Never) {
       if (post.commentCount === undefined) {
         commentCount =
-          <span className="fas fa-comments">评论数拉取中 {InlineLoader}</span>;
+          <span className="fas fa-comments">{t('commentCount.loading')} {InlineLoader}</span>;
       } else {
-        commentCount = post.commentCount === 0 ? '还没有评论耶' : post.commentCount === 1 ?
-          `${post.commentCount} 条评论` : `${post.commentCount} 条评论`;
+        commentCount = t(post.commentCount === 0 ? 'commentCount.noComment' : 'commentCount.comment', { count: post.commentCount });
         commentCount =
           <span className="fas fa-comments"><Link to={`/${post.slug}#Comments`}>{commentCount}</Link></span>;
       }
     }
     const dateStr = formatDate(post.date_gmt + '.000Z');
     const date = [];
-    date.push(<span key="date" className="fas fa-calendar">发表于 {dateStr}</span>);
+    date.push(<span key="date" className="fas fa-calendar">{t('date', { date: dateStr })}</span>);
     if (formatDate(post.modified_gmt + '.000Z') !== dateStr) {
       date.push(<span key="modified"
-                      className="fas fa-pencil-alt">最后更新于 {human(post.modified_gmt + '.000Z')}</span>);
+                      className="fas fa-pencil-alt">{t('modifiedDate', { date: human(post.modified_gmt + '.000Z') })}</span>);
     }
     return (
       <div className="post">
@@ -355,4 +358,4 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 }
 
-export default withPost(Index);
+export default translate('post')(withPost(Index));

@@ -1,0 +1,22 @@
+commentCount:
+  loading: "評論數拉取中"
+  noComment: "還沒有評論耶"
+  comment: "{{count}} 條評論"
+date: "發表於 {{date}}"
+modifiedDate: "最後更新於 {{date}}"
+siblings:
+  loading: "載入中"
+  prev: "上一篇："
+  first: "已經是第一篇了"
+  next: "下一篇："
+  last: "已經是最後一篇了"
+post:
+  update: "文章已同步為最新"
+  fail: "電波收不到喵"
+  updateFail: "更新出錯惹"
+  retry: "重試"
+index:
+  update: "文章列表已同步為最新"
+  fail: "電波收不到喵"
+  updateFail: "更新出錯惹"
+  retry: "重試"

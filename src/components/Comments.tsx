@@ -1,5 +1,6 @@
 import honoka from 'honoka';
 import React, { Component } from 'react';
+import { translate, InjectedTranslateProps } from 'react-i18next';
 import * as WP from 'wordpress';
 
 import { comment as config } from '../config';
@@ -11,7 +12,7 @@ import urlEncode from '../utils/url';
 import Alert from './Alert';
 import { ClassicalLoader as Loader } from './Loader';
 
-interface ICommentSenderProps {
+interface ICommentSenderProps extends InjectedTranslateProps {
   postId: number;
   parentId?: number;
   reply?: WP.Comment;
@@ -59,34 +60,35 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
 
   private onSubmit(e: React.MouseEvent<HTMLInputElement>) {
     e.preventDefault();
+    const { t } = this.props;
     if (!this.alert) return;
     const cmt: any = this.state.data;
 
     cmt.content = cmt.content.trim();
     if (!cmt.content) {
-      this.alert.current.show('乃什么都没输！', 'warning', 0, {
-        title: '嗷', callback: () => undefined,
+      this.alert.current.show(t('invalid.content'), 'warning', 0, {
+        title: t('invalid.ok'), callback: () => undefined,
       });
       return;
     }
 
     cmt.author_name = cmt.author_name.trim();
     if (!cmt.author_name) {
-      this.alert.current.show('昵称是必填的！', 'warning', 0, {
-        title: '嗷', callback: () => undefined,
+      this.alert.current.show(t('invalid.name'), 'warning', 0, {
+        title: t('invalid.ok'), callback: () => undefined,
       });
       return;
     }
 
     cmt.author_email = cmt.author_email.trim();
     if (!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(cmt.author_email.toLowerCase())) {
-      this.alert.current.show('请输入正确的邮箱！', 'warning', 0, {
-        title: '嗷', callback: () => undefined,
+      this.alert.current.show(t('invalid.email'), 'warning', 0, {
+        title: t('invalid.ok'), callback: () => undefined,
       });
       return;
     }
 
-    this.alert.current.show('发射中...', 'info', 0, null);
+    this.alert.current.show(t('sending'), 'info', 0, null);
 
     cmt.post = this.props.postId;
     if (this.props.parentId) cmt.parent = this.props.parentId;
@@ -95,7 +97,7 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
       data: cmt,
     })
       .then(data => {
-        this.alert.current.show('发射成功！', 'success', 3000, null);
+        this.alert.current.show(t('sent'), 'success', 3000, null);
         this.props.addComment(data);
         this.setState({ data: emptyCommentConfig() });
         setTimeout(() => {
@@ -104,8 +106,8 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
       })
       .catch(err => {
         console.log(err);
-        this.alert.current.show('发射失败了喵...', 'danger', 0, {
-          title: '重试', callback: () => { this.onSubmit(e); },
+        this.alert.current.show(t('sendFail'), 'danger', 0, {
+          title: t('retry'), callback: () => { this.onSubmit(e); },
         });
       });
   }
@@ -117,25 +119,26 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
   }
 
   public render() {
+    const { t } = this.props;
     return (
       <div className="comment-box">
         <Alert ref={this.alert} show={false} type="shadow" />
         <div className="comment-send">
           <textarea id="textarea" name="content" rows={10} tabIndex={1} value={this.state.data.content}
-                    placeholder="把你变成小鸟的点心 (・8・)" onChange={this.vModel} />
+                    placeholder={t('placeHolder')} onChange={this.vModel} />
           <div className="author-info nf">
-            <input type="text" id="author" name="author_name" placeholder="昵称" size={22} tabIndex={2}
+            <input type="text" id="author" name="author_name" placeholder={t('name')} size={22} tabIndex={2}
                    value={this.state.data.author_name} aria-required="true" onChange={this.vModel} />
-            <input type="text" id="mail" name="author_email" placeholder="邮箱" size={22} tabIndex={3}
+            <input type="text" id="mail" name="author_email" placeholder={t('email')} size={22} tabIndex={3}
                    value={this.state.data.author_email} onChange={this.vModel} />
-            <input type="text" id="url" name="author_url" placeholder="网址" size={22} tabIndex={4}
+            <input type="text" id="url" name="author_url" placeholder={t('website')} size={22} tabIndex={4}
                    value={this.state.data.author_url} onChange={this.vModel} />
             {this.props.parentId ?
-              <input name="submit" className="btn reply-btn" type="button" value="取消"
+              <input name="submit" className="btn reply-btn" type="button" value={t('cancel')}
                      onClick={this.props.cancel} /> : ''
             }
             <input name="submit" className={this.props.parentId ? 'btn reply-btn' : 'btn'} type="button" tabIndex={5}
-                   value="发射=A=" onClick={this.onSubmit} />
+                   value={t('submit')} onClick={this.onSubmit} />
           </div>
         </div>
       </div>
@@ -143,7 +146,7 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
   }
 }
 
-interface ICommentsProps {
+interface ICommentsProps extends InjectedTranslateProps {
   id: number;
 }
 
@@ -304,6 +307,8 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
   }
 
   private renderComment(data: WP.Comment) {
+    const { t } = this.props;
+    const CommentSenderWithTrans = translate('comment')(CommentSender);
     const isReply = data.parent === 0 ? '' : 'reply';
     const reply = (e: React.MouseEvent<HTMLAnchorElement>) => {
       this.setState({
@@ -346,14 +351,14 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
             <a href={data.author_url} target="_blank" rel="noopener noreferrer" className="username">
               {data.author_name}
             </a>
-            <span>学院生</span>
+            {/*<span>学院生</span>*/}
             <label>{human(data.date_gmt + '.000Z')}</label>
-            <a href="" onClick={reply}>回复</a>
+            <a href="" onClick={reply}>{t('reply')}</a>
           </div>
         </div>
         {
           data.replyFocus ?
-            <CommentSender postId={this.props.id} parentId={data.parent ? data.parent : data.id} reply={data}
+            <CommentSenderWithTrans postId={this.props.id} parentId={data.parent ? data.parent : data.id} reply={data}
                            addComment={this.addComment} cancel={cancel} />
             : ''
         }
@@ -362,6 +367,8 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
   }
 
   public render() {
+    const { t } = this.props;
+    const CommentSenderWithTrans = translate('comment')(CommentSender);
     const comments = [];
     for (const cmt of this.state.comments) {
       comments.push(this.renderComment(cmt));
@@ -372,22 +379,22 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     return (
       <div className="page-container">
         <h1 className="title fee page-control">
-          以下是评论惹(´Д｀)
+          {t('title')}
         </h1>
         <div className="comments page-control">
           {
-            this.state.replyFocus ? <CommentSender addComment={this.addComment} postId={this.props.id} /> : ''
+            this.state.replyFocus ? <CommentSenderWithTrans addComment={this.addComment} postId={this.props.id} /> : ''
           }
           {comments}
           {!this.state.ready ? Loader : ''}
         </div>
         <div id="comment-ending" />
-        <Alert ref={this.alert} show={false} content="评论拉取失败了"
-               handle={{ title: '重试', callback: this.fetchMoreComments }} />
+        <Alert ref={this.alert} show={false} content={t('fail')}
+               handle={{ title: t('retry'), callback: this.fetchMoreComments }} />
         {
           this.state.end ?
             <div className="info eef page-control no-more">
-              {this.state.comments.length ? '已经没有更多评论了呢' : '来第一个评论吧 |･ω･｀)'}
+              {this.state.comments.length ? t('noMore') : t('noComment')}
             </div>
             : ''
         }
@@ -396,4 +403,4 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
   }
 }
 
-export default Comments;
+export default translate('comment')(Comments);
