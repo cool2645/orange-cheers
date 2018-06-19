@@ -33,18 +33,19 @@ const DefaultRefreshConfig = {
 };
 
 const RefreshSettings = {
-  indexes: [ RefreshLevel.Always, RefreshLevel.Cache  ],
-  posts: [ RefreshLevel.Always, RefreshLevel.Cache ],
-  categories: [ RefreshLevel.Always, RefreshLevel.Cache ],
-  tags: [ RefreshLevel.Always, RefreshLevel.Cache ],
-  commentCounts: [ RefreshLevel.Always, RefreshLevel.Cache, RefreshLevel.Never ],
-  siblings: [ RefreshLevel.Always, RefreshLevel.Cache, RefreshLevel.Never ],
-  comments: [ RefreshLevel.Always, RefreshLevel.Never ],
+  indexes: [RefreshLevel.Always, RefreshLevel.Cache],
+  posts: [RefreshLevel.Always, RefreshLevel.Cache],
+  categories: [RefreshLevel.Always, RefreshLevel.Cache],
+  tags: [RefreshLevel.Always, RefreshLevel.Cache],
+  commentCounts: [RefreshLevel.Always, RefreshLevel.Cache, RefreshLevel.Never],
+  siblings: [RefreshLevel.Always, RefreshLevel.Cache, RefreshLevel.Never],
+  comments: [RefreshLevel.Always, RefreshLevel.Never],
 };
 
 function initSettings() {
   if (!localStorage.theme) localStorage.theme = themes.default;
   document.body.className = localStorage.theme;
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', themes.themeColor[localStorage.theme]);
   if (!localStorage.refreshConfig) localStorage.refreshConfig = JSON.stringify(DefaultRefreshConfig);
 }
 
@@ -92,6 +93,7 @@ class Settings extends Component<ISettingsProps, ISettingsState> {
   private setTheme(theme: string) {
     localStorage.theme = theme;
     document.body.className = theme;
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', themes.themeColor[theme]);
     this.forceUpdate();
   }
 

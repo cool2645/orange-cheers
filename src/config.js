@@ -6,7 +6,7 @@ const site = {
   name: "2645 实验室",
   banner: "2645 实验室",
   title: "2645 Laboratory",
-  apiEndpoint: "https://blog.cool2645.com/index.php/wp-json/wp/v2",
+  apiEndpoint: "https://blog.cool2645.com/wp-json/wp/v2",
 };
 const post = {
   perPage: 10,

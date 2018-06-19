@@ -11,4 +11,15 @@ export default {
     "momoiro-egao",
   ],
   default: "orange-cheers",
+  themeColor: {
+    "orange-cheers": "#ff9228",
+    "ice-blue-no-shunkan": "#489efe",
+    "junpaku-romance": "#6d6d6d",
+    "aoi-no-shinwa": "#2b57c5",
+    "ring-a-yellow-bell": "#fada54",
+    "scarlet-princess": "#ff6000",
+    "violet-moon": "#a93de1",
+    "wakakusa-no-season": "#43d13f",
+    "momoiro-egao": "#ff5ea2",
+  },
 };
