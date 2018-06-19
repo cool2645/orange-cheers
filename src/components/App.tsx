@@ -17,6 +17,7 @@ import Index from './Index';
 import Nav from './Nav';
 import NotFound from './NotFound';
 import Post from './Post';
+import Redirect from './Redirect';
 import Settings, { initSettings } from './Settings';
 
 class App extends Component {
@@ -34,6 +35,7 @@ class App extends Component {
     this.renderIndex = this.renderIndex.bind(this);
     this.renderPost = this.renderPost.bind(this);
     this.renderSettings = this.renderSettings.bind(this);
+    this.renderRedirect = this.renderRedirect.bind(this);
     this.renderComponent = this.renderComponent.bind(this);
     initSettings();
   }
@@ -70,6 +72,10 @@ class App extends Component {
     return this.renderComponent(Settings, props);
   }
 
+  private renderRedirect(props: object) {
+    return this.renderComponent(Redirect, props);
+  }
+
   private renderComponent(Comp: ComponentClass<any>, props: object) {
     return <Comp {...props}
                  setTyped={this.setTyped}
@@ -86,6 +92,7 @@ class App extends Component {
           <Nav ref={this.nav} />
           <Switch>
             <Route exact={true} path="/" render={this.renderIndex} />
+            <Route exact={true} path="/(.*).php" render={this.renderRedirect} />
             <Route exact={true} path="/archives" render={this.renderArchives} />
             <Route exact={true} path="/settings" render={this.renderSettings} />
             <Route exact={true} path="/page/:page" render={this.renderIndex} />

@@ -91,7 +91,6 @@ class Nav extends Component<INavProps, INavStates> {
       backSpeed: 50,
     };
     this.typed = new Typed(this.el, options);
-    this.startProgress();
   }
 
   public componentWillUnmount() {

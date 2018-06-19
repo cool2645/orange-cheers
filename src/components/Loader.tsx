@@ -52,4 +52,16 @@ const InlineLoader = (
   </div>
 );
 
-export { FullPageLoader, ClassicalLoader, InlineLoader };
+const MicrosoftLoader = (
+  <section className="microsoft-loader show">
+    <div className="loader">
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  </section>
+);
+
+export { FullPageLoader, ClassicalLoader, InlineLoader, MicrosoftLoader };
