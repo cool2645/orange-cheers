@@ -45,19 +45,49 @@ interface ICommentSenderState {
 
 class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> {
 
+  private readonly alert: React.RefObject<Alert>;
+
   constructor(props: ICommentSenderProps) {
     super(props);
     this.state = {
       data: emptyCommentConfig(),
     };
+    this.alert = React.createRef();
     this.onSubmit = this.onSubmit.bind(this);
     this.vModel = this.vModel.bind(this);
   }
 
   private onSubmit(e: React.MouseEvent<HTMLInputElement>) {
     e.preventDefault();
-    console.log(this.state.data);
+    if (!this.alert) return;
     const cmt: any = this.state.data;
+
+    cmt.content = cmt.content.trim();
+    if (!cmt.content) {
+      this.alert.current.show('乃什么都没输！', 'warning', 0, {
+        title: '嗷', callback: () => undefined,
+      });
+      return;
+    }
+
+    cmt.author_name = cmt.author_name.trim();
+    if (!cmt.author_name) {
+      this.alert.current.show('昵称是必填的！', 'warning', 0, {
+        title: '嗷', callback: () => undefined,
+      });
+      return;
+    }
+
+    cmt.author_email = cmt.author_email.trim();
+    if (!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(cmt.author_email.toLowerCase())) {
+      this.alert.current.show('请输入正确的邮箱！', 'warning', 0, {
+        title: '嗷', callback: () => undefined,
+      });
+      return;
+    }
+
+    this.alert.current.show('发射中...', 'info', 0, null);
+
     cmt.post = this.props.postId;
     if (this.props.parentId) cmt.parent = this.props.parentId;
     if (this.props.reply) cmt.content = `<a href="#Comment-${this.props.reply.id}" >@${this.props.reply.author_name}</a> ${cmt.content}`;
@@ -65,12 +95,18 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
       data: cmt,
     })
       .then(data => {
+        this.alert.current.show('发射成功！', 'success', 3000, null);
         this.props.addComment(data);
         this.setState({ data: emptyCommentConfig() });
-        if (this.props.cancel) this.props.cancel();
+        setTimeout(() => {
+          if (this.props.cancel) this.props.cancel();
+        }, 3000);
       })
       .catch(err => {
         console.log(err);
+        this.alert.current.show('发射失败了喵...', 'danger', 0, {
+          title: '重试', callback: () => { this.onSubmit(e); },
+        });
       });
   }
 
@@ -83,6 +119,7 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
   public render() {
     return (
       <div className="comment-box">
+        <Alert ref={this.alert} show={false} type="shadow" />
         <div className="comment-send">
           <textarea id="textarea" name="content" rows={10} tabIndex={1} value={this.state.data.content}
                     placeholder="把你变成小鸟的点心 (・8・)" onChange={this.vModel} />
@@ -116,12 +153,13 @@ interface ICommentsState {
   replyFocus: boolean;
   page: number;
   end: boolean;
-  error: (() => void) | null;
+  error: boolean;
 }
 
 class Comments extends Component<ICommentsProps, ICommentsState> {
 
   private unmounted: boolean;
+  private readonly alert: React.RefObject<Alert>;
 
   public setState<K extends keyof ICommentsState>(
     newState: ((prevState: Readonly<ICommentsState>, props: ICommentsProps) =>
@@ -141,6 +179,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
       end: false,
       error: null,
     };
+    this.alert = React.createRef();
     this.update = this.update.bind(this);
     this.fetchMoreComments = this.fetchMoreComments.bind(this);
     this.fetchComments = this.fetchComments.bind(this);
@@ -233,6 +272,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
   }
 
   private update() {
+    if (this.state.error) return;
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('comment-ending'));
     // let scrollHeight = document.body.clientHeight;
@@ -242,7 +282,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
 
   private fetchMoreComments() {
     if (!this.state.ready) return;
-    this.setState({ ready: false, error: null }, () =>
+    this.setState({ ready: false, error: false }, () =>
       this.fetchComments(this.props.id, this.state.page + 1)
         .then((data) => {
           const end = data.length === 0;
@@ -252,7 +292,9 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
         })
         .catch(err => {
           console.log(err);
-          this.setState({ ready: true, error: this.fetchMoreComments });
+          this.setState({ ready: true, error: true }, () => {
+            if (this.alert) this.alert.current.show();
+          });
         })
         .then(data => this.fetchReplies(data))
         .catch(err => {
@@ -337,9 +379,11 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
             this.state.replyFocus ? <CommentSender addComment={this.addComment} postId={this.props.id} /> : ''
           }
           {comments}
-          {!this.state.ready ? Loader : this.state.error ? <Alert content="电波收不到喵" /> : ''}
+          {!this.state.ready ? Loader : ''}
         </div>
         <div id="comment-ending" />
+        <Alert ref={this.alert} show={false} content="评论拉取失败了"
+               handle={{ title: '重试', callback: this.fetchMoreComments }} />
         {
           this.state.end ?
             <div className="info eef page-control no-more">

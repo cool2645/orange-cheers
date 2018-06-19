@@ -63,8 +63,8 @@ class Alert extends Component<IAlertProps, IAlertState> {
     const state: IAlertState = this.state;
     if (className) state.className = className;
     if (content) state.content = content;
-    state.dismiss = dismiss;
-    state.handle = handle;
+    if (dismiss) state.dismiss = dismiss;
+    if (handle !== undefined) state.handle = handle;
     this.setState(state);
     setTimeout(() => {
       this.setState({ hide: false });

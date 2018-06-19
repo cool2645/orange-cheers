@@ -2,6 +2,7 @@
   * {
     box-sizing: border-box;
   }
+  position: relative;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   .comment-send {
@@ -87,6 +88,7 @@
       border-radius: 50%;
     }
     .comment-control {
+      float: left;
       margin: {
         top: 0.5em;
         bottom: 0.5em;
@@ -133,7 +135,10 @@
 }
 
 .comment-content {
-  p:last-child {
+  a {
+    text-decoration: none;
+  }
+  p {
     margin-bottom: 0;
   }
 }
