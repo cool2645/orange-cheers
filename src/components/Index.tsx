@@ -345,14 +345,14 @@ class Index extends Component<IIndexProps, IIndexState> {
             </div>
         }
         {
-          this.props.data ?
+          this.state.ready && this.props.data ?
             (this.props.data as IPostsData).posts.map(post =>
               <div key={post.post.id} className="page-container">
                 {this.renderPost(post)}
               </div>)
             : ''
         }
-        {this.props.data ? this.renderPagination((this.props.data as IPostsData).totalPage) : ''}
+        {this.state.ready && this.props.data ? this.renderPagination((this.props.data as IPostsData).totalPage) : ''}
       </div>
     );
   }

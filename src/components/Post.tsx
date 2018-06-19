@@ -245,13 +245,13 @@ class Post extends Component<IPostProps, IPostState> {
             </div>
         }
         {
-          this.props.data ?
+          this.state.ready && this.props.data ?
             <div className="page-container">
               {this.renderPost(this.props.data as IPostData)}
             </div> : ''
         }
         {
-          this.props.data ?
+          this.state.ready && this.props.data ?
             (this.props.data as IPostData).post.comment_status === 'open' && this.state.refreshConfig.comments !== RefreshLevel.Never ?
               <Comments id={(this.props.data as IPostData).post.id} />
               : ''
