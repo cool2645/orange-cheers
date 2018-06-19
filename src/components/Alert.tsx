@@ -54,8 +54,8 @@ class Alert extends Component<IAlertProps, IAlertState> {
     const state: IAlertState = this.state;
     if (nextProps.className) state.className = nextProps.className;
     if (nextProps.content) state.content = nextProps.content;
-    state.dismiss = nextProps.dismiss;
-    state.handle = nextProps.handle;
+    if (nextProps.dismiss) state.dismiss = nextProps.dismiss;
+    if (nextProps.handle) state.handle = nextProps.handle;
     this.setState(state);
   }
 
@@ -68,7 +68,7 @@ class Alert extends Component<IAlertProps, IAlertState> {
     this.setState(state);
     setTimeout(() => {
       this.setState({ hide: false });
-      if (typeof this.state.dismiss === 'number') setTimeout(this.hide, this.state.dismiss);
+      if (this.state.dismiss) setTimeout(this.hide, this.state.dismiss);
     }, 100);
   }
 
