@@ -44,17 +44,22 @@
   <script src="https://unpkg.com/monaco-editor/min/vs/loader.js"></script>
   <script>
     function initMonacoEditor() {
-      require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor/min/vs' } });
-      window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+      if (!window.monaco) {
+        require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor/min/vs' } });
+        window.MonacoEnvironment = { getWorkerUrl: () => proxy };
 
-      let proxy = URL.createObjectURL(new Blob([`
+        let proxy = URL.createObjectURL(new Blob([`
 	self.MonacoEnvironment = {
 		baseUrl: 'https://unpkg.com/monaco-editor/min/'
 	};
 	importScripts('https://unpkg.com/monaco-editor/min/vs/base/worker/workerMain.js');
 `], { type: 'text/javascript' }));
 
+        window.monacoIns = [];
+      }
       for (let element of document.getElementsByTagName('pre')) {
+        if (element.getAttribute('monaco-ins') !== null) continue;
+        element.setAttribute('monaco-ins', 'pending');
         require(["vs/editor/editor.main"], () => {
           let code = element.innerText.trim();
           let lang = element.className.match(/lang:(\S+)/);
@@ -73,6 +78,8 @@
             folding: true,
             scrollBeyondLastLine: false,
           });
+          window.monacoIns.push(editor);
+          element.setAttribute('monaco-ins', window.monacoIns.length - 1);
         });
       }
     }

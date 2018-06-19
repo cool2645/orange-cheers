@@ -107,7 +107,7 @@ class Post extends Component<IPostProps, IPostState> {
           }
         });
       }
-    } else this.setState({ ready: true });
+    } else this.setState({ ready: true }, (window as any).initMonacoEditor);
     if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
   }
@@ -125,6 +125,7 @@ class Post extends Component<IPostProps, IPostState> {
       this.alert.current.show(
         '文章已同步为最新', 'info', 3000
       );
+      (window as any).initMonacoEditor();
     }
   }
 
