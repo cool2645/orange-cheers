@@ -29,24 +29,28 @@ interface IPostState {
   slug: string;
   ready: boolean;
   query?: IQuery;
-  error: (() => void) | null;
+  notfound: boolean;
   refreshConfig?: IRefreshConfig;
 }
 
 const initialState: IPostState = {
   slug: '',
   ready: false,
-  error: null,
+  notfound: false,
 };
 
 const initState = (): IPostState => Object.assign({}, initialState);
 
 class Post extends Component<IPostProps, IPostState> {
 
+  private readonly alert: React.RefObject<Alert>;
+
   constructor(props: IPostProps) {
     super(props);
     this.state = initState();
+    this.alert = React.createRef();
     this.onReady = this.onReady.bind(this);
+    this.onUpdated = this.onUpdated.bind(this);
     this.fetchData = this.fetchData.bind(this);
   }
 
@@ -89,21 +93,50 @@ class Post extends Component<IPostProps, IPostState> {
   }
 
   private onReady(error: any): void {
-    if (error === null) this.setState({ ready: true, error: null }, (window as any).initMonacoEditor);
-    else if (typeof error === 'function') this.setState({ ready: true, error });
-    else this.setState({ ready: true });
+    if (error instanceof Error) {
+      if (error.message === '404') this.setState({ notfound: true });
+      else {
+        this.setState({ ready: true }, () => {
+          if (this.alert) {
+            this.alert.current.show(
+              '电波收不到喵', 'danger', null, {
+                title: '重试',
+                callback: this.fetchData,
+              }
+            );
+          }
+        });
+      }
+    } else this.setState({ ready: true });
     if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
   }
 
+  private onUpdated(error: any): void {
+    if (!this.alert) return;
+    if (error instanceof Error) {
+      this.alert.current.show(
+        '更新出错惹', 'danger', null, {
+          title: '重试',
+          callback: this.fetchData,
+        }
+      );
+    } else {
+      this.alert.current.show(
+        '文章已同步为最新', 'info', 3000
+      );
+    }
+  }
+
   private fetchData() {
     if (this.state.slug) {
-      this.setState({ ready: false, error: null }, () =>
+      this.setState({ ready: false }, () =>
         this.props.getPostData(
           this.state.slug,
           this.state.query.params,
           this.state.query.offset,
-          this.onReady
+          this.onReady,
+          this.onUpdated
         )
       );
     }
@@ -195,29 +228,29 @@ class Post extends Component<IPostProps, IPostState> {
   }
 
   public render() {
-    if (!this.state.ready) {
-      return (
-        <div className="container page">
-          <div className="page-container">
-            {Loader}
-          </div>
-        </div>
-      );
-    }
-    if (this.state.error) {
-      return <Alert content="电波收不到喵" />;
-    }
-    if (!this.props.data) {
+    if (this.state.notfound) {
       return <NotFound />;
     }
     return (
       <div className="container page post">
-        <div className="page-container">
-          {this.renderPost(this.props.data as IPostData)}
-        </div>
+        <Alert ref={this.alert} rootClassName="page-container" show={false} />
         {
-          (this.props.data as IPostData).post.comment_status === 'open' && this.state.refreshConfig.comments !== RefreshLevel.Never ?
-            <Comments id={(this.props.data as IPostData).post.id} />
+          this.state.ready ? '' :
+            <div className="page-container">
+              {Loader}
+            </div>
+        }
+        {
+          this.props.data ?
+            <div className="page-container">
+              {this.renderPost(this.props.data as IPostData)}
+            </div> : ''
+        }
+        {
+          this.props.data ?
+            (this.props.data as IPostData).post.comment_status === 'open' && this.state.refreshConfig.comments !== RefreshLevel.Never ?
+              <Comments id={(this.props.data as IPostData).post.id} />
+              : ''
             : ''
         }
       </div>

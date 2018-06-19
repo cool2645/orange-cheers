@@ -491,6 +491,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
                         onready?: (err: any) => any, onupdated?: (err: any) => any) {
       if (!append) this.seq++;
       const seq = this.seq;
+      if (!append) this.setState({ data: null });
       params = Object.assign({}, params);
       return this.fetchPostsFromCache(page, params)
         .then(posts => {

@@ -105,7 +105,7 @@ class Index extends Component<IIndexProps, IIndexState> {
 
   private onReady(error: any): void {
     if (error instanceof Error) {
-      if (error.message === '404') this.setState({ ready: true, notfound: true });
+      if (error.message === '404') this.setState({ notfound: true });
       else {
         this.setState({ ready: true }, () => {
           if (this.alert) {
@@ -134,18 +134,20 @@ class Index extends Component<IIndexProps, IIndexState> {
       );
     } else {
       this.alert.current.show(
-        '列表更新成功', 'info', 3000
+        '文章列表已同步为最新', 'info', 3000
       );
     }
   }
 
   private init(): void {
-    this.challengeParams()
-      .then(this.fetchData)
-      .catch((err: Error) => {
-        err.name = 'challengeParams';
-        this.onReady(err);
-      });
+    this.setState({ ready: false }, () =>
+      this.challengeParams()
+        .then(this.fetchData)
+        .catch((err: Error) => {
+          err.name = 'challengeParams';
+          this.onReady(err);
+        })
+    );
   }
 
   private challengeParams(): Promise<void> {
@@ -192,14 +194,12 @@ class Index extends Component<IIndexProps, IIndexState> {
   }
 
   private fetchData() {
-    this.setState({ ready: false }, () =>
-      this.props.getPostsData(
-        this.state.query.params,
-        this.state.page,
-        false,
-        this.onReady,
-        this.onUpdated
-      )
+    this.props.getPostsData(
+      this.state.query.params,
+      this.state.page,
+      false,
+      this.onReady,
+      this.onUpdated
     );
   }
 
