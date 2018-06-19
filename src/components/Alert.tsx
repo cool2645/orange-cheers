@@ -29,6 +29,16 @@ interface IAlertState {
 
 class Alert extends Component<IAlertProps, IAlertState> {
 
+  private unmounted: boolean;
+
+  public setState<K extends keyof IAlertState>(
+    newState: ((prevState: Readonly<IAlertState>, props: IAlertProps) =>
+      (Pick<IAlertState, K> | IAlertState | null)) | (Pick<IAlertState, K> | IAlertState | null),
+    callback?: () => void
+  ): void {
+    if (!this.unmounted) super.setState(newState, callback);
+  }
+
   constructor(props: IAlertProps) {
     super(props);
     this.state = {
@@ -41,6 +51,7 @@ class Alert extends Component<IAlertProps, IAlertState> {
   }
 
   public componentDidMount() {
+    this.unmounted = false;
     const state: IAlertState = this.state;
     if (this.props.className) state.className = this.props.className;
     if (this.props.content) state.content = this.props.content;
@@ -48,6 +59,10 @@ class Alert extends Component<IAlertProps, IAlertState> {
     if (this.props.handle) state.handle = this.props.handle;
     this.setState(state);
     if (this.props.show === undefined || this.props.show) this.show();
+  }
+
+  public componentWillUnmount() {
+    this.unmounted = true;
   }
 
   public componentWillReceiveProps(nextProps: IAlertProps) {
