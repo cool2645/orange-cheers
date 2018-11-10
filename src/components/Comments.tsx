@@ -47,6 +47,7 @@ interface ICommentSenderState {
 class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> {
 
   private readonly alert: React.RefObject<Alert>;
+  private unmounted = false;
 
   constructor(props: ICommentSenderProps) {
     super(props);
@@ -54,6 +55,19 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
       data: emptyCommentConfig(),
     };
     this.alert = React.createRef();
+  }
+
+  public setState<K extends keyof ICommentSenderState>(
+    newState: ((prevState: Readonly<ICommentSenderState>, props: ICommentSenderProps) =>
+      (ICommentSenderState | null))
+      | (ICommentSenderState | null),
+    callback?: () => void
+  ): void {
+    if (!this.unmounted) super.setState(newState, callback);
+  }
+
+  public componentDidMount() {
+    this.unmounted = false;
   }
 
   private onSubmit = async (e: React.MouseEvent<HTMLInputElement>) => {
