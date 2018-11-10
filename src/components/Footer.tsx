@@ -45,30 +45,33 @@ class Footer extends Component<InjectedTranslateProps, { top: boolean }> {
         {t('theme')} <a target="_blank" href="https://github.com/cool2645/orange-cheers">Orange Cheers</a>
       </div>
     );
-    return (<footer className="page-footer orange">
-      <div className="container row">
-        {
-          nav.footer.top.map((item, index) => <div key={index} className="col">
-              <h5>{item.title}</h5>
-              {
-                item.contents
-                  .map((p, i) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)
-              }
+    return (
+      <footer className="page-footer orange">
+        <div className="row responsive-container">
+          {
+            nav.footer.top.map((item, index) =>
+              <div key={index} className="col">
+                <h5>{item.title}</h5>
+                {
+                  item.contents
+                    .map((p, i) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)
+                }
+              </div>
+            )
+          }
+        </div>
+        <div className="footer-copyright">
+          <div className="responsive-container">
+            <div className="center">
+              {arr}
             </div>
-          )
-        }
-      </div>
-      <div className="footer-copyright">
-        <div className="container">
-          <div className="center">
-            {arr}
           </div>
         </div>
-      </div>
-      <div className={`totop ${this.state.top ? 'hide' : ''}`} onClick={this.scrollToTop}>
-        <i className="fa fa-angle-up" />
-      </div>
-    </footer>);
+        <div className={`totop ${this.state.top ? 'hide' : ''}`} onClick={this.scrollToTop}>
+          <i className="fa fa-angle-up" />
+        </div>
+      </footer>
+    );
   }
 }
 
