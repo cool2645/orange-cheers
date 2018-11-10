@@ -87,10 +87,10 @@ Thanks to them and their wonderful theme authors:
         }
     }
     ```
-6. If you write markdown, place a pre tag for compatibility. Note that there shouldn't be any HTML tags in the markdown content. If you do need HTML tags, use xmp instead of pre.
+6. If you write markdown, place a pre tag for compatibility. Note that there shouldn't be any HTML tags in the markdown content. If you need HTML, close the pre tag first.
     ```html
     <pre lang="markdown" class="lang:markdown">
-    # markdown goes here
+       # markdown goes here
     </pre>
     ```    
 

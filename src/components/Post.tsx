@@ -5,6 +5,7 @@ import { Link, RouteComponentProps } from 'react-router-dom';
 import '../styles/Post.css';
 import '../styles/PostContent.css';
 import { formatDate, human } from '../utils/datetime';
+import markup from '../utils/markdown';
 
 import Alert from './Alert';
 import Comments from './Comments';
@@ -188,7 +189,7 @@ class Post extends Component<IPostProps, IPostState> {
           }
         </div>
         <div className="content page-control">
-          <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+          <div className="post-content" dangerouslySetInnerHTML={{ __html: markup(post.content.rendered) }} />
         </div>
         {
           postData.siblings ?
