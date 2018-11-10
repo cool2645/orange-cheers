@@ -29,7 +29,7 @@ interface IPostIndex {
   offset: number;
 }
 
-interface IPost extends WP.Post {
+export interface IPost extends WP.Post {
   commentCount?: number;
 }
 
@@ -207,7 +207,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
       const total = +response.headers.get('x-wp-total');
       post.commentCount = total;
       this.posts[post.slug].commentCount = total;
-      if ((this.state.data as IPostsData).totalPage) {
+      if (seq === this.seq && (this.state.data as IPostsData).totalPage) {
         this.setState({
           data: {
             posts: (this.state.data as IPostsData).posts.map(p =>
@@ -221,7 +221,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
             totalPage: (this.state.data as IPostsData).totalPage,
           },
         }, seq);
-      } else if ((this.state.data as IPostData).post
+      } else if (seq === this.seq
+        && (this.state.data as IPostData).post
         && (this.state.data as IPostData).post.slug === post.slug) {
         this.setState({
           data: {

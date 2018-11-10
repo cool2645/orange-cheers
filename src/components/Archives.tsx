@@ -7,14 +7,14 @@ import { getElementTop } from '../utils/element';
 
 import { ClassicalLoader as Loader } from './Loader';
 import { INavControlProps } from './Nav';
-import { default as withPost, IPostsData, IViewComponentProps } from './PostHelper';
+import { default as withPost, IPost as IPost, IPostsData, IViewComponentProps } from './PostHelper';
 
-interface IPost {
+interface IArchivePost {
   date: number;
-  post: WP.Post;
+  post: IPost;
 }
 
-type Archive = ({ [key: string]: { [key: string]: IPost[] } });
+type Archive = ({ [key: string]: { [key: string]: IArchivePost[] } });
 
 interface IArchivesProps extends IViewComponentProps, INavControlProps {
 }
@@ -29,6 +29,8 @@ interface IArchivesState {
 }
 
 class Archives extends Component<IArchivesProps, IArchivesState> {
+
+  private firstFetch = true;
 
   constructor(props: IArchivesProps) {
     super(props);
@@ -79,12 +81,13 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   private fetchMorePosts = () => {
     if (!this.state.ready) return;
     this.setState({ ready: false }, () =>
-      this.props.getPostsData({ per_page: 15 }, this.state.page + 1, false, (err) => {
+      this.props.getPostsData({ per_page: 15 }, this.state.page + 1, !this.firstFetch, (err) => {
         if (err) {
           this.setState({ ready: true, end: true });
           return;
         }
-        const posts: Archive = Object.assign({}, this.state.posts);
+        this.firstFetch = false;
+        const posts: Archive = {};
         (this.props.data as IPostsData).posts.forEach(postData => {
           const post = postData.post;
           const date = new Date(post.date_gmt + '.000Z');
@@ -136,10 +139,15 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
                         <div key={month}>
                           <h3>{month} 月</h3>
                           {
-                            this.state.posts[year][month].map((post: IPost) => (
+                            this.state.posts[year][month].map((post: IArchivePost) => (
                               <div key={post.post.id}>
                                 <span>{post.date} 日：</span>
                                 <Link to={`/${post.post.slug}`}>{post.post.title.rendered}</Link>
+                                {
+                                  post.post.commentCount
+                                    ? <span>（{post.post.commentCount}）</span>
+                                    : ''
+                                }
                               </div>
                             ))
                           }
