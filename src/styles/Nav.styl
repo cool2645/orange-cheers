@@ -81,14 +81,16 @@
       }
       @media (max-width: 865px) {
         width: auto !important;
-        h1 {
-          @media (max-width: 370px) {
-            font-size: 26px !important;
-            margin-top: 24px !important;
-          }
-          @media (min-width: 370px) {
-            font-size: 33px !important;
-          }
+      }
+      h1 {
+        @media (max-width: 865px) {
+          font-size: 26px !important;
+          margin-top: 24px !important;
+        }
+        @media (min-width: 370px) and (max-width: 865px) {
+          font-size: 33px !important;
+        }
+        @media (max-width: 865px) {
           padding: 0 15px !important;
         }
       }
@@ -126,19 +128,22 @@
         .collapse-hide {
           display: none !important;
         }
+
         .collapse-show {
           display: block !important;
         }
-        @media (max-width: 900px) {
-          .social {
-            display: none !important;
-          }
+
+      }
+      @media (max-width: 900px) {
+        .social {
+          display: none !important;
         }
       }
       @media (min-width: 865px) and (max-width: 975px) {
         .collapse-hide {
           display: none !important;
         }
+
         .collapse-show {
           display: block !important;
         }
@@ -194,13 +199,15 @@
 .side-root {
   position: static !important;
   overflow: auto !important;
-  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.14);
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.14);
 }
+
 .side-side {
   z-index: 999 !important;
   width: 14.375rem !important;
   position: fixed !important;
 }
+
 .out-sidebar-content {
   overflow: auto !important;
   position: static !important;

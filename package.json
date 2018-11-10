@@ -26,12 +26,13 @@
     "react-router-dom": "^4.3.1",
     "react-scripts-ts": "^2.16.0",
     "react-sidebar": "^2.3.2",
+    "stylus-chokidar": "^0.0.3",
     "typed.js": "^2.0.7",
     "typescript": "^2.9.1"
   },
   "scripts": {
-    "build-css": "node-sass-chokidar src/ -o src/",
-    "watch-css": "npm run build-css && node-sass-chokidar src/ -o src/ --watch --recursive",
+    "build-css": "stylus-chokidar src/",
+    "watch-css": "npm run build-css && stylus-chokidar -w src/",
     "start-js": "react-app-rewired start --scripts-version react-scripts-ts",
     "start": "npm-run-all -p watch-css start-js",
     "build-js": "react-app-rewired build --scripts-version react-scripts-ts",
