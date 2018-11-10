@@ -27,63 +27,43 @@ class App extends Component {
   constructor(props: object) {
     super(props);
     this.nav = React.createRef();
-    this.setTyped = this.setTyped.bind(this);
-    this.startProgress = this.startProgress.bind(this);
-    this.joinProgress = this.joinProgress.bind(this);
-    this.doneProgress = this.doneProgress.bind(this);
-    this.renderArchives = this.renderArchives.bind(this);
-    this.renderIndex = this.renderIndex.bind(this);
-    this.renderPost = this.renderPost.bind(this);
-    this.renderSettings = this.renderSettings.bind(this);
-    this.renderRedirect = this.renderRedirect.bind(this);
-    this.renderComponent = this.renderComponent.bind(this);
     initSettings();
   }
 
-  public setTyped(text: string) {
+  public setTyped = (text: string) => {
     if (this.nav.current) this.nav.current.setTyped(text);
   }
 
-  public startProgress() {
+  public startProgress = () => {
     if (this.nav.current) this.nav.current.startProgress();
   }
 
-  public joinProgress() {
+  public joinProgress = () => {
     if (this.nav.current) this.nav.current.joinProgress();
   }
 
-  public doneProgress() {
+  public doneProgress = () => {
     if (this.nav.current) this.nav.current.doneProgress();
   }
 
-  private renderIndex(props: object) {
-    return this.renderComponent(Index, props);
-  }
+  private renderIndex = (props: object) => this.renderComponent(Index, props);
 
-  private renderPost(props: object) {
-    return this.renderComponent(Post, props);
-  }
+  private renderPost = (props: object) => this.renderComponent(Post, props);
 
-  private renderArchives(props: object) {
-    return this.renderComponent(Archives, props);
-  }
+  private renderArchives = (props: object) => this.renderComponent(Archives, props);
 
-  private renderSettings(props: object) {
-    return this.renderComponent(Settings, props);
-  }
+  private renderSettings = (props: object) => this.renderComponent(Settings, props);
 
-  private renderRedirect(props: object) {
-    return this.renderComponent(Redirect, props);
-  }
+  private renderRedirect = (props: object) => this.renderComponent(Redirect, props);
 
-  private renderComponent(Comp: ComponentClass<any>, props: object) {
-    return <Comp {...props}
-                 setTyped={this.setTyped}
-                 startProgress={this.startProgress}
-                 joinProgress={this.joinProgress}
-                 doneProgress={this.doneProgress}
-    />;
-  }
+  private renderComponent = (Comp: ComponentClass<any>, props: object) => (
+    <Comp {...props}
+          setTyped={this.setTyped}
+          startProgress={this.startProgress}
+          joinProgress={this.joinProgress}
+          doneProgress={this.doneProgress}
+    />
+  )
 
   public render() {
     return (

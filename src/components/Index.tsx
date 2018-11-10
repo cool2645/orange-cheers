@@ -65,11 +65,6 @@ class Index extends Component<IIndexProps, IIndexState> {
     state.page = +props.match.params.page || 1;
     this.state = state;
     this.alert = React.createRef();
-    this.init = this.init.bind(this);
-    this.onReady = this.onReady.bind(this);
-    this.onUpdated = this.onUpdated.bind(this);
-    this.challengeParams = this.challengeParams.bind(this);
-    this.fetchData = this.fetchData.bind(this);
   }
 
   public componentDidMount() {
@@ -104,7 +99,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     this.unmounted = true;
   }
 
-  private onReady(error: any): void {
+  private onReady = (error: any): void => {
     const { t } = this.props;
     if (error instanceof Error) {
       if (error.message === '404') this.setState({ notfound: true });
@@ -125,7 +120,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     else this.props.joinProgress();
   }
 
-  private onUpdated(error: any): void {
+  private onUpdated = (error: any): void => {
     const { t } = this.props;
     if (!this.alert) return;
     if (error instanceof Error) {
@@ -142,7 +137,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     }
   }
 
-  private init(): void {
+  private init = (): void => {
     this.setState({ ready: false }, () =>
       this.challengeParams()
         .then(this.fetchData)
@@ -153,50 +148,40 @@ class Index extends Component<IIndexProps, IIndexState> {
     );
   }
 
-  private challengeParams(): Promise<void> {
-    let promise = new Promise<void>((resolve) => {
-      resolve();
-    });
+  private challengeParams = async (): Promise<void> => {
     const params: IQueryParams = {
       per_page: config.perPage,
     };
     if (this.state.params.category) {
-      promise = promise.then(() => honoka.get('/categories', {
+      const data = await honoka.get('/categories', {
         data: {
           slug: this.state.params.category,
         },
-      })
-        .then(data => {
-          const cat = data.length === 0 ? null : data[0];
-          if (cat === null) {
-            throw new Error('404');
-          }
-          params.categories = cat.id;
-          this.props.setTyped(cat.name);
-        }));
+      });
+      const cat = data.length === 0 ? null : data[0];
+      if (cat === null) {
+        throw new Error('404');
+      }
+      params.categories = cat.id;
+      this.props.setTyped(cat.name);
     }
     if (this.state.params.tag) {
-      promise = promise.then(() => honoka.get('/tags', {
+      const data = await honoka.get('/tags', {
         data: {
           slug: this.state.params.tag,
         },
-      })
-        .then(data => {
-          const tag = data.length === 0 ? null : data[0];
-          if (tag === null) {
-            throw new Error('404');
-          }
-          params.tags = tag.id;
-          this.props.setTyped(tag.name);
-        }));
+      });
+      const tag = data.length === 0 ? null : data[0];
+      if (tag === null) {
+        throw new Error('404');
+      }
+      params.tags = tag.id;
+      this.props.setTyped(tag.name);
     }
-    promise = promise.then(() => {
-      this.setState({ query: { params } });
-    });
-    return promise;
+    this.setState({ query: { params } });
   }
 
-  private fetchData() {
+  private fetchData = () => {
     this.props.getPostsData(
       this.state.query.params,
       this.state.page,

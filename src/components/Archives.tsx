@@ -40,8 +40,6 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
       page: 0,
       posts: {},
     };
-    this.fetchMorePosts = this.fetchMorePosts.bind(this);
-    this.update = this.update.bind(this);
   }
 
   public componentDidMount() {
@@ -70,7 +68,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     document.onreadystatechange = null;
   }
 
-  private update() {
+  private update = () => {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('archive-ending'));
     // let scrollHeight = document.body.clientHeight;
@@ -78,7 +76,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMorePosts();
   }
 
-  private fetchMorePosts() {
+  private fetchMorePosts = () => {
     if (!this.state.ready) return;
     this.setState({ ready: false }, () =>
       this.props.getPostsData({ per_page: 15 }, this.state.page + 1, false, (err) => {

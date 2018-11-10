@@ -65,9 +65,6 @@ class Settings extends Component<ISettingsProps, ISettingsState> {
       refreshConfig: JSON.parse(localStorage.refreshConfig),
       unclearable: !(localStorage.indexes || localStorage.posts || localStorage.categories || localStorage.tags),
     };
-    this.setTheme = this.setTheme.bind(this);
-    this.setRefreshConfig = this.setRefreshConfig.bind(this);
-    this.clearCache = this.clearCache.bind(this);
   }
 
   public componentDidMount() {
@@ -90,21 +87,21 @@ class Settings extends Component<ISettingsProps, ISettingsState> {
     document.onreadystatechange = null;
   }
 
-  private setTheme(theme: string) {
+  private setTheme = (theme: string) => {
     localStorage.theme = theme;
     document.body.className = theme;
     document.querySelector('meta[name="theme-color"]').setAttribute('content', themes.themeColor[theme]);
     this.forceUpdate();
   }
 
-  private setRefreshConfig(key: string, value: RefreshLevel) {
+  private setRefreshConfig = (key: string, value: RefreshLevel) => {
     const refreshConfig = Object.assign({}, this.state.refreshConfig);
     refreshConfig[key] = value;
     this.setState({ refreshConfig });
     localStorage.refreshConfig = JSON.stringify(refreshConfig);
   }
 
-  private clearCache() {
+  private clearCache = () => {
     localStorage.removeItem('indexes');
     localStorage.removeItem('posts');
     localStorage.removeItem('categories');

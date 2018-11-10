@@ -46,8 +46,6 @@ class Alert extends Component<IAlertProps, IAlertState> {
       className: 'danger',
       content: '',
     };
-    this.show = this.show.bind(this);
-    this.hide = this.hide.bind(this);
   }
 
   public componentDidMount() {
@@ -74,7 +72,8 @@ class Alert extends Component<IAlertProps, IAlertState> {
     this.setState(state);
   }
 
-  public show(content?: string, className?: string, dismiss?: number, handle?: IAlertHandle | IAlertHandle[]) {
+  public show = (content?: string, className?: string, dismiss?: number,
+              handle?: IAlertHandle | IAlertHandle[]) => {
     const state: IAlertState = this.state;
     if (className) state.className = className;
     if (content) state.content = content;
@@ -87,7 +86,7 @@ class Alert extends Component<IAlertProps, IAlertState> {
     }, 100);
   }
 
-  public hide() {
+  public hide = () => {
     setTimeout(() => {
       this.setState({ hide: true });
     }, 100);

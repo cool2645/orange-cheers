@@ -54,11 +54,9 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
       data: emptyCommentConfig(),
     };
     this.alert = React.createRef();
-    this.onSubmit = this.onSubmit.bind(this);
-    this.vModel = this.vModel.bind(this);
   }
 
-  private onSubmit(e: React.MouseEvent<HTMLInputElement>) {
+  private onSubmit = async (e: React.MouseEvent<HTMLInputElement>) => {
     e.preventDefault();
     const { t } = this.props;
     if (!this.alert) return;
@@ -92,27 +90,30 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
 
     cmt.post = this.props.postId;
     if (this.props.parentId) cmt.parent = this.props.parentId;
-    if (this.props.reply) cmt.content = `<a href="#Comment-${this.props.reply.id}" >@${this.props.reply.author_name}</a> ${cmt.content}`;
-    honoka.post('/comments', {
-      data: cmt,
-    })
-      .then(data => {
-        this.alert.current.show(t('sent'), 'success', 3000, null);
-        this.props.addComment(data);
-        this.setState({ data: emptyCommentConfig() });
-        setTimeout(() => {
-          if (this.props.cancel) this.props.cancel();
-        }, 3000);
-      })
-      .catch(err => {
-        console.log(err);
-        this.alert.current.show(t('sendFail'), 'danger', 0, {
-          title: t('retry'), callback: () => { this.onSubmit(e); },
-        });
+    if (this.props.reply) {
+      cmt.content = `<a href="#Comment-${this.props.reply.id}" >@${this.props.reply.author_name}</a> ${cmt.content}`;
+    }
+    try {
+      const data = await honoka.post('/comments', {
+        data: cmt,
       });
+      this.alert.current.show(t('sent'), 'success', 3000, null);
+      this.props.addComment(data);
+      this.setState({ data: emptyCommentConfig() });
+      setTimeout(() => {
+        if (this.props.cancel) this.props.cancel();
+      }, 3000);
+    } catch (err) {
+      console.log(err);
+      this.alert.current.show(t('sendFail'), 'danger', 0, {
+        title: t('retry'), callback: () => {
+          this.onSubmit(e);
+        },
+      });
+    }
   }
 
-  private vModel(e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
+  private vModel = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     const data = this.state.data;
     data[e.target.name] = e.target.value;
     this.setState({ data });
@@ -183,12 +184,6 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
       error: null,
     };
     this.alert = React.createRef();
-    this.update = this.update.bind(this);
-    this.fetchMoreComments = this.fetchMoreComments.bind(this);
-    this.fetchComments = this.fetchComments.bind(this);
-    this.fetchReplies = this.fetchReplies.bind(this);
-    this.fetchReply = this.fetchReply.bind(this);
-    this.addComment = this.addComment.bind(this);
   }
 
   public componentDidMount() {
@@ -202,68 +197,59 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     this.unmounted = true;
   }
 
-  private fetchReply(id: number, page: number, totalPage: number, comment: IComment): Promise<object> {
-    return fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
+  private fetchReply = async (id: number, page: number, totalPage: number,
+                              comment: IComment): Promise<object> => {
+    const response = await fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       page,
       parent: id,
       order: 'asc',
-    })).then(response => {
-      const total = response.headers.get('x-wp-totalpages');
-      totalPage = total !== null ? +total : 1;
-      return response.json();
-    }).then(data => {
-      comment.children = [...comment.children, ...data];
-      page++;
-      if (page <= totalPage) {
-        this.setState({
-          comments: [...this.state.comments.map(c =>
-            c.id !== comment.id ? c : comment)],
-        });
-        return this.fetchReply(id, page, totalPage, comment);
-      }
-      return {};
-    });
+    }));
+    const total = response.headers.get('x-wp-totalpages');
+    totalPage = total !== null ? +total : 1;
+    const data = await response.json();
+    comment.children = [...comment.children, ...data];
+    page++;
+    if (page <= totalPage) {
+      this.setState({
+        comments: [...this.state.comments.map(c =>
+          c.id !== comment.id ? c : comment)],
+      });
+      return await this.fetchReply(id, page, totalPage, comment);
+    }
+    return {};
   }
 
-  private fetchReplies(comments: IComment[]): Promise<IComment[]> {
-    let promise = new Promise<void>((resolve) => {
-      resolve();
-    });
+  private fetchReplies = async (comments: IComment[]): Promise<IComment[]> => {
     for (const comment of comments) {
       comment.children = [];
-      promise = promise.then(() => this.fetchReply(comment.id, 1, 1, comment))
-        .then(() => {
-          this.setState({
-            comments: [...this.state.comments.map(c =>
-              c.id !== comment.id ? c : comment)],
-          });
-        });
+      await this.fetchReply(comment.id, 1, 1, comment);
+      this.setState({
+        comments: [...this.state.comments.map(c =>
+          c.id !== comment.id ? c : comment)],
+      });
     }
-    return promise.then(() =>
-      comments);
+    return comments;
   }
 
-  private fetchComments(id: number, page: number) {
-    return honoka.get('/comments', {
+  private fetchComments = async (id: number, page: number) => {
+    const data = await honoka.get('/comments', {
       data: {
         post: id,
         parent: 0,
         per_page: config.perPage,
         page,
       },
-    })
-      .then(data => {
-        this.setState({
-          comments: [...this.state.comments, ...data.map((comment: IComment) => {
-            comment.children = [];
-            return comment;
-          })],
-        });
-        return data;
-      });
+    });
+    this.setState({
+      comments: [...this.state.comments, ...data.map((comment: IComment) => {
+        comment.children = [];
+        return comment;
+      })],
+    });
+    return data;
   }
 
-  public addComment(cmt: IComment) {
+  public addComment = (cmt: IComment) => {
     cmt.children = [];
     this.setState({
       comments: cmt.parent === 0 ? [cmt, ...this.state.comments] :
@@ -274,7 +260,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     });
   }
 
-  private update() {
+  private update = () => {
     if (this.state.error) return;
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('comment-ending'));
@@ -283,7 +269,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
   }
 
-  private fetchMoreComments() {
+  private fetchMoreComments = () => {
     if (!this.state.ready) return;
     this.setState({ ready: false, error: false }, () =>
       this.fetchComments(this.props.id, this.state.page + 1)
@@ -359,7 +345,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
         {
           data.replyFocus ?
             <CommentSenderWithTrans postId={this.props.id} parentId={data.parent ? data.parent : data.id} reply={data}
-                           addComment={this.addComment} cancel={cancel} />
+                                    addComment={this.addComment} cancel={cancel} />
             : ''
         }
       </div>

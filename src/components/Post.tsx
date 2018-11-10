@@ -50,9 +50,6 @@ class Post extends Component<IPostProps, IPostState> {
     super(props);
     this.state = initState();
     this.alert = React.createRef();
-    this.onReady = this.onReady.bind(this);
-    this.onUpdated = this.onUpdated.bind(this);
-    this.fetchData = this.fetchData.bind(this);
   }
 
   public componentDidMount() {
@@ -93,7 +90,7 @@ class Post extends Component<IPostProps, IPostState> {
     document.onreadystatechange = null;
   }
 
-  private onReady(error: any): void {
+  private onReady = (error: any): void => {
     const { t } = this.props;
     if (error instanceof Error) {
       if (error.message === '404') this.setState({ notfound: true });
@@ -114,7 +111,7 @@ class Post extends Component<IPostProps, IPostState> {
     else this.props.joinProgress();
   }
 
-  private onUpdated(error: any): void {
+  private onUpdated = (error: any): void => {
     const { t } = this.props;
     if (!this.alert) return;
     if (error instanceof Error) {
@@ -132,7 +129,7 @@ class Post extends Component<IPostProps, IPostState> {
     }
   }
 
-  private fetchData() {
+  private fetchData = () => {
     if (this.state.slug) {
       this.setState({ ready: false }, () =>
         this.props.getPostData(
