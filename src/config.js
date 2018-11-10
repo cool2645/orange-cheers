@@ -76,7 +76,7 @@ const nav = {
       title: "RSS",
       typed: "RSS",
       icon: "fas fa-rss",
-      path: "/rss",
+      path: "/feed",
     },
     {
       title: "登录",

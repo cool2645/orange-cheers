@@ -72,7 +72,8 @@ class App extends Component {
           <Nav ref={this.nav} />
           <Switch>
             <Route exact={true} path="/" render={this.renderIndex} />
-            <Route exact={true} path="/(.*).php" render={this.renderRedirect} />
+            <Route exact={true} path="(.*)/feed" render={this.renderRedirect} />
+            <Route exact={true} path="(.*).php" render={this.renderRedirect} />
             <Route exact={true} path="/archives" render={this.renderArchives} />
             <Route exact={true} path="/settings" render={this.renderSettings} />
             <Route exact={true} path="/page/:page" render={this.renderIndex} />
