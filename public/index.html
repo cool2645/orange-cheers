@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css?family=Sunflower:500" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=PT+Serif" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
-    <link href='static/font/5b19626bf629d9187422e708.css' rel='stylesheet' type='text/css' />
+    <link href='%PUBLIC_URL%/static/font/5b19626bf629d9187422e708.css' rel='stylesheet' type='text/css' />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -42,47 +42,6 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   <script src="https://unpkg.com/monaco-editor/min/vs/loader.js"></script>
-  <script>
-    function initMonacoEditor() {
-      if (!window.monaco) {
-        require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor/min/vs' } });
-        window.MonacoEnvironment = { getWorkerUrl: () => proxy };
-
-        let proxy = URL.createObjectURL(new Blob([`
-	self.MonacoEnvironment = {
-		baseUrl: 'https://unpkg.com/monaco-editor/min/'
-	};
-	importScripts('https://unpkg.com/monaco-editor/min/vs/base/worker/workerMain.js');
-`], { type: 'text/javascript' }));
-
-        window.monacoIns = [];
-      }
-      for (let element of document.getElementsByTagName('pre')) {
-        if (element.getAttribute('monaco-ins') !== null) continue;
-        element.setAttribute('monaco-ins', 'pending');
-        require(["vs/editor/editor.main"], () => {
-          let code = element.innerText.trim();
-          let lang = element.className.match(/lang:(\S+)/);
-          lang = (lang && lang.length) > 1 ? lang[1] : '';
-          lang = lang.replace(/\+/g, 'p');
-          lang = lang.replace(/#/g, 'sharp');
-          console.log(lang);
-          element.style.display = 'block';
-          element.style.overflow = 'hidden';
-          let enter = code.match(/\n\r?/g);
-          element.style.height = 19 * (enter ? enter.length + 1 : 1) + 'px';
-          element.innerHTML = '';
-          let editor = window.monaco.editor.create(element, {
-            value: code,
-            language: lang,
-            folding: true,
-            scrollBeyondLastLine: false,
-          });
-          window.monacoIns.push(editor);
-          element.setAttribute('monaco-ins', window.monacoIns.length - 1);
-        });
-      }
-    }
-  </script>
+  <script src="%PUBLIC_URL%/static/js/monaco-editor-loader.1c9bc66a.js"></script>
   </body>
 </html>
