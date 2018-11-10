@@ -7,7 +7,7 @@ import { getElementTop } from '../utils/element';
 
 import { ClassicalLoader as Loader } from './Loader';
 import { INavControlProps } from './Nav';
-import { default as withPost, IPost as IPost, IPostsData, IViewComponentProps } from './PostHelper';
+import withPost, { IPost as IPost, IPostsData, IViewComponentProps } from './PostHelper';
 
 interface IArchivePost {
   date: number;

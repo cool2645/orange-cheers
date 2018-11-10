@@ -11,7 +11,7 @@ import Comments from './Comments';
 import { FullPageLoader as Loader, InlineLoader } from './Loader';
 import { INavControlProps } from './Nav';
 import NotFound from './NotFound';
-import { default as withPost, IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
+import withPost, { IPostData, IQueryParams, IViewComponentProps } from './PostHelper';
 import { IRefreshConfig, RefreshLevel } from './Settings';
 
 interface IQuery {

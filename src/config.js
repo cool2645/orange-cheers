@@ -91,6 +91,18 @@ const nav = {
       path: "/settings",
     },
   ],
+  footer: {
+    bottom: [
+      "2018 © 2645 Laboratory",
+    ],
+    top: [{
+      title: "关于作者",
+      contents: [
+        "<a href=''>梨子</a>",
+        "<a href=''>Bittersweet</a>",
+      ],
+    }],
+  },
 };
 
 export { site, nav, post, comment };

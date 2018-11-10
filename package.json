@@ -38,6 +38,7 @@
     "build-js": "react-app-rewired build --scripts-version react-scripts-ts",
     "build": "npm-run-all build-css build-js",
     "test": "react-app-rewired test --env=jsdom",
-    "eject": "react-scripts-ts eject"
+    "eject": "react-scripts-ts eject",
+    "lint": "tslint --fix -c tslint.json --project ./"
   }
 }

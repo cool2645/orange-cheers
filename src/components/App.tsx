@@ -13,6 +13,7 @@ import '../styles/themes/violet-moon.css';
 import '../styles/themes/wakakusa-no-season.css';
 
 import Archives from './Archives';
+import Footer from './Footer';
 import Index from './Index';
 import Nav from './Nav';
 import NotFound from './NotFound';
@@ -85,6 +86,7 @@ class App extends Component {
             <Route exact={true} path="/:slug" render={this.renderPost} />
             <Route component={NotFound} />
           </Switch>
+          <Footer/>
         </div>
       </Router>
     );
