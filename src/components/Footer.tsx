@@ -3,6 +3,7 @@ import { translate, InjectedTranslateProps } from 'react-i18next';
 
 import { nav } from '../config';
 import '../styles/Footer.css';
+import { scrollToTop } from '../utils/element';
 
 class Footer extends Component<InjectedTranslateProps, { top: boolean }> {
 
@@ -19,20 +20,6 @@ class Footer extends Component<InjectedTranslateProps, { top: boolean }> {
         this.setState({ top: false });
       }
     });
-  }
-
-  private scrollToTop = () => {
-    let currentY = document.documentElement.scrollTop || document.body.scrollTop;
-    const needScrollTop = 0 - currentY;
-    setTimeout(() => {
-      currentY += Math.ceil(needScrollTop / 10);
-      window.scrollTo(0, currentY);
-      if (needScrollTop > 10 || needScrollTop < -10) {
-        this.scrollToTop();
-      } else {
-        window.scrollTo(0, 0);
-      }
-    }, 1);
   }
 
   public render() {
@@ -67,7 +54,7 @@ class Footer extends Component<InjectedTranslateProps, { top: boolean }> {
             </div>
           </div>
         </div>
-        <div className={`totop ${this.state.top ? 'hide' : ''}`} onClick={this.scrollToTop}>
+        <div className={`totop ${this.state.top ? 'hide' : ''}`} onClick={scrollToTop}>
           <i className="fa fa-angle-up" />
         </div>
       </footer>

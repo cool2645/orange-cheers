@@ -11,6 +11,7 @@ import '../styles/themes/ring-a-yellow-bell.css';
 import '../styles/themes/scarlet-princess.css';
 import '../styles/themes/violet-moon.css';
 import '../styles/themes/wakakusa-no-season.css';
+import { scrollToTop } from '../utils/element';
 
 import Archives from './Archives';
 import Footer from './Footer';
@@ -36,6 +37,7 @@ class App extends Component {
   }
 
   public startProgress = () => {
+    scrollToTop();
     if (this.nav.current) this.nav.current.startProgress();
   }
 

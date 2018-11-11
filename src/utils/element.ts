@@ -9,4 +9,18 @@ const getElementTop = (element: HTMLElement | null): number => {
   return actualTop;
 };
 
-export { getElementTop };
+const scrollToTop = () => {
+  let currentY = document.documentElement.scrollTop || document.body.scrollTop;
+  const needScrollTop = 0 - currentY;
+  setTimeout(() => {
+    currentY += Math.ceil(needScrollTop / 10);
+    window.scrollTo(0, currentY);
+    if (needScrollTop > 10 || needScrollTop < -10) {
+      scrollToTop();
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, 1);
+};
+
+export { getElementTop, scrollToTop };
