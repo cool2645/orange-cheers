@@ -30,7 +30,16 @@ interface IArchivesState {
 
 class Archives extends Component<IArchivesProps, IArchivesState> {
 
+  private unmounted: boolean;
   private firstFetch = true;
+
+  public setState<K extends keyof IArchivesState>(
+    newState: ((prevState: Readonly<IArchivesState>, props: IArchivesProps) =>
+      (Pick<IArchivesState, K> | IArchivesState | null)) | (Pick<IArchivesState, K> | IArchivesState | null),
+    callback?: () => void
+  ): void {
+    if (!this.unmounted) super.setState(newState, callback);
+  }
 
   constructor(props: IArchivesProps) {
     super(props);
@@ -45,6 +54,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   }
 
   public componentDidMount() {
+    this.unmounted = false;
     this.props.startProgress();
     this.props.fetchCategories().then(categories =>
       this.setState({ categories: Object.values(categories) })
@@ -68,6 +78,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   public componentWillUnmount() {
     window.onscroll = null;
     document.onreadystatechange = null;
+    this.unmounted = true;
   }
 
   private update = () => {

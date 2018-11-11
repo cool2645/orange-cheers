@@ -46,6 +46,15 @@ const initState = (): IPostState => Object.assign({}, initialState);
 class Post extends Component<IPostProps, IPostState> {
 
   private readonly alert: React.RefObject<Alert>;
+  private unmounted: boolean;
+
+  public setState<K extends keyof IPostState>(
+    newState: ((prevState: Readonly<IPostState>, props: IPostProps) =>
+      (Pick<IPostState, K> | IPostState | null)) | (Pick<IPostState, K> | IPostState | null),
+    callback?: () => void
+  ): void {
+    if (!this.unmounted) super.setState(newState, callback);
+  }
 
   constructor(props: IPostProps) {
     super(props);
@@ -54,6 +63,7 @@ class Post extends Component<IPostProps, IPostState> {
   }
 
   public componentDidMount() {
+    this.unmounted = false;
     this.props.startProgress();
     const refreshConfig = JSON.parse(localStorage.refreshConfig);
     this.setState({
@@ -89,6 +99,7 @@ class Post extends Component<IPostProps, IPostState> {
 
   public componentWillUnmount() {
     document.onreadystatechange = null;
+    this.unmounted = true;
   }
 
   private onReady = (error: any): void => {
