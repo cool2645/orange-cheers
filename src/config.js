@@ -96,10 +96,41 @@ const nav = {
       "2018 © 2645 Laboratory",
     ],
     top: [{
-      title: "关于作者",
+      title: "两只鸽子作者",
       contents: [
-        "<a target='_blank' href='https://rikako.moe'>梨子</a>",
-        "<a target='_blank' href='https://渡边曜.我爱你'>Bittersweet</a>",
+        "<a target='_blank' href='https://rikako.moe/About'>梨子</a> - " +
+        "<a target='_blank' href='https://rikako.moe/GuestBook'>留言板</a> - " +
+        "<a target='_blank' href='https://rikako.moe'>时间轴</a>",
+        "<a target='_blank' href='https://渡边曜.我爱你/About'>Bittersweet</a> - " +
+        "<a target='_blank' href='https://渡边曜.我爱你/GuestBook'>留言板</a> - " +
+        "<a target='_blank' href='https://渡边曜.我爱你'>时间轴</a>",
+      ],
+    }, {
+      title: "地球的小伙伴们",
+      contents: [
+        "<a target='_blank' href='https://void-shana.moe/'>VOID's WOWO</a>",
+        "<a target='_blank' href='https://kotori.love/'>ことりのおやつにしてやるぞー！</a>",
+        "<a target='_blank' href='https://ekyu.moe/'>Equim</a>",
+        "<a target='_blank' href='https://frantic1048.com/'>Frantic1048 Chino Kafuu</a>",
+        "<a target='_blank' href='https://blog.nanpuyue.com/'>南浦月</a>",
+      ],
+    }, {
+      title: "地球的小伙伴们",
+      contents: [
+        "<a target='_blank' href='https://whoisnian.com/'>念</a>",
+        "<a target='_blank' href='https://kirainmoe.com/'>宇宙よりも遠い場所</a>",
+        "<a target='_blank' href='https://kirikira.moe/'>KIRIKIRA.MOE</a>",
+        "<a target='_blank' href='https://typeblog.net/'>PeterCxy</a>",
+        "<a target='_blank' href='https://blog.yoitsu.moe/'>约伊兹的萌狼乡手札</a>",
+      ],
+    }, {
+      title: "地球的小伙伴们",
+      contents: [
+        "<a target='_blank' href='https://fiveyellowmice.com/'>FiveYellowMice's Blog</a>",
+        "<a target='_blank' href='https://2heng.xin/'>樱花庄的白猫 | ねこ・しろ・ましろ</a>",
+        "<a target='_blank' href='https://blessing.studio/'>Blessing Studio</a>",
+        "<a target='_blank' href='https://blog.keep.moe/'>玛奇朵 生活觀察筆記</a>",
+        "<a target='_blank' href='https://blog.poi.cat/'>PoiScript</a>",
       ],
     }],
   },
