@@ -524,6 +524,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
         }
         const postData = { post, offset };
         await this.afterGetPost(postData, seq, params, offset, onready);
+        document.querySelector('meta[name="description"]').setAttribute('content', post.excerpt.rendered);
       } catch (err) {
         console.log(err);
         if (onready) onready(err);

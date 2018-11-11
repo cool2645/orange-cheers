@@ -98,8 +98,8 @@ const nav = {
     top: [{
       title: "关于作者",
       contents: [
-        "<a href=''>梨子</a>",
-        "<a href=''>Bittersweet</a>",
+        "<a target='_blank' href='https://rikako.moe'>梨子</a>",
+        "<a target='_blank' href='https://渡边曜.我爱你'>Bittersweet</a>",
       ],
     }],
   },
