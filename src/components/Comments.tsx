@@ -59,7 +59,7 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
 
   public setState<K extends keyof ICommentSenderState>(
     newState: ((prevState: Readonly<ICommentSenderState>, props: ICommentSenderProps) =>
-      (ICommentSenderState | null))
+        (ICommentSenderState | null))
       | (ICommentSenderState | null),
     callback?: () => void
   ): void {
@@ -341,19 +341,21 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     };
     return (
       <div key={data.id} className={`comment ${isReply} nf`}>
-        <div className="avatar-control">
-          <img alt={data.author_name} className="avatar"
-               src={data.author_avatar_urls['96']} />
-        </div>
-        <div className="comment-control">
-          <div className="comment-content post-content" dangerouslySetInnerHTML={{ __html: data.content.rendered }} />
-          <div className="comment-author">
-            <a href={data.author_url} target="_blank" rel="noopener noreferrer" className="username">
-              {data.author_name}
-            </a>
-            {/*<span>学院生</span>*/}
-            <label>{human(data.date_gmt + '.000Z')}</label>
-            <a href="" onClick={reply}>{t('reply')}</a>
+        <div className="comment-container">
+          <div className="avatar-control">
+            <img alt={data.author_name} className="avatar"
+                 src={data.author_avatar_urls['96']} />
+          </div>
+          <div className="comment-control">
+            <div className="comment-content post-content" dangerouslySetInnerHTML={{ __html: data.content.rendered }} />
+            <div className="comment-author">
+              <a href={data.author_url} target="_blank" rel="noopener noreferrer" className="username">
+                {data.author_name}
+              </a>
+              {/*<span>学院生</span>*/}
+              <label>{human(data.date_gmt + '.000Z')}</label>
+              <a href="" onClick={reply}>{t('reply')}</a>
+            </div>
           </div>
         </div>
         {

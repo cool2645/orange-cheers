@@ -61,6 +61,11 @@
 
 .comments {
   .comment {
+    .comment-container {
+      display: flex;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
     &.reply {
       padding-left: 3.75rem;
       @media screen and (max-width: 865px) {
@@ -89,8 +94,6 @@
     }
     .comment-control {
       float: left;
-      margin-top: 0.5em;
-      margin-bottom: 0.5em;
       a {
         margin-left: 0.25em;
         &.username {
