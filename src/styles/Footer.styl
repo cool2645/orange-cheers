@@ -45,6 +45,9 @@ footer.page-footer {
     .center {
       display: flex;
       justify-content: center;
+      @media (max-width: 700px) {
+        flex-direction: column;
+      }
     }
     font-size: 1rem;
     .item {
@@ -55,6 +58,9 @@ footer.page-footer {
   .row {
     display: flex;
     justify-content: space-between;
+    @media (max-width: 700px) {
+      flex-direction: column;
+    }
 
     .col {
       display: flex;

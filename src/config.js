@@ -63,7 +63,7 @@ const nav = {
     {
       name: "關於",
       typed: "关于",
-      path: "/about",
+      path: "/298",
     },
   ],
   icons: [
