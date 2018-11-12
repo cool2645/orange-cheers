@@ -38,7 +38,7 @@ class Footer extends Component<InjectedTranslateProps, { top: boolean }> {
           {
             nav.footer.top.map((item, index) =>
               <div key={index} className="col">
-                <h5>{item.title}</h5>
+                <h5 dangerouslySetInnerHTML={{ __html: item.title }} />
                 {
                   item.contents
                     .map((p, i) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)

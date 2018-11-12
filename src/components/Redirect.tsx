@@ -13,6 +13,7 @@ interface IRedirectProps extends InjectedTranslateProps, RouteProps {
 class Redirect extends Component<IRedirectProps> {
 
   public componentDidMount() {
+    // to avoid redirect too many times to fast
     setTimeout(() => {
       navigator.serviceWorker.getRegistration().then(reg => {
         if (reg) {
@@ -21,7 +22,7 @@ class Redirect extends Component<IRedirectProps> {
           location.reload(true);
         }
       });
-    }, 3000);
+    }, 1000);
   }
 
   public render() {
