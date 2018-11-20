@@ -98,42 +98,42 @@ const nav = {
     top: [{
       title: "两只鸽子作者",
       contents: [
-        "<a target='_blank' href='https://rikako.moe/About'>梨子</a> - " +
-        "<a target='_blank' href='https://rikako.moe/GuestBook'>留言板</a> - " +
-        "<a target='_blank' href='https://rikako.moe'>时间轴</a>",
-        "<a target='_blank' href='https://渡边曜.我爱你/About'>Bittersweet</a> - " +
-        "<a target='_blank' href='https://渡边曜.我爱你/GuestBook'>留言板</a> - " +
-        "<a target='_blank' href='https://渡边曜.我爱你'>时间轴</a>",
+        "<a target='_blank' href='https://rikako.moe/About' rel='noopener noreferrer'>梨子</a> - " +
+        "<a target='_blank' href='https://rikako.moe/GuestBook' rel='noopener noreferrer'>留言板</a> - " +
+        "<a target='_blank' href='https://rikako.moe' rel='noopener noreferrer'>时间轴</a>",
+        "<a target='_blank' href='https://渡边曜.我爱你/About' rel='noopener noreferrer'>Bittersweet</a> - " +
+        "<a target='_blank' href='https://渡边曜.我爱你/GuestBook' rel='noopener noreferrer'>留言板</a> - " +
+        "<a target='_blank' href='https://渡边曜.我爱你' rel='noopener noreferrer'>时间轴</a>",
       ],
     }, {
       title: "地球的小伙伴们",
       contents: [
-        "<a target='_blank' href='https://void-shana.moe/'>VOID's WOWO</a>",
-        "<a target='_blank' href='https://kotori.love/'>ことりのおやつにしてやるぞー！</a>",
-        "<a target='_blank' href='https://fiveyellowmice.com/'>FiveYellowMice's Blog</a>",
-        "<a target='_blank' href='https://blog.ixnet.work/'>IX Network Studio</a>",
-        "<a target='_blank' href='https://frantic1048.com/'>Frantic1048 Chino Kafuu</a>",
-        "<a target='_blank' href='https://blog.yoitsu.moe/'>约伊兹的萌狼乡手札</a>",
+        "<a target='_blank' href='https://void-shana.moe/' rel='noopener noreferrer'>VOID's WOWO</a>",
+        "<a target='_blank' href='https://kotori.love/' rel='noopener noreferrer'>ことりのおやつにしてやるぞー！</a>",
+        "<a target='_blank' href='https://fiveyellowmice.com/' rel='noopener noreferrer'>FiveYellowMice's Blog</a>",
+        "<a target='_blank' href='https://blog.ixnet.work/' rel='noopener noreferrer'>IX Network Studio</a>",
+        "<a target='_blank' href='https://frantic1048.com/' rel='noopener noreferrer'>Frantic1048 Chino Kafuu</a>",
+        "<a target='_blank' href='https://blog.yoitsu.moe/' rel='noopener noreferrer'>约伊兹的萌狼乡手札</a>",
       ],
     }, {
       title: "地球的小伙伴们",
       contents: [
-        "<a target='_blank' href='https://stdrc.cc/'>一只大写的腊鸡</a>",
-        "<a target='_blank' href='https://kirainmoe.com/'>宇宙よりも遠い場所</a>",
-        "<a target='_blank' href='https://ekyu.moe/'>Equim</a>",
-        "<a target='_blank' href='https://kirikira.moe/'>KIRIKIRA.MOE</a>",
-        "<a target='_blank' href='https://blog.nanpuyue.com/'>南浦月</a>",
-        "<a target='_blank' href='https://typeblog.net/'>PeterCxy</a>",
+        "<a target='_blank' href='https://stdrc.cc/' rel='noopener noreferrer'>一只大写的腊鸡</a>",
+        "<a target='_blank' href='https://kirainmoe.com/' rel='noopener noreferrer'>宇宙よりも遠い場所</a>",
+        "<a target='_blank' href='https://ekyu.moe/' rel='noopener noreferrer'>Equim</a>",
+        "<a target='_blank' href='https://kirikira.moe/' rel='noopener noreferrer'>KIRIKIRA.MOE</a>",
+        "<a target='_blank' href='https://blog.nanpuyue.com/' rel='noopener noreferrer'>南浦月</a>",
+        "<a target='_blank' href='https://typeblog.net/' rel='noopener noreferrer'>PeterCxy</a>",
       ],
     }, {
       title: "地球的小伙伴们",
       contents: [
-        "<a target='_blank' href='https://whoisnian.com/'>念</a>",
-        "<a target='_blank' href='https://2heng.xin/'>樱花庄的白猫 | ねこ・しろ・ましろ</a>",
-        "<a target='_blank' href='https://blessing.studio/'>Blessing Studio</a>",
-        "<a target='_blank' href='https://blog.keep.moe/'>玛奇朵 生活觀察筆記</a>",
-        "<a target='_blank' href='https://blog.poi.cat/'>PoiScript</a>",
-        "<a target='_blank' href='https://angry.im/'>ANGRY.IM</a>",
+        "<a target='_blank' href='https://whoisnian.com/' rel='noopener noreferrer'>念</a>",
+        "<a target='_blank' href='https://2heng.xin/' rel='noopener noreferrer'>樱花庄的白猫 | ねこ・しろ・ましろ</a>",
+        "<a target='_blank' href='https://blessing.studio/' rel='noopener noreferrer'>Blessing Studio</a>",
+        "<a target='_blank' href='https://blog.keep.moe/' rel='noopener noreferrer'>玛奇朵 生活觀察筆記</a>",
+        "<a target='_blank' href='https://blog.poi.cat/' rel='noopener noreferrer'>PoiScript</a>",
+        "<a target='_blank' href='https://angry.im/' rel='noopener noreferrer'>ANGRY.IM</a>",
       ],
     }],
   },

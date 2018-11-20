@@ -29,7 +29,10 @@ class Footer extends Component<InjectedTranslateProps, { top: boolean }> {
     arr.push(
       <div className="item" key="wordpress">{t('wordpress')}</div>,
       <div className="item" key="theme">
-        {t('theme')} <a target="_blank" href="https://github.com/cool2645/orange-cheers">orange-cheers</a>
+        {t('theme')}
+        <a target="_blank" href="https://github.com/cool2645/orange-cheers"
+           rel="noopener noreferrer"
+        >orange-cheers</a>
       </div>
     );
     return (

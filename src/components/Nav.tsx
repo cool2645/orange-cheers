@@ -52,11 +52,13 @@ class Nav extends Component<INavProps, INavStates> {
       touchStartY: 0,
       sidebarOpen: false,
     };
-    document.ontouchstart = (e) => {
+    document.addEventListener('touchstart', (e) => {
       this.setState({ touchStartY: e.touches[0].clientY });
-    };
-    document.onmousewheel = document.ontouchmove = document.onscroll = this.handleCollapse.bind(this);
-    document.addEventListener('DOMMouseScroll', this.handleCollapse.bind(this));
+    }, { passive: true });
+    document.addEventListener('mousewheel', this.handleCollapse, { passive: true });
+    document.addEventListener('touchmove', this.handleCollapse, { passive: true });
+    document.addEventListener('scroll', this.handleCollapse);
+    document.addEventListener('DOMMouseScroll', this.handleCollapse);
     window.addEventListener('scroll', () => {
       if (this.progressing) return;
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -168,8 +170,8 @@ class Nav extends Component<INavProps, INavStates> {
     if (e.changedTouches) this.setState({ touchStartY: e.changedTouches[0].clientY });
   }
 
-  private renderLinks(on: NavHolder) {
-    return nav.links.map(link => {
+  private renderLinks = (on: NavHolder) => (
+    nav.links.map(link => {
       if ((on === NavHolder.Sidebar && link.hideInSidebar) ||
         (on === NavHolder.Sidebar && link.hideInBanner && link.hideInHeader)
       ) return '';
@@ -194,11 +196,11 @@ class Nav extends Component<INavProps, INavStates> {
              rel="noopener noreferrer">{link.name}</a>
         </li>
       );
-    });
-  }
+    })
+  )
 
-  private renderIcons(on: NavHolder) {
-    return nav.icons.map(icon => {
+  private renderIcons = (on: NavHolder) => (
+    nav.icons.map(icon => {
       const internal = icon.path && (icon.path.charAt(0) === '/' || icon.path.charAt(0) === '#');
       const navigateInternalLink = () => {
         if (on === NavHolder.Sidebar) this.setSidebarOpen(false);
@@ -218,8 +220,8 @@ class Nav extends Component<INavProps, INavStates> {
              className={icon.icon} target="_blank" rel="noopener noreferrer" />
         </div>
       );
-    });
-  }
+    })
+  )
 
   public render() {
     const progressbar = (
@@ -227,10 +229,10 @@ class Nav extends Component<INavProps, INavStates> {
         <div id="inb" className="bar" />
       </div>
     );
-    const sidebarLinks = this.renderLinks.bind(this)(NavHolder.Sidebar);
-    const sidebarIcons = this.renderIcons.bind(this)(NavHolder.Sidebar);
-    const headerLinks = this.renderLinks.bind(this)(NavHolder.Header);
-    const headerIcons = this.renderIcons.bind(this)(NavHolder.Header);
+    const sidebarLinks = this.renderLinks(NavHolder.Sidebar);
+    const sidebarIcons = this.renderIcons(NavHolder.Sidebar);
+    const headerLinks = this.renderLinks(NavHolder.Header);
+    const headerIcons = this.renderIcons(NavHolder.Header);
     const sidebarContent = <div className="sidebar">
       <div className="sidebar-banner">
         <h2>
