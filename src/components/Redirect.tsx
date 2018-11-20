@@ -28,6 +28,7 @@ class Redirect extends Component<IRedirectProps> {
   public render() {
 
     const { t } = this.props;
+    document.title = t('redirect');
 
     return (
       <div className="container page">

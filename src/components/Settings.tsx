@@ -69,6 +69,8 @@ class Settings extends Component<ISettingsProps, ISettingsState> {
 
   public componentDidMount() {
     this.props.startProgress();
+    const { t } = this.props;
+    document.title = t('title');
     this.setState({
       unclearable: !(localStorage.indexes || localStorage.posts || localStorage.categories || localStorage.tags),
     });

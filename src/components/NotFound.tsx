@@ -7,6 +7,7 @@ class NotFound extends Component<InjectedTranslateProps> {
   public render() {
 
     const { t } = this.props;
+    document.title = t('notfound');
 
     return (
       <div className="container page">
