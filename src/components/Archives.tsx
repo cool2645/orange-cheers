@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { translate, InjectedTranslateProps } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import * as WP from 'wordpress';
 
@@ -16,7 +17,7 @@ interface IArchivePost {
 
 type Archive = ({ [key: string]: { [key: string]: IArchivePost[] } });
 
-interface IArchivesProps extends IViewComponentProps, INavControlProps {
+interface IArchivesProps extends IViewComponentProps, INavControlProps, InjectedTranslateProps {
 }
 
 interface IArchivesState {
@@ -56,11 +57,20 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   public componentDidMount() {
     this.unmounted = false;
     this.props.startProgress();
+    const { t } = this.props;
+    document.title = t('archive.title');
+    document.querySelector('meta[name="description"]')
+      .setAttribute('content', t('description'));
     this.props.fetchCategories().then(categories =>
       this.setState({ categories: Object.values(categories) })
     );
-    this.props.fetchTags().then(tags =>
-      this.setState({ tags: Object.values(tags) })
+    this.props.fetchTags().then(tags => {
+        document.querySelector('meta[name="keywords"]')
+          .setAttribute('content',
+            Object.values(tags).map(tag => tag.name).join()
+          );
+        this.setState({ tags: Object.values(tags) });
+      }
     );
     this.fetchMorePosts();
     window.onscroll = this.update;
@@ -113,12 +123,13 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   }
 
   public render() {
+    const { t } = this.props;
     return (
       <div className="container page post">
         <div className="page-container page-box">
           <div className="post">
             <div className="content fee page-control post-content">
-              <h1>分类目录</h1>
+              <h1>{t('archive.categories')}</h1>
               {
                 this.state.categories === null ? Loader :
                   this.state.categories.map((cate) => (
@@ -129,7 +140,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
               }
             </div>
             <div className="content fee page-control post-content">
-              <h1>标签</h1>
+              <h1>{t('archive.tags')}</h1>
               {
                 this.state.tags === null ? Loader :
                   this.state.tags.map((tag) => (
@@ -140,19 +151,19 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
               }
             </div>
             <div className="content page-control post-content">
-              <h1>归档文章</h1>
+              <h1>{t('archive.posts')}</h1>
               {
                 Object.keys(this.state.posts).map(year => (
                   <div key={year}>
-                    <h2>{year} 年</h2>
+                    <h2>{year} {t('archive.year')}</h2>
                     {
                       Object.keys(this.state.posts[year]).map(month => (
                         <div key={month}>
-                          <h3>{month} 月</h3>
+                          <h3>{month} {t('archive.month')}</h3>
                           {
                             this.state.posts[year][month].map((post: IArchivePost) => (
                               <div key={post.post.id}>
-                                <span>{post.date} 日：</span>
+                                <span>{post.date} {t('archive.date')}{t('archive.colon')}</span>
                                 <Link to={`/${post.post.slug}`}>{post.post.title.rendered}</Link>
                                 {
                                   post.post.commentCount
@@ -178,4 +189,4 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
   }
 }
 
-export default withPost(Archives);
+export default translate('post')(withPost(Archives));

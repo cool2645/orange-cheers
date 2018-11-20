@@ -118,9 +118,25 @@ class Post extends Component<IPostProps, IPostState> {
           }
         });
       }
-    } else this.setState({ ready: true }, (window as any).initMonacoEditor);
+    } else {
+      this.setMetaTags();
+      this.setState({ ready: true }, (window as any).initMonacoEditor);
+    }
     if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
+  }
+
+  private setMetaTags = (): void => {
+    const postData = (this.props.data as IPostData);
+    document.title = postData.post.title.rendered;
+    document.querySelector('meta[name="description"]')
+      .setAttribute('content',
+        postData.post.excerpt.rendered
+          .replace(/<[^>]+>/mg, '')
+          .replace(/\[&hellip;\]/mg, '...')
+      );
+    document.querySelector('meta[name="keywords"]')
+      .setAttribute('content', postData.tags.map(tag => tag.name).join());
   }
 
   private onUpdated = (error: any): void => {
@@ -134,6 +150,7 @@ class Post extends Component<IPostProps, IPostState> {
         }
       );
     } else {
+      this.setMetaTags();
       this.alert.current.show(
         t('post.update'), 'info', 3000
       );

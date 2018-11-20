@@ -115,9 +115,24 @@ class Index extends Component<IIndexProps, IIndexState> {
           }
         });
       }
-    } else this.setState({ ready: true });
+    } else {
+      this.setMetaTags();
+      this.setState({ ready: true });
+    }
     if (document.readyState === 'complete') this.props.doneProgress();
     else this.props.joinProgress();
+  }
+
+  private setMetaTags = (): void => {
+    const { t } = this.props;
+    const postData = (this.props.data as IPostsData);
+    document.title = t('title');
+    document.querySelector('meta[name="description"]')
+      .setAttribute('content', t('description'));
+    document.querySelector('meta[name="keywords"]')
+      .setAttribute('content',
+        postData.posts.map(post => post.tags.map(tag => tag.name)).join()
+      );
   }
 
   private onUpdated = (error: any): void => {
@@ -131,6 +146,7 @@ class Index extends Component<IIndexProps, IIndexState> {
         }
       );
     } else {
+      this.setMetaTags();
       this.alert.current.show(
         t('index.update'), 'info', 3000
       );

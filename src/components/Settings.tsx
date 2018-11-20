@@ -24,11 +24,11 @@ interface IRefreshConfig {
 
 const DefaultRefreshConfig = {
   indexes: RefreshLevel.Always,
-  posts: RefreshLevel.Cache,
+  posts: RefreshLevel.Always,
   categories: RefreshLevel.Cache,
   tags: RefreshLevel.Cache,
-  commentCounts: RefreshLevel.Cache,
-  siblings: RefreshLevel.Cache,
+  commentCounts: RefreshLevel.Always,
+  siblings: RefreshLevel.Always,
   comments: RefreshLevel.Always,
 };
 
