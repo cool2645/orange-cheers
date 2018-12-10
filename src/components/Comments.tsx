@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import honoka from 'honoka';
 import React, { Component } from 'react';
 import { translate, InjectedTranslateProps } from 'react-i18next';
@@ -70,7 +71,8 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
     this.unmounted = false;
   }
 
-  private onSubmit = async (e: React.MouseEvent<HTMLInputElement>) => {
+  @autobind
+  private async onSubmit(e: React.MouseEvent<HTMLInputElement>) {
     e.preventDefault();
     const { t } = this.props;
     if (!this.alert) return;
@@ -127,7 +129,8 @@ class CommentSender extends Component<ICommentSenderProps, ICommentSenderState> 
     }
   }
 
-  private vModel = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  @autobind
+  private vModel(e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
     const data = this.state.data;
     data[e.target.name] = e.target.value;
     this.setState({ data });
@@ -202,7 +205,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
 
   public componentDidMount() {
     this.fetchMoreComments();
-    window.onscroll = this.update;
+    window.onscroll = this.update.bind(this);
     this.unmounted = false;
   }
 
@@ -211,8 +214,8 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     this.unmounted = true;
   }
 
-  private fetchReply = async (id: number, page: number, totalPage: number,
-                              comment: IComment): Promise<object> => {
+  private async fetchReply(id: number, page: number, totalPage: number,
+                              comment: IComment): Promise<object> {
     const response = await fetch(honoka.defaults.baseURL + '/comments?' + urlEncode({
       page,
       parent: id,
@@ -233,7 +236,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     return {};
   }
 
-  private fetchReplies = async (comments: IComment[]): Promise<IComment[]> => {
+  private async fetchReplies(comments: IComment[]): Promise<IComment[]> {
     for (const comment of comments) {
       comment.children = [];
       await this.fetchReply(comment.id, 1, 1, comment);
@@ -245,7 +248,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     return comments;
   }
 
-  private fetchComments = async (id: number, page: number) => {
+  private async fetchComments(id: number, page: number) {
     const data = await honoka.get('/comments', {
       data: {
         post: id,
@@ -263,7 +266,8 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     return data;
   }
 
-  public addComment = (cmt: IComment) => {
+  @autobind
+  public addComment(cmt: IComment) {
     cmt.children = [];
     this.setState({
       comments: cmt.parent === 0 ? [cmt, ...this.state.comments] :
@@ -274,7 +278,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     });
   }
 
-  private update = () => {
+  private update() {
     if (this.state.error) return;
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('comment-ending'));
@@ -283,11 +287,11 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMoreComments();
   }
 
-  private fetchMoreComments = () => {
+  private fetchMoreComments() {
     if (!this.state.ready) return;
     this.setState({ ready: false, error: false }, () =>
       this.fetchComments(this.props.id, this.state.page + 1)
-        .then((data) => {
+        .then(data => {
           const end = data.length === 0;
           this.setState({ ready: true, page: this.state.page + 1, end });
           this.update();
@@ -392,7 +396,7 @@ class Comments extends Component<ICommentsProps, ICommentsState> {
         </div>
         <div id="comment-ending" />
         <Alert ref={this.alert} show={false} content={t('fail')}
-               handle={{ title: t('retry'), callback: this.fetchMoreComments }} />
+               handle={{ title: t('retry'), callback: this.fetchMoreComments.bind(this) }} />
         {
           this.state.end ?
             <div className="info eef page-control no-more">

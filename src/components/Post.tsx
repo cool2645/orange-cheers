@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import React, { Component } from 'react';
 import { translate, InjectedTranslateProps } from 'react-i18next';
 import { Link, RouteComponentProps } from 'react-router-dom';
@@ -102,7 +103,8 @@ class Post extends Component<IPostProps, IPostState> {
     this.unmounted = true;
   }
 
-  private onReady = (error: any): void => {
+  @autobind
+  private onReady(error: any): void {
     const { t } = this.props;
     if (error instanceof Error) {
       if (error.message === '404') this.setState({ notfound: true });
@@ -126,7 +128,7 @@ class Post extends Component<IPostProps, IPostState> {
     else this.props.joinProgress();
   }
 
-  private setMetaTags = (): void => {
+  private setMetaTags(): void {
     const postData = (this.props.data as IPostData);
     document.title = postData.post.title.rendered;
     document.querySelector('meta[name="description"]')
@@ -139,7 +141,8 @@ class Post extends Component<IPostProps, IPostState> {
       .setAttribute('content', postData.tags.map(tag => tag.name).join());
   }
 
-  private onUpdated = (error: any): void => {
+  @autobind
+  private onUpdated(error: any): void {
     const { t } = this.props;
     if (!this.alert) return;
     if (error instanceof Error) {
@@ -158,7 +161,8 @@ class Post extends Component<IPostProps, IPostState> {
     }
   }
 
-  private fetchData = () => {
+  @autobind
+  private fetchData() {
     if (this.state.slug) {
       this.setState({ ready: false }, () =>
         this.props.getPostData(

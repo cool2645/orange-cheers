@@ -15,6 +15,7 @@
     "@types/react-router": "^4.0.26",
     "@types/react-router-dom": "^4.2.7",
     "@types/react-sidebar": "^2.3.0",
+    "autobind-decorator": "^2.4.0",
     "honoka": "^0.4.17",
     "i18next": "^11.3.3",
     "i18next-browser-languagedetector": "^2.2.0",
@@ -42,5 +43,6 @@
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts-ts eject",
     "lint": "tslint --fix -c tslint.json --project ./"
-  }
+  },
+  "dependencies": {}
 }

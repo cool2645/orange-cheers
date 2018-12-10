@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import honoka from 'honoka';
 import React, { Component } from 'react';
 import { translate, InjectedTranslateProps } from 'react-i18next';
@@ -99,7 +100,8 @@ class Index extends Component<IIndexProps, IIndexState> {
     this.unmounted = true;
   }
 
-  private onReady = (error: any): void => {
+  @autobind
+  private onReady(error: any): void {
     const { t } = this.props;
     if (error instanceof Error) {
       if (error.message === '404') this.setState({ notfound: true });
@@ -109,7 +111,8 @@ class Index extends Component<IIndexProps, IIndexState> {
             this.alert.current.show(
               t('index.fail'), 'danger', null, {
                 title: t('index.retry'),
-                callback: error.name === 'challengeParams' ? this.init : this.fetchData,
+                callback: error.name === 'challengeParams'
+                  ? this.init : this.fetchData,
               }
             );
           }
@@ -123,7 +126,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     else this.props.joinProgress();
   }
 
-  private setMetaTags = (): void => {
+  private setMetaTags(): void {
     const { t } = this.props;
     const postData = (this.props.data as IPostsData);
     document.title = t('title');
@@ -135,7 +138,8 @@ class Index extends Component<IIndexProps, IIndexState> {
       );
   }
 
-  private onUpdated = (error: any): void => {
+  @autobind
+  private onUpdated(error: any): void {
     const { t } = this.props;
     if (!this.alert) return;
     if (error instanceof Error) {
@@ -153,7 +157,8 @@ class Index extends Component<IIndexProps, IIndexState> {
     }
   }
 
-  private init = (): void => {
+  @autobind
+  private init(): void {
     this.setState({ ready: false }, () =>
       this.challengeParams()
         .then(this.fetchData)
@@ -164,7 +169,7 @@ class Index extends Component<IIndexProps, IIndexState> {
     );
   }
 
-  private challengeParams = async (): Promise<void> => {
+  private async challengeParams(): Promise<void> {
     const params: IQueryParams = {
       per_page: config.perPage,
     };
@@ -197,7 +202,8 @@ class Index extends Component<IIndexProps, IIndexState> {
     this.setState({ query: { params } });
   }
 
-  private fetchData = () => {
+  @autobind
+  private fetchData() {
     this.props.getPostsData(
       this.state.query.params,
       this.state.page,

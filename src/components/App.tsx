@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import React, { Component, ComponentClass } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
@@ -22,6 +23,7 @@ import Post from './Post';
 import Redirect from './Redirect';
 import Settings, { initSettings } from './Settings';
 
+@autobind
 class App extends Component {
 
   private readonly nav: React.RefObject<Nav>;
@@ -32,20 +34,20 @@ class App extends Component {
     initSettings();
   }
 
-  public setTyped = (text: string) => {
+  public setTyped(text: string) {
     if (this.nav.current) this.nav.current.setTyped(text);
   }
 
-  public startProgress = () => {
+  public startProgress() {
     scrollToTop();
     if (this.nav.current) this.nav.current.startProgress();
   }
 
-  public joinProgress = () => {
+  public joinProgress() {
     if (this.nav.current) this.nav.current.joinProgress();
   }
 
-  public doneProgress = () => {
+  public doneProgress() {
     if (this.nav.current) this.nav.current.doneProgress();
   }
 

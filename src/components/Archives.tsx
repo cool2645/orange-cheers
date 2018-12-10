@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import React, { Component } from 'react';
 import { translate, InjectedTranslateProps } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -91,7 +92,8 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     this.unmounted = true;
   }
 
-  private update = () => {
+  @autobind
+  private update() {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     const commentTop = getElementTop(document.getElementById('archive-ending'));
     // let scrollHeight = document.body.clientHeight;
@@ -99,7 +101,7 @@ class Archives extends Component<IArchivesProps, IArchivesState> {
     if (!this.state.end && scrollTop + windowHeight >= commentTop) this.fetchMorePosts();
   }
 
-  private fetchMorePosts = () => {
+  private fetchMorePosts() {
     if (!this.state.ready) return;
     this.setState({ ready: false }, () =>
       this.props.getPostsData({ per_page: 15 }, this.state.page + 1, !this.firstFetch, (err) => {

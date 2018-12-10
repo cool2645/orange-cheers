@@ -97,6 +97,10 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
         refreshConfig: JSON.parse(localStorage.refreshConfig),
         data: null,
       };
+      this.fetchCategories = this.fetchCategories.bind(this);
+      this.fetchTags = this.fetchTags.bind(this);
+      this.getPostsData = this.getPostsData.bind(this);
+      this.getPostData = this.getPostData.bind(this);
     }
 
     public componentDidMount() {
@@ -118,8 +122,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // fetch given categories, return an object whose keys are values in filter
     // if no category given, fetch categories with most posts, return an array of results
-    public fetchCategories = async (filter?: number[])
-      : Promise<{ [key: number]: WP.Category } | WP.Category[]> => {
+    public async fetchCategories(filter?: number[])
+      : Promise<{ [key: number]: WP.Category } | WP.Category[]> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -157,7 +161,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // fetch given tags, return an object whose keys are values in filter
     // if no tags given, fetch tags with most posts, return an array of results
-    public fetchTags = async (filter?: number[]): Promise<{ [key: number]: WP.Tag } | WP.Tag[]> => {
+    public async fetchTags(filter?: number[]): Promise<{ [key: number]: WP.Tag } | WP.Tag[]> {
       const params = {
         per_page: 100,
         orderby: 'count',
@@ -195,7 +199,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // fetch given post's comment count
     // update data state of corresponding post
-    private fetchCommentCount = async (seq: number, post: IPost): Promise<IPost> => {
+    private async fetchCommentCount(seq: number, post: IPost): Promise<IPost> {
       if (post.commentCount !== undefined
         && this.state.refreshConfig.commentCounts === RefreshLevel.Cache) {
         return post;
@@ -239,7 +243,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // fetch given posts' comment count
     // update data state of corresponding posts
-    private fetchCommentCounts = async (seq: number, posts: IPost[]): Promise<IPost[]> => {
+    private async fetchCommentCounts(seq: number, posts: IPost[]): Promise<IPost[]> {
       for (const post of posts) {
         if (post.commentCount !== undefined
           && this.state.refreshConfig.commentCounts === RefreshLevel.Cache) continue;
@@ -251,7 +255,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
     // fetch post from cache
     // return post if succeed
     // return null if fail
-    private fetchPostFromCache = async (slug: string): Promise<null | IPost> => {
+    private async fetchPostFromCache(slug: string): Promise<null | IPost> {
       if (this.posts[slug]) {
         return this.posts[slug];
       }
@@ -259,7 +263,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
     }
 
     // fetch post
-    private fetchPost = async (slug: string): Promise<IPost> => {
+    private async fetchPost(slug: string): Promise<IPost> {
       const data = await honoka.get('/posts', {
         data: {
           slug,
@@ -276,8 +280,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
     // fetch posts from cache
     // return posts if succeed
     // return null if fail
-    private fetchPostsFromCache = async (page: number,
-                                         params: IQueryParams): Promise<null | IPostsData> => {
+    private async fetchPostsFromCache(page: number,
+                                         params: IQueryParams): Promise<null | IPostsData> {
       const query = urlEncode(params);
       if (this.indexes[query] && this.indexes[query].pages[page]) {
         const cachedData: IPostData[] = this.indexes[query].pages[page].map((index: IPostIndex) => (
@@ -289,7 +293,7 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
     }
 
     // fetch posts
-    private fetchPosts = async (page: number, params: IQueryParams): Promise<IPostsData> => {
+    private async fetchPosts(page: number, params: IQueryParams): Promise<IPostsData> {
       const query = urlEncode(params);
       params.page = page;
       const response = await fetch(honoka.defaults.baseURL + '/posts?' + urlEncode(params));
@@ -313,8 +317,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // fetch given post's siblings
     // update data state of corresponding post
-    private fetchSiblings = (seq: number, post: IPostData,
-                             params: IQueryParams, offset?: number): IPostData => {
+    private fetchSiblings(seq: number, post: IPostData,
+                             params: IQueryParams, offset?: number): IPostData {
       const key = urlEncode(params);
       post.siblings = {
         prev: undefined,
@@ -422,8 +426,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
       return post;
     }
 
-    private afterGetPosts = async (posts: IPostsData, seq: number,
-                                   append?: boolean, callback?: (err: any) => any) => {
+    private async afterGetPosts(posts: IPostsData, seq: number,
+                                   append?: boolean, callback?: (err: any) => any) {
       let cats: number[] = [];
       posts.posts.forEach((post: IPostData) => {
         cats = cats.concat(post.post.categories);
@@ -457,8 +461,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // get posts as well as the dependencies and push them to data state
     // will call onready once get data, call onupdated after data updated against onready.
-    public getPostsData = async (params: IQueryParams, page: number, append?: boolean,
-                                 onready?: (err: any) => any, onupdated?: (err: any) => any) => {
+    public async getPostsData(params: IQueryParams, page: number, append?: boolean,
+                                 onready?: (err: any) => any, onupdated?: (err: any) => any) {
       if (!append) this.seq++;
       const seq = this.seq;
       if (!append) this.setState({ data: null });
@@ -483,8 +487,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
       }
     }
 
-    private afterGetPost = async (postData: IPostData, seq: number, params?: IQueryParams,
-                                  offset?: number, callback?: (err: any) => any) => {
+    private async afterGetPost(postData: IPostData, seq: number, params?: IQueryParams,
+                                  offset?: number, callback?: (err: any) => any) {
       try {
         const categories = await this.fetchCategories(postData.post.categories);
         postData.categories = Object.values(categories);
@@ -503,8 +507,8 @@ function withPost<P extends IViewComponentProps>(ViewComponent: ComponentType<IV
 
     // get post as well as the dependencies and push it to data state
     // will call onready once get data, call onupdated after data updated against onready.
-    public getPostData = async (slug: string, params?: IQueryParams, offset?: number,
-                                onready?: (err: any) => any, onupdated?: (err: any) => any) => {
+    public async getPostData(slug: string, params?: IQueryParams, offset?: number,
+                                onready?: (err: any) => any, onupdated?: (err: any) => any) {
       this.seq++;
       const seq = this.seq;
       params = Object.assign({}, params);

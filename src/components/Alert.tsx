@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import React, { Component } from 'react';
 
 import '../styles/Alert.css';
@@ -72,8 +73,8 @@ class Alert extends Component<IAlertProps, IAlertState> {
     this.setState(state);
   }
 
-  public show = (content?: string, className?: string, dismiss?: number,
-              handle?: IAlertHandle | IAlertHandle[]) => {
+  public show(content?: string, className?: string, dismiss?: number,
+              handle?: IAlertHandle | IAlertHandle[]) {
     const state: IAlertState = this.state;
     if (className) state.className = className;
     if (content) state.content = content;
@@ -86,7 +87,8 @@ class Alert extends Component<IAlertProps, IAlertState> {
     }, 100);
   }
 
-  public hide = () => {
+  @autobind
+  public hide() {
     setTimeout(() => {
       this.setState({ hide: true });
     }, 100);

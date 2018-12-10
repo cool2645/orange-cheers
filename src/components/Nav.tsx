@@ -1,3 +1,4 @@
+import autobind from 'autobind-decorator';
 import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import Sidebar from 'react-sidebar';
@@ -72,7 +73,7 @@ class Nav extends Component<INavProps, INavStates> {
     setInterval(this.retype, 15000);
   }
 
-  public setTyped = (text: string) => {
+  public setTyped(text: string) {
     if (this.typed) {
       this.typed.strings = [text, site.title];
       this.retype(0);
@@ -92,7 +93,7 @@ class Nav extends Component<INavProps, INavStates> {
     this.typed.destroy();
   }
 
-  public joinProgress = () => {
+  public joinProgress() {
     const inb = document.getElementById('inb');
     const step = Math.random() * 10 + 20;
     if (this.progress >= 90) return;
@@ -101,7 +102,7 @@ class Nav extends Component<INavProps, INavStates> {
     if (inb) inb.style.width = this.progress + '%';
   }
 
-  public doneProgress = () => {
+  public doneProgress() {
     if (!this.progressing) return;
     const inb = document.getElementById('inb');
     this.progress = 100;
@@ -113,7 +114,7 @@ class Nav extends Component<INavProps, INavStates> {
     }, 500);
   }
 
-  public startProgress = () => {
+  public startProgress() {
     if (this.progressing) return;
     const inb = document.getElementById('inb');
     if (inb) inb.style.width = '0';
@@ -122,7 +123,8 @@ class Nav extends Component<INavProps, INavStates> {
     this.progressing = window.setInterval(this.onProgress, 200);
   }
 
-  private onProgress = () => {
+  @autobind
+  private onProgress() {
     const inb = document.getElementById('inb');
     let step = +(Math.random() > 0.7) * 5;
     if (this.progress + step > 98) return;
@@ -131,7 +133,8 @@ class Nav extends Component<INavProps, INavStates> {
     if (inb) inb.style.width = this.progress + '%';
   }
 
-  private retype = (timeout: number) => {
+  @autobind
+  private retype(timeout: number) {
     // BUG: https://github.com/mattboldt/typed.js/issues/283
     timeout = timeout || 0;
     setTimeout(() => {
@@ -139,13 +142,15 @@ class Nav extends Component<INavProps, INavStates> {
     }, timeout);
   }
 
-  private setSidebarOpen = (open: boolean) => {
+  @autobind
+  private setSidebarOpen(open: boolean) {
     if (open) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'auto';
     this.setState({ sidebarOpen: open });
   }
 
-  private handleCollapse = (e: WheelEvent & TouchEvent) => {
+  @autobind
+  private handleCollapse(e: WheelEvent & TouchEvent) {
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
     if ((e.wheelDelta && e.wheelDelta > 0) || (e.detail && e.detail < 0) || (e.changedTouches && e.changedTouches[0].clientY > this.state.touchStartY)) {
       if (scrollTop === 0 && window.matchMedia('(min-width: 865px)').matches && this.state.collapse !== Collapse.false) {
@@ -170,8 +175,8 @@ class Nav extends Component<INavProps, INavStates> {
     if (e.changedTouches) this.setState({ touchStartY: e.changedTouches[0].clientY });
   }
 
-  private renderLinks = (on: NavHolder) => (
-    nav.links.map(link => {
+  private renderLinks(on: NavHolder) {
+    return nav.links.map(link => {
       if ((on === NavHolder.Sidebar && link.hideInSidebar) ||
         (on === NavHolder.Sidebar && link.hideInBanner && link.hideInHeader)
       ) return '';
@@ -196,11 +201,11 @@ class Nav extends Component<INavProps, INavStates> {
              rel="noopener noreferrer">{link.name}</a>
         </li>
       );
-    })
-  )
+    });
+  }
 
-  private renderIcons = (on: NavHolder) => (
-    nav.icons.map(icon => {
+  private renderIcons(on: NavHolder) {
+    return nav.icons.map(icon => {
       const internal = icon.path && (icon.path.charAt(0) === '/' || icon.path.charAt(0) === '#');
       const navigateInternalLink = () => {
         if (on === NavHolder.Sidebar) this.setSidebarOpen(false);
@@ -220,8 +225,8 @@ class Nav extends Component<INavProps, INavStates> {
              className={icon.icon} target="_blank" rel="noopener noreferrer" />
         </div>
       );
-    })
-  )
+    });
+  }
 
   public render() {
     const progressbar = (
